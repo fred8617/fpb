@@ -7,16 +7,60 @@ import {
   runInAction,
 } from 'mobx';
 import _ from 'lodash';
+import { EditorState, convertToRaw, ContentState,convertFromHTML } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 
 
-function loadAntElement(name){
-  let element;
+async function loadAntElement(name){
+  let element={
+    ComponentProps:{
+
+    }
+  };
+  let ComponentClass;
   switch (name) {
     case 'input':
-      element=import('antd/lib/input');
+      element.ComponentClass=(await import('antd/lib/input')).default;
+      element.ComponentType=`form`;
+      break;
+    case 'input-number':
+      element.ComponentClass=(await import('antd/lib/input-number')).default;
+      element.ComponentType=`form`;
+      break;
+    case 'select':
+      element.ComponentClass=(await import('antd/lib/select')).default;
+      element.ComponentType=`form`;
+      element.ComponentChildrenClass=element.ComponentClass.Option;
+      break;
+    case 'checkbox':
+      ComponentClass=(await import('antd/lib/checkbox')).default;
+      element.ComponentClass=ComponentClass.Group;
+      element.ComponentChildrenClass=ComponentClass;
+      element.ComponentType=`form`;
+      break;
+    case 'radio':
+      ComponentClass=(await import('antd/lib/radio')).default;
+      element.ComponentClass=ComponentClass.Group;
+      element.ComponentChildrenClass=ComponentClass;
+      element.ComponentType=`form`;
+      break;
+    case 'date-picker':
+      element.ComponentClass=(await import('antd/lib/date-picker')).default;
+      element.ComponentType=`form`;
+      break;
+    case 'time-picker':
+      element.ComponentClass=(await import('antd/lib/time-picker')).default;
+      element.ComponentType=`form`;
+      break;
+    case 'divider':
+      element.ComponentClass=(await import('antd/lib/divider')).default;
+      element.ComponentType=`layout`;
       break;
     default:
-      element=import('antd/lib/input');
+      element.ComponentClass=(await import('antd/lib/input')).default;
+      element.ComponentType=`form`;
+
   }
   return element;
 }
@@ -55,6 +99,12 @@ export default class Store {
       name:`时间输入框`,
       value:`time-picker`,
     },
+  ];
+  layoutElements=[
+    {
+      name:`分割线`,
+      value:`divider`,
+    },
   ]
   @observable mode="develop";//开发模式
   @observable compact="vertical";//碰撞模式
@@ -83,7 +133,7 @@ export default class Store {
       this.layoutDrawerPlacement==`left`||
       this.layoutDrawerPlacement==`right`
     ){
-      style.height=`93%`;
+      style.height=`88%`;
     }else{
       style.height=192;
     }
@@ -91,6 +141,9 @@ export default class Store {
   }
   @computed get isResizable(){//是否可缩放
     return this.isDraggable;/**/
+  }
+  @computed get hasMinusButton(){//是否出现减号
+    return this.editingItem?.ComponentProps?.ChildrenProps?.length>1;/**/
   }
   @computed get minCol(){//最小栅格所需数量
     let min=0;
@@ -107,6 +160,15 @@ export default class Store {
 
   @action toggleTool=(e)=>{//工具版切换
     this.toolHide=!this.toolHide;
+  }
+  @action addChildrenProps=(index)=>{//添加子选项
+    this.editingItem.ComponentProps.ChildrenProps.splice(index+1,0,{children:``,value:``})
+  }
+  @action minusChildrenProps=(index)=>{//添加子选项
+    this.editingItem.ComponentProps.ChildrenProps.splice(index,1)
+  }
+  @action onItemLabelChange=(label)=>{//工具版切换
+      this.editingItem.ComponentProps.label=label;
   }
   @action setDefaultLeft=(e)=>{//工具版切换
     this.toolDefaultLeft=e;
@@ -125,18 +187,104 @@ export default class Store {
     this.editingItem=e;
     this.itemSettingDrawerVisible=true;
   }
+
+  @action showLabelChange=(e)=>{//是否显示label
+    this.editingItem.ComponentProps.showLabel=e;
+  }
+
+  @action itemFieldNameChange=(e)=>{//传值字段改变
+    this.editingItem.fieldName=e.target.value;
+  }
+
+  @action blurCheck=(e)=>{
+    this.editingItem.fieldName=this.getFieldName(e.target.value);
+  }
+
+  @action getFieldName=(name)=>{//检查元素名称
+    for(let i=0;i<this.layout.length;i++){
+      const item=this.layout[i];
+      const {fieldName}=item;
+      if(fieldName&&fieldName===name&&this.editingItem!==item){
+        name=`${name}0`;
+        name=this.getFieldName(name);
+        break;
+      }
+    }
+    return name;
+  }
+
+  @action itemRequiredChange=(e)=>{//是否必填
+    this.editingItem.ComponentProps.rules.isRequired.value=e;
+  }
+  @action itemRequiredMessageChange=(e)=>{//必填标语
+    this.editingItem.ComponentProps.rules.isRequired.message=e.target.value;
+  }
+  @action itemRowShowNumberChange=(e)=>{//每行显示数量
+    this.editingItem.ComponentProps.rowShowNumber=e;
+  }
+  @action itemChildrenPropsChange=(e,prop,value)=>{//每行显示数量
+    e[prop]=value;
+  }
+
+  @action setElementBasicProps=(element,item)=>{//设置元素基础属性
+    const {counterNum,type}=item;
+    element.ComponentProps.props={}
+    switch (element.ComponentType) {
+      case 'form':
+        element.ComponentProps.showLabel=true;
+        element.ComponentProps.rules={
+          isRequired:{
+            label:`是否必填`,
+            value:false,
+            message:'',
+          }
+        };
+        element.fieldName=this.getFieldName(`${type}${counterNum}`);
+        element.ComponentProps.label=element.fieldName;
+        let ChildrenProps=[];
+        switch (type) {
+          case 'radio':
+          case 'checkbox':
+            element.ComponentProps.rowShowNumber=1;//行显示数量
+            element.ComponentProps.props.style={
+              width:`100%`
+            }
+          case 'select':
+            ChildrenProps.push(
+              {
+                children:`default1`,
+                value:`default1`,
+              },
+              {
+                children:`default2`,
+                value:`default2`,
+              },
+            )
+            element.ComponentProps.ChildrenProps=ChildrenProps;
+            break;
+          default:
+
+        }
+        break;
+      default:
+
+    }
+    return element;
+  }
   @action itemTypeChange=async(e)=>{
     this.editingItem.type=e;
+    if(e===`blank`){
+      this.editingItem.ComponentClass=null;
+      return;
+    }
     const el=await loadAntElement(e);
+    this.setElementBasicProps(el,this.editingItem);
+
     runInAction(()=>{
-      this.editingItem.ComponentClass=el.default;
+      for(let key in el){
+        set(this.editingItem,key,el[key])
+      }
     });
-    // console.log(el);
-    // this.editingItem.ComponentClass=await import(`${ANTD_PREFIX}/${e}`).then(e=>{
-    //   console.log(e);
-    // }).catch(e=>{
-    //   console.log(e);
-    // });
   }
   @action hideSettingDrawer=()=>{//收起全局设置
     this.settingDrawerVisible=false;
@@ -146,12 +294,14 @@ export default class Store {
     this.editingItem=null;
   }
   @action addItem=()=>{
+    const counterNum=this.counter;
     this.layout.push({
       x:0,
       w:1,
-      h:1,
+      h:3,
       y:Infinity,
-      i:`item${this.counter}`,
+      i:`item${counterNum}`,
+      counterNum,
       type:'blank',
       ComponentClass:null,
     });

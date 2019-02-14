@@ -6,6 +6,15 @@
 .@{FPB}-container{
   border: 1px solid @primary-color;
   transition: all 0.3s;
+  .ant-form-item-no-colon .ant-form-item-label label:after{
+    display: none!important;
+  }
+  p{
+    margin-bottom: 0;
+  }
+  .ant-form-item-control{
+    line-height: normal!important;
+  }
 }
 .@{FPB}-tool{
   position: fixed;

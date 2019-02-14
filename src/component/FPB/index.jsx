@@ -14,6 +14,7 @@ import {
   Divider,
   Button,
   Slider,
+  Switch,
   Form,
   Input,
   InputNumber,
@@ -23,8 +24,10 @@ import {
   Row,
   Col,
   Empty,
+  Tooltip,
 } from 'antd';
 import SliderInputNumber from './FormComponent/SliderInputNumber';
+import MyEditor from './MyEditor';
 import NumberComponent from './FormComponent/NumberComponent';
 import styled from 'styled-components';
 const {Item,create}=Form;
@@ -93,9 +96,210 @@ function generateLayout() {
   });
 }
 
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 8 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 16 },
+  },
+};
 
+
+//Fled Page Reader
 @create()
-export default class FPB extends React.Component {
+export class FPR extends Component {
+  resize=()=>{
+    setTimeout(debounce(this.resizeEvent,200),200);
+  }
+  resizeEvent=()=>{
+    const event = document.createEvent('HTMLEvents');
+    event.initEvent('resize', true, false);
+    window.dispatchEvent(event);
+  }
+  render(){
+    const {
+      form:{
+        getFieldDecorator
+      },
+      store,
+      gridHeight,
+      marginLR,
+      marginTB,
+      cols,
+      containerHeight,
+      mounted,
+    }=this.props;
+    return (
+      <Observer>
+        {
+          ()=>{
+            const {
+              layout,
+              layoutData,
+              mode,
+              isResizable,
+              isDraggable,
+              deleteItem,
+              isEditing,
+              editingItem,
+              showItemSettingDrawer,
+              compact,
+              preventCollision,
+            }=store;
+            return (
+              <div
+                className="FPB-container"
+                style={{
+                  width:`100%`,
+                  height:containerHeight[1]&&containerHeight[0]&&`${containerHeight[1]}${containerHeight[0]}`
+                }}
+              >
+                {do{
+                  if(layout.length===0){
+                    <Empty/>
+                  }else{
+                    <ReactGridLayout
+                      ref={this.layoutRef}
+                      isDraggable={isDraggable}
+                      isResizable={isResizable}
+                      layout={toJS(layoutData)}
+                      onLayoutChange={this.onLayoutChange}
+                      measureBeforeMount={false}
+                      margin={[marginLR,marginTB]}
+                      rowHeight={gridHeight}
+                      cols={cols}
+                      useCSSTransforms={mounted}
+                      compactType={compact}
+                      preventCollision={preventCollision}
+                      onDragStop={this.resize}
+                      onResizeStop={this.resize}
+                    >
+                      {
+                        layout.map((e,i)=>{
+                          const {
+                            ComponentClass,
+                            ComponentType,
+                            ComponentProps,
+                            ComponentChildrenClass,
+                            fieldName,
+                          }=e;
+                          return (
+                            <Block
+                              data-grid={e}
+                              key={e.i}
+                            >
+                              <Popover
+                                placement={`bottom`}
+                                trigger="contextMenu"
+                                content={
+                                  <Fragment>
+                                    <Button
+                                      icon="edit"
+                                      type="primary"
+                                      onClick={_=>showItemSettingDrawer(e)}
+                                    />
+                                    <Divider
+                                      type="vertical"
+                                    />
+                                    <Button
+                                      icon="delete"
+                                      type="danger"
+                                      onClick={_=>deleteItem(e)}
+                                    />
+                                  </Fragment>
+                                }
+                              >
+                                {do{
+                                  if(ComponentClass&&ComponentType===`form`){
+                                    <Item
+                                      colon={false}
+                                      label={
+                                        ComponentProps.showLabel&&
+                                        <div
+                                          style={{display:`inline-block`}}
+                                          dangerouslySetInnerHTML={
+                                            {
+                                              __html:ComponentProps.label
+                                            }
+                                          }
+                                        />
+                                      }
+                                    >
+                                      {
+                                        ComponentClass&&
+                                        getFieldDecorator(fieldName,{
+                                          rules:[
+                                          {
+                                            required:ComponentProps.rules.isRequired.value,
+                                            message:ComponentProps.rules.isRequired.message,
+                                          }
+                                          ]
+                                        })(
+                                          <ComponentClass {...ComponentProps.props}>
+                                            {do{
+                                              if(ComponentProps.rowShowNumber){
+                                                <Row>
+                                                  {
+                                                    ComponentProps.ChildrenProps?.map((e,i)=>(
+                                                      <Col span={24/ComponentProps.rowShowNumber}>
+                                                        <ComponentChildrenClass
+                                                          key={`c${i}`}
+                                                          {...e}
+                                                        />
+                                                      </Col>
+                                                    ))
+                                                  }
+                                                </Row>
+                                              }else{
+                                                ComponentProps.ChildrenProps?.map((e,i)=>(
+                                                  <ComponentChildrenClass
+                                                    key={`c${i}`}
+                                                    {...e}
+                                                  />
+                                                ))
+                                              }
+                                            }}
+                                          </ComponentClass>
+                                        )
+                                      }
+                                    </Item>
+                                  }else if(ComponentClass&&ComponentType===`layout`){
+                                    ComponentClass&&
+                                    <ComponentClass/>
+                                  }
+                                }}
+
+                                <DevelopShadowContainer
+                                  mode={mode}
+                                  editing={editingItem&&editingItem!==e}
+                                >
+
+                                </DevelopShadowContainer>
+                              </Popover>
+
+                            </Block>
+                          );
+                        })
+                      }
+                    </ReactGridLayout>
+                  }
+                }}
+              </div>
+
+            )
+          }
+        }
+      </Observer>
+    )
+  }
+}
+
+//Fled Page Builder
+@create()
+export default class FPB extends Component {
   layoutRef=React.createRef();
   toolRef=React.createRef();
   // static defaultProps = {
@@ -112,14 +316,7 @@ export default class FPB extends React.Component {
     const layout = this.generateLayout();
     this.state = { layout };
   }
-  resize=()=>{
-    setTimeout(debounce(this.resizeEvent,200),200);
-  }
-  resizeEvent=()=>{
-    const event = document.createEvent('HTMLEvents');
-    event.initEvent('resize', true, false);
-    window.dispatchEvent(event);
-  }
+
 
   generateLayout() {
     const p = this.props;
@@ -161,6 +358,15 @@ export default class FPB extends React.Component {
       containerType=DEFAULT_CONTAINER_TYPE,
       containerHeight=DEFAULT_CONTAINER_HEIGHT,
     }=getFieldsValue();
+    const FPRProps={
+      gridHeight,
+      marginLR,
+      marginTB,
+      cols,
+      containerHeight,
+      mounted:this.state.mounted,
+      store,
+    };
     return (
       <Fragment>
         {/* 工具栏开始 */}
@@ -190,20 +396,28 @@ export default class FPB extends React.Component {
                               left:toolLeft,
                             }}
                           >
-                            <Button
-                              onClick={showSettingDrawer}
-                              icon="setting"
-                              shape="circle"
-                              type="primary"
-                            />
+                            <Tooltip
+                              title="全局设置"
+                            >
+                              <Button
+                                onClick={showSettingDrawer}
+                                icon="setting"
+                                shape="circle"
+                                type="primary"
+                              />
+                            </Tooltip>
                             <Divider type="vertical"/>
-                            <Button
-                              onClick={addItem}
-                              disabled={addDisabled}
-                              icon="plus"
-                              shape="circle"
-                              type="primary"
-                            />
+                            <Tooltip
+                              title="添加元素"
+                            >
+                              <Button
+                                onClick={addItem}
+                                disabled={addDisabled}
+                                icon="plus"
+                                shape="circle"
+                                type="primary"
+                              />
+                            </Tooltip>
                             <Divider type="vertical"/>
                             {/* 模式切换开始 */}
                             <ToolSpan>
@@ -215,7 +429,6 @@ export default class FPB extends React.Component {
                                   const {
                                     mode,
                                     setMode,
-
                                   }=store;
                                   return (
                                     <RadioGroup
@@ -335,7 +548,7 @@ export default class FPB extends React.Component {
                             <Divider>
                               元素
                             </Divider>
-                            <Row>
+                            <Row gutter={10}>
                               <Col span={12}>
                                 <Item
                                   label="单位高度(px)"
@@ -454,110 +667,9 @@ export default class FPB extends React.Component {
           }
         </Observer>
         {/* 工具栏结束 */}
-        {/* 布局 */}
-        <Observer>
-          {
-            ()=>{
-              const {
-                layout,
-                layoutData,
-                mode,
-                isResizable,
-                isDraggable,
-                deleteItem,
-                isEditing,
-                editingItem,
-                showItemSettingDrawer,
-                compact,
-                preventCollision,
-              }=store;
-              return (
-                <div
-                  className="FPB-container"
-                  style={{
-                    width:`100%`,
-                    height:containerHeight[1]&&containerHeight[0]&&`${containerHeight[1]}${containerHeight[0]}`
-                  }}
-                >
-                  {do{
-                    if(layout.length===0){
-                      <Empty/>
-                    }else{
-                      <ReactGridLayout
-                        {...this.props}
-                        ref={this.layoutRef}
-                        isDraggable={isDraggable}
-                        isResizable={isResizable}
-                        layout={toJS(layoutData)}
-                        onLayoutChange={this.onLayoutChange}
-                        measureBeforeMount={false}
-                        margin={[marginLR,marginTB]}
-                        rowHeight={gridHeight}
-                        cols={cols}
-                        useCSSTransforms={this.state.mounted}
-                        compactType={compact}
-                        preventCollision={preventCollision}
-                        onDragStop={this.resize}
-                        onResizeStop={this.resize}
-                      >
-                        {
-                          layout.map((e,i)=>{
-                            const {ComponentClass}=e;
-                            return (
-                              <Block
-                                data-grid={e}
-                                key={e.i}
-                              >
-                                <Popover
-                                  trigger="contextMenu"
-                                  content={
-                                    <Fragment>
-                                      <Button
-                                        icon="edit"
-                                        type="primary"
-                                        onClick={_=>showItemSettingDrawer(e)}
-                                      />
-                                      <Divider
-                                        type="vertical"
-                                      />
-                                      <Button
-                                        icon="delete"
-                                        type="danger"
-                                        onClick={_=>deleteItem(e)}
-                                      />
-                                    </Fragment>
-                                  }
-                                >
-                                  <Item
-                                    // label="元素类型"
-                                  >
-                                    {
-                                      ComponentClass&&
-                                      <ComponentClass/>
-                                    }
-                                  </Item>
-                                  <DevelopShadowContainer
-                                    mode={mode}
-                                    editing={editingItem&&editingItem!==e}
-                                  >
-
-                                  </DevelopShadowContainer>
-                                </Popover>
-
-                              </Block>
-                            );
-                          })
-                        }
-                      </ReactGridLayout>
-                    }
-                  }}
-                </div>
-
-              )
-            }
-          }
-        </Observer>
-        {/* 布局结束 */}
+        <FPR
+          {...FPRProps}
+        />
         {/* 元素设置窗口开始 */}
         <Observer>
           {
@@ -565,12 +677,15 @@ export default class FPB extends React.Component {
               const {
                 itemSettingDrawerVisible,
                 hideItemSettingDrawer,
-                editingItem,
                 layoutDrawerPlacement,
                 drawerBodyStyle,
                 layoutDrawerPlacementChange,
                 formElements,
+                layoutElements,
                 itemTypeChange,
+                itemFieldNameChange,
+                blurCheck,
+                showLabelChange,
               }=store;
               return (
                 <Drawer
@@ -580,7 +695,9 @@ export default class FPB extends React.Component {
                   bodyStyle={drawerBodyStyle}
                   title={
                     <Fragment>
-                      <span>布局设置</span>
+                      <span>
+                        布局设置
+                      </span>
                       <RadioGroup
                         value={layoutDrawerPlacement}
                         onChange={layoutDrawerPlacementChange}
@@ -604,46 +721,326 @@ export default class FPB extends React.Component {
                   title="元素设置"
                   onClose={hideItemSettingDrawer}
                 >
-                  <Row>
+                  <Row gutter={10}>
                     <Col span={12}>
                       <Item
                         label="元素类型"
                       >
-                        <Select
-                          onChange={itemTypeChange}
-                          value={editingItem?.type}
-                          style={{width:`100%`}}
-                        >
-                          <Option value={'blank'}>
-                            {`空白占位`}
-                          </Option>
-                          <OptGroup
-                            label={`表单元素`}
-                          >
-                            {
-                              formElements.map(({name,value},i)=>(
-                                <Option
-                                  value={value}
-                                  key={`ele${i}`}
+                        <Observer>
+                          {
+                            ()=>{
+                              const {editingItem}=store;
+                              return (
+                                <Select
+                                  showSearch
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) => option.props.children.toLowerCase?.().indexOf(input.toLowerCase()) >= 0}
+                                  onChange={itemTypeChange}
+                                  value={editingItem?.type}
+                                  style={{width:`100%`}}
                                 >
-                                  {name}
-                                </Option>
-                              ))
+                                  <Option value={'blank'}>
+                                    {`空白占位`}
+                                  </Option>
+                                  <OptGroup
+                                    label={`表单元素`}
+                                  >
+                                    {
+                                      formElements.map(({name,value},i)=>(
+                                        <Option
+                                          value={value}
+                                          key={`ele${i}`}
+                                        >
+                                          {name}
+                                        </Option>
+                                      ))
+                                    }
+                                  </OptGroup>
+                                  <OptGroup
+                                    label={`布局元素`}
+                                  >
+                                    {
+                                      layoutElements.map(({name,value},i)=>(
+                                        <Option
+                                          value={value}
+                                          key={`ele${i}`}
+                                        >
+                                          {name}
+                                        </Option>
+                                      ))
+                                    }
+                                  </OptGroup>
+                                </Select>
+                              )
                             }
-                          </OptGroup>
-                          <OptGroup
-                            label={`布局元素`}
-                          >
-                            <Option value={`divider`}>
-                              {`分割线`}
-                            </Option>
-                          </OptGroup>
-                        </Select>
+                          }
+                        </Observer>
                       </Item>
                     </Col>
-                    <Col span={12}>
+                    <Observer>
+                      {
+                        ()=>{
+                          const {editingItem}=store;
+                          return do{
+                            if(editingItem?.ComponentClass){
+                              if(editingItem.ComponentType===`form`){
+                                <Fragment>
+                                  <Col span={12}>
+                                    <Item
+                                      label="是否显示Label"
+                                    >
+                                      <Observer>
+                                        {
+                                          ()=>{
+                                            const {editingItem}=store;
+                                            return (
+                                              <Switch
+                                                onChange={showLabelChange}
+                                                checkedChildren="显示"
+                                                unCheckedChildren="隐藏"
+                                                checked={editingItem.ComponentProps.showLabel}
+                                              />
+                                            )
+                                          }
+                                        }
+                                      </Observer>
+                                    </Item>
+                                  </Col>
+                                  <Col span={12}>
+                                    <Item
+                                      label="传值字段"
+                                    >
+                                      <Observer>
+                                        {
+                                          ()=>{
+                                            const {
+                                              editingItem,
+                                              blurCheck,
+                                              itemFieldNameChange,
+                                            }=store;
+                                            return (
+                                              <Input
+                                                onBlur={blurCheck}
+                                                onChange={itemFieldNameChange}
+                                                value={editingItem.fieldName}
+                                              />
+                                            )
+                                          }
+                                        }
+                                      </Observer>
+                                    </Item>
+                                  </Col>
+                                  <Col span={24}>
+                                    <Item
+                                      label="Label内容"
+                                    >
+                                      <Observer>
+                                        {
+                                          ()=>{
+                                            const {
+                                              editingItem,
+                                              onItemLabelChange,
+                                            }=store;
+                                            return (
+                                              <MyEditor
+                                                editingItem={editingItem}
+                                                onChange={onItemLabelChange}
+                                              />
+                                            )
+                                          }
+                                        }
+                                      </Observer>
+                                    </Item>
+                                  </Col>
+                                  <Col span={12}>
+                                    <Item
+                                      label="是否必填"
+                                    >
+                                      <Observer>
+                                        {
+                                          ()=>{
+                                            const {
+                                              editingItem,
+                                              itemRequiredChange,
+                                            }=store;
+                                            return (
+                                              <Switch
+                                                checkedChildren="必填"
+                                                unCheckedChildren="非必填"
+                                                checked={editingItem?.ComponentProps.rules.isRequired.value}
+                                                onChange={itemRequiredChange}
+                                              />
+                                            )
+                                          }
+                                        }
+                                      </Observer>
+                                    </Item>
+                                  </Col>
+                                  {do{
+                                    if(editingItem?.ComponentProps.rules.isRequired.value){
+                                      <Col span={12}>
+                                        <Item
+                                          label="必填标语"
+                                        >
+                                          <Observer>
+                                            {
+                                              ()=>{
+                                                const {
+                                                  editingItem,
+                                                  itemRequiredMessageChange,
+                                                }=store;
+                                                return (
+                                                  <Input
+                                                    onChange={itemRequiredMessageChange}
+                                                    value={editingItem?.ComponentProps.rules.isRequired.message}
+                                                  />
+                                                )
+                                              }
+                                            }
+                                          </Observer>
+                                        </Item>
+                                      </Col>
+                                    }
+                                  }}
+                                  {do{
+                                    if(editingItem?.ComponentProps.ChildrenProps){
+                                      <Col span={24}>
+                                        <Item
+                                          label="键值对"
+                                        >
+                                          <Observer>
+                                            {
+                                              ()=>{
+                                                const {
+                                                  itemChildrenPropsChange,
+                                                  addChildrenProps,
+                                                  minusChildrenProps,
+                                                  hasMinusButton,
+                                                }=store;
+                                                return (
+                                                  editingItem.ComponentProps.ChildrenProps.map((e,i)=>(
+                                                    <Row
+                                                      gutter={10}
+                                                      key={`childrenProps${i}`}
+                                                    >
+                                                      <Col span={9}>
+                                                        <Item
+                                                          label="键"
+                                                          style={{marginBottom:5}}
+                                                          {...formItemLayout}
+                                                        >
+                                                          <Observer>
+                                                            {
+                                                              ()=>{
+                                                                return (
+                                                                  <Input
+                                                                    value={e.children}
+                                                                    onChange={_=>itemChildrenPropsChange(e,'children',_.target.value)}
+                                                                  />
+                                                                )
+                                                              }
+                                                            }
+                                                          </Observer>
+                                                        </Item>
+                                                      </Col>
+                                                      <Col span={9}>
+                                                        <Item
+                                                          label="值"
+                                                          style={{marginBottom:5}}
+                                                          {...formItemLayout}
+                                                        >
+                                                          <Observer>
+                                                            {
+                                                              ()=>{
+                                                                return (
+                                                                  <Input
+                                                                    value={e.value}
+                                                                    onChange={_=>itemChildrenPropsChange(e,'value',_.target.value)}
+                                                                  />
+                                                                )
+                                                              }
+                                                            }
+                                                          </Observer>
+                                                        </Item>
+                                                      </Col>
+                                                      <Col span={6}>
+                                                        <Button
+                                                          icon="plus"
+                                                          type="primary"
+                                                          onClick={_=>addChildrenProps(i)}
+                                                        />
+                                                        {do{
+                                                          const minusButton=(
+                                                            <Fragment>
+                                                              <Divider type="vertical"/>
+                                                              <Button
+                                                                onClick={_=>minusChildrenProps(i)}
+                                                                icon="minus"
+                                                                type="danger"
+                                                              />
+                                                            </Fragment>
+                                                          )
+                                                          if(i===0){
+                                                            if(hasMinusButton){
+                                                              minusButton
+                                                            }
+                                                          }else{
+                                                            minusButton
+                                                          }
+                                                        }}
 
-                    </Col>
+                                                      </Col>
+                                                    </Row>
+                                                  ))
+                                                )
+                                              }
+                                            }
+                                          </Observer>
+                                        </Item>
+                                      </Col>
+                                    }
+                                  }}
+                                  {do{
+                                    if(editingItem?.ComponentProps.rowShowNumber){
+                                      <Col span={12}>
+                                        <Item
+                                          label="行显示数量"
+                                        >
+                                          <Observer>
+                                            {
+                                              ()=>{
+                                                const {
+                                                  editingItem,
+                                                  itemRowShowNumberChange,
+                                                }=store;
+                                                return (
+                                                  <Slider
+                                                    min={1}
+                                                    max={4}
+                                                    onChange={itemRowShowNumberChange}
+                                                    value={editingItem?.ComponentProps.rowShowNumber}
+                                                  />
+                                                )
+                                              }
+                                            }
+                                          </Observer>
+                                        </Item>
+                                      </Col>
+                                    }
+                                  }}
+                                </Fragment>
+                              }else if(editingItem.ComponentType===`layout`){
+                                <span/>
+                              }else{
+                                <span/>
+                              }
+                            }else{
+                              <span/>
+                            }
+                          }
+                        }
+                      }
+                    </Observer>
                   </Row>
                 </Drawer>
               )
