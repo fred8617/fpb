@@ -119,6 +119,12 @@ export class FPR extends Component {
     event.initEvent('resize', true, false);
     window.dispatchEvent(event);
   }
+
+  onLayoutChange=(layout)=>{
+    console.log(`onLayoutChange`,layout);
+    this.props.store.setLayoutData(layout)
+  }
+
   render(){
     const {
       form:{
@@ -310,6 +316,8 @@ export default class FPB extends Component {
   //   cols: 12
   // };
 
+
+
   constructor(props) {
     super(props);
 
@@ -337,10 +345,7 @@ export default class FPB extends Component {
     store.setDefaultLeft(this.toolRef.current.clientWidth-18)
   }
 
-  onLayoutChange(layout) {
-    console.log(`onLayoutChange`,layout);
-    store.setLayoutData(layout)
-  }
+
 
 
   render() {
