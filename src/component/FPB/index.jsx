@@ -16,6 +16,7 @@ import {
   Button,
   Slider,
   Switch,
+  Checkbox,
   Form,
   Input,
   InputNumber,
@@ -61,6 +62,7 @@ const DevelopShadowContainer=styled.div`
 `;
 const RadioButton=Radio.Button;
 const RadioGroup=Radio.Group;
+const CheckboxGroup=Checkbox.Group;
 const {Option,OptGroup}=Select;
 
 const HOST='host';//主机路径
@@ -83,18 +85,49 @@ const CONTENT_TYPE_LIST=[
     value:`application/json`,
   },
 ];//contenttype
+const GRID_BREAK_POINTS=[
+  {
+    value:`lg`,
+    width:1200,
+    props:{
+      disabled:true,
+    }
+  },
+  {
+    value:`md`,
+    width:996,
+  },
+  {
+    value:`sm`,
+    width:768,
+  },
+  {
+    value:`xs`,
+    width:480,
+  },
+  {
+    value:`xxs`,
+    width:0,
+  },
+];
 const DEFAULT_GRID_WIDTH=10;//默认单位宽度
 const DEFAULT_GRID_HEIGHT=32;//默认单位高度
 const DEFAULT_MARGIN_LR=0;//默认左右间距
 const DEFAULT_MARGIN_TB=0;//默认上下间距
-const DEFAULT_COLS=12;//默认栅格数量
+const DEFAULT_COLS=['lg'];//默认栅格
 const SETTING_DRAWER_WIDTH=512;//布局抽屉宽度
 const DEFAULT_CONTAINER_TYPE=0;
 const DEFAULT_CONTAINER_HEIGHT=[null,null];
 const DRAWER_MASK_STYLE={
   background:`transparent`,
 };//抽屉遮罩样式
-
+const DEFAULT_BREAK_POINTS={
+  lg: 1200,
+  md: 996,
+  sm: 768,
+  xs: 480,
+  xxs: 0
+}
 
 
 function generateLayout() {
@@ -169,6 +202,11 @@ export class FPR extends Component {
     }
   }
 
+  onBreakpointChange=(newBreakpoint,newCols)=>{
+    console.log('onBreakpointChange',newBreakpoint,newCols,this.state.store.layoutData);
+    this.state.store.setBreakPoint(newBreakpoint)
+  }
+
   resize=()=>{
     setTimeout(debounce(this.resizeEvent,200),200);
   }
@@ -178,9 +216,9 @@ export class FPR extends Component {
     window.dispatchEvent(event);
   }
 
-  onLayoutChange=(layout)=>{
-    console.log(`onLayoutChange`,layout);
-    this.state.store.setLayoutData(layout)
+  onLayoutChange=(layout,layouts)=>{
+    console.log(`onLayoutChange`,layout,layouts);
+    this.state.store.setLayoutData(layouts)
   }
 
   getFunction=(item,{host})=>()=>{
@@ -229,6 +267,8 @@ export class FPR extends Component {
       containerHeight,
       host,
     }=this.state;
+    const breakpoints={};
+    cols.forEach((e)=>breakpoints[e]=DEFAULT_BREAK_POINTS[e]);
     return (
       <Skeleton
         active
@@ -270,16 +310,24 @@ export class FPR extends Component {
                       if(layout.length===0){
                         <Empty/>
                       }else{
-                        <ReactGridLayout
+                        <ResponsiveReactGridLayout
                           ref={this.layoutRef}
                           isDraggable={isDraggable}
                           isResizable={isResizable}
-                          layout={toJS(layoutData)}
+                          layouts={toJS(layoutData)}
                           onLayoutChange={this.onLayoutChange}
                           measureBeforeMount={false}
                           margin={[marginLR,marginTB]}
                           rowHeight={gridHeight}
-                          cols={cols}
+                          breakpoints={breakpoints}
+                          cols={{
+                            lg: 12,
+                            md: 10,
+                            sm: 6,
+                            xs: 4,
+                            xxs: 2
+                          }}
+                          onBreakpointChange={this.onBreakpointChange}
                           compactType={compact}
                           preventCollision={preventCollision}
                           onDragStop={this.resize}
@@ -409,7 +457,7 @@ export class FPR extends Component {
                               );
                             })
                           }
-                        </ReactGridLayout>
+                        </ResponsiveReactGridLayout>
                       }
                     }}
                   </div>
@@ -727,17 +775,34 @@ export default class FPB extends Component {
                                   }
                                 </Item>
                               </Col>
-                              <Col span={12}>
+                            </Row>
+                            <Divider>
+                              栅格
+                            </Divider>
+                            <Row>
+                              <Col span={24}>
                                 <Item
-                                  label="栅格数量"
+                                  label="栅格断点"
                                 >
                                   {
                                     getFieldDecorator(COLS,{
                                       initialValue:DEFAULT_COLS,
                                     })(
-                                      <SliderInputNumber
-                                        min={minCol}
-                                      />
+                                      <CheckboxGroup>
+                                        {
+                                          GRID_BREAK_POINTS.map((e,i)=>(
+                                            <Checkbox
+                                              key={`break${i}`}
+                                              {...e.props}
+                                              value={e.value}
+                                            >
+                                              {/* {e.value} */}
+                                              {`${e.width}px`}
+                                            </Checkbox>
+                                          ))
+                                        }
+
+                                      </CheckboxGroup>
                                     )
                                   }
                                 </Item>

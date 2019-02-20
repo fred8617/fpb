@@ -163,7 +163,7 @@ export default class Store {
   }
   @computed get minCol(){//最小栅格所需数量
     let min=0;
-    this.layoutData.forEach(e=>min=Math.max(min,e.w));
+    this.layoutData['lg']?.forEach(e=>min=Math.max(min,e.w));
     return min;
   }
 
@@ -172,9 +172,19 @@ export default class Store {
   @observable itemSettingDrawerVisible=false;//元素设置
   @observable editingItem=null;//编辑中元素
   // @observable dom=null;//绑定编辑中dom
+  @observable breakPoint='lg';
   @observable layout=[];
-  @observable layoutData=[];
-
+  @observable layoutData={
+        lg: [],
+        md: [],
+        sm: [],
+        xs: [],
+        xxs: [],
+  };
+  @observable loading=false;
+  @action setBreakPoint=(breakPoint)=>{//设置当前断点
+    this.breakPoint=breakPoint;
+  }
   @action createBasicLayoutClass=async ()=>{
     this.loading=true;
     for(let i=0;i<this.layout.length;i++){
@@ -192,7 +202,7 @@ export default class Store {
     this.toolHide=!this.toolHide;
   }
   getLayoutItem=(item)=>{
-    return this.layoutData.filter(e=>e.i===item.i)[0];
+    return this.layoutData[this.breakPoint]?.filter(e=>e.i===item.i)[0];
   }
   @action bindRef=(dom,item,marginTB,gridHeight)=>{//绑定
     const caclNewH=action(()=>{
@@ -236,6 +246,18 @@ export default class Store {
     this.settingDrawerVisible=true;
   }
   @action setLayoutData=(layoutData)=>{
+    const grids=Object.keys(layoutData);
+    const newLayoutData={};
+    // grids.forEach((e,i)=>{
+    //   const layout=layoutData[e];
+    //   const beforeLayout=newLayoutData[grids[i-1]];
+    //   if(layout.length===0&&beforeLayout){
+    //     newLayoutData[e]=beforeLayout;
+    //   }else{
+    //     newLayoutData[e]=layout;
+    //   }
+    // })
+    // console.log(`newLayoutData`,newLayoutData);
     this.layoutData=layoutData;
   }
   @action showItemSettingDrawer=(e)=>{//开始编辑
