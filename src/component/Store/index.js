@@ -7,6 +7,7 @@ import {
   runInAction,
 } from 'mobx';
 import _ from 'lodash';
+import axios from 'axios';
 import { EditorState, convertToRaw, ContentState,convertFromHTML } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
@@ -14,9 +15,7 @@ import htmlToDraft from 'html-to-draftjs';
 
 async function loadAntElement(name){
   let element={
-    ComponentProps:{
 
-    }
   };
   let ComponentClass;
   switch (name) {
@@ -56,6 +55,10 @@ async function loadAntElement(name){
     case 'divider':
       element.ComponentClass=(await import('antd/lib/divider')).default;
       element.ComponentType=`layout`;
+      break;
+    case 'button':
+      element.ComponentClass=(await import('antd/lib/button')).default;
+      element.ComponentType=`function`;
       break;
     default:
       element.ComponentClass=(await import('antd/lib/input')).default;
@@ -106,6 +109,13 @@ export default class Store {
       value:`divider`,
     },
   ]
+  functionElements=[
+    {
+      name:`按钮`,
+      value:`button`,
+    },
+  ]
+  @observable change=1;//标识符
   @observable mode="develop";//开发模式
   @observable compact="vertical";//碰撞模式
   @observable toolHide=true;//工具板显隐
@@ -116,6 +126,9 @@ export default class Store {
   @computed get preventCollision(){//碰撞失效
     return this.compact===`none`;
   }
+  @computed get containerBorder(){//碰撞失效
+    return this.mode===`develop`?undefined:`none`;
+  }
   @computed get toolLeft(){//工具板left
     return this.toolHide?-this.toolDefaultLeft:0;
   }
@@ -124,6 +137,9 @@ export default class Store {
   }
   @computed get isDraggable(){//是否可拖拽
     return this.mode===`develop`&&this.editingItem==null;
+  }
+  @computed get developing(){//开发中
+    return this.mode===`develop`;
   }
   @computed get drawerBodyStyle(){//抽屉体样式
     const style={
@@ -155,11 +171,47 @@ export default class Store {
   @observable layoutDrawerPlacement=`right`;//布局抽屉方向
   @observable itemSettingDrawerVisible=false;//元素设置
   @observable editingItem=null;//编辑中元素
+  // @observable dom=null;//绑定编辑中dom
   @observable layout=[];
   @observable layoutData=[];
 
+  @action createBasicLayoutClass=async ()=>{
+    this.loading=true;
+    for(let i=0;i<this.layout.length;i++){
+      const el=await loadAntElement(this.layout[i].type);
+      runInAction(()=>{
+        this.layout[i]={...this.layout[i],...el};
+      });
+    }
+    runInAction(()=>{
+      this.loading=false;
+    });
+  }
+
   @action toggleTool=(e)=>{//工具版切换
     this.toolHide=!this.toolHide;
+  }
+  getLayoutItem=(item)=>{
+    return this.layoutData.filter(e=>e.i===item.i)[0];
+  }
+  @action bindRef=(dom,item,marginTB,gridHeight)=>{//绑定
+    const caclNewH=action(()=>{
+      if(item.fixGrid&&dom){
+        // this.dom=dom;
+        const {clientHeight}=dom;
+        const itemLayout=this.getLayoutItem(item);
+        const {h}=itemLayout;
+        const newH=Math.ceil(clientHeight/(gridHeight+marginTB));
+        itemLayout.maxH=newH;
+        itemLayout.minH=newH;
+        itemLayout.h=newH;
+      }
+    });
+    if(item===this.editingItem&&this.developing){
+      caclNewH();
+    }else{
+      caclNewH();
+    }
   }
   @action addChildrenProps=(index)=>{//添加子选项
     this.editingItem.ComponentProps.ChildrenProps.splice(index+1,0,{children:``,value:``})
@@ -172,6 +224,9 @@ export default class Store {
   }
   @action setDefaultLeft=(e)=>{//工具版切换
     this.toolDefaultLeft=e;
+  }
+  @action setChange=(e)=>{//工具版切换
+    this.change++;
   }
   @action layoutDrawerPlacementChange=(e)=>{//布局抽屉方向变化
     this.layoutDrawerPlacement=e.target.value;
@@ -199,6 +254,17 @@ export default class Store {
   @action blurCheck=(e)=>{
     this.editingItem.fieldName=this.getFieldName(e.target.value);
   }
+  @action fixGridChange=(e)=>{//适应高度变化
+    this.editingItem.fixGrid=e;
+    if(e){
+
+    }else{
+      const layoutItem=this.getLayoutItem(this.editingItem);
+      layoutItem.minH=undefined;
+      layoutItem.maxH=undefined;
+    }
+
+  }
 
   @action getFieldName=(name)=>{//检查元素名称
     for(let i=0;i<this.layout.length;i++){
@@ -216,6 +282,32 @@ export default class Store {
   @action itemRequiredChange=(e)=>{//是否必填
     this.editingItem.ComponentProps.rules.isRequired.value=e;
   }
+
+  @action savePageData=({setting})=>{//保存转换页面数据
+    const saveData={
+      setting,
+      layout:toJS(this.layout),
+      layoutData:toJS(this.layoutData),
+    }
+    axios.post('asd',saveData)
+    // console.log();
+  }
+
+  @action textChange=(e)=>{//是否必填
+    this.editingItem.text=e.target.value;
+  }
+  @action functionChange=(e)=>{//功能改变
+    this.editingItem.functionUse=e;
+  }
+  @action urlChange=(e)=>{//url改变
+    this.editingItem.functionProps.url=e.target.value;
+  }
+  @action methodChange=(e)=>{//method改变
+    this.editingItem.functionProps.method=e;
+  }
+  @action contentTypeChange=(e)=>{//contentType改变
+    this.editingItem.functionProps.contentType=e;
+  }
   @action itemRequiredMessageChange=(e)=>{//必填标语
     this.editingItem.ComponentProps.rules.isRequired.message=e.target.value;
   }
@@ -228,7 +320,9 @@ export default class Store {
 
   @action setElementBasicProps=(element,item)=>{//设置元素基础属性
     const {counterNum,type}=item;
-    element.ComponentProps.props={}
+    element.ComponentProps={};
+    element.ComponentProps.props={};
+    element.fixGrid=true;//默认适应宽高
     switch (element.ComponentType) {
       case 'form':
         element.ComponentProps.showLabel=true;
@@ -266,10 +360,39 @@ export default class Store {
 
         }
         break;
+      case 'function':
+        element.text=this.getFieldName(`${type}${counterNum}`);
+        switch (type) {
+          case 'button':
+          element.functionUse=`submit`;
+          element.functionProps=this.getElementFunctionProps(element.functionUse);
+          element.ComponentProps.props.type=`primary`
+          element.ComponentProps.props.shape=null;
+          element.ComponentProps.props.icon=null;
+          element.ComponentProps.props.loading=false;
+          element.ComponentProps.props.trigger='onClick';
+          break;
+        }
+        break;
       default:
 
     }
     return element;
+  }
+  getElementFunctionProps=(functionUse)=>{//获取方法执行参数
+    const functionProps={};
+    switch (functionUse) {
+      case 'submit':
+        functionProps.url=``;
+        functionProps.method=`POST`;
+        functionProps.contentType=`application/x-www-form-urlencoded`;
+        functionProps.responseType=`json`;
+        // functionProps.contentType=`application/x-www-form-urlencoded`;
+        break;
+      default:
+
+    }
+    return functionProps
   }
   @action itemTypeChange=async(e)=>{
     this.editingItem.type=e;

@@ -16,7 +16,8 @@ export default class MyEditor extends Component{
     const {
       editingItem
     }=props;
-    if(editingItem!==state.editingItem){
+    if(editingItem!==state.editingItem||editingItem.type!==state.type){
+      // debugger
       let editorState=EditorState.createEmpty();
       const newContent=convertFromHTML(editingItem?.ComponentProps?.label);
       if (!newContent.contentBlocks) {
@@ -28,6 +29,7 @@ export default class MyEditor extends Component{
       return {
         editorState,
         editingItem,
+        type:editingItem.type,
       }
     }
     return null;

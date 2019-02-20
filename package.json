@@ -6,7 +6,7 @@
     "url": "https://github.com/Fled8617/react-form-builder-antd"
   },
   "main": "./src/dist/main.js",
-  "homepage": "https://fled8617.github.io/react-form-builder-antd",
+  "homepage": ".",
   "scripts": {
     "start": "node scripts/start.js",
     "start-self": "node scripts/start-self.js",
