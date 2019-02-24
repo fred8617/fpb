@@ -9,6 +9,7 @@ import _ from "lodash";
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import Store from '../Store';
+import FPR from '../FPR';
 import {
   Drawer,
   Icon,
@@ -28,16 +29,39 @@ import {
   Empty,
   Tooltip,
   Skeleton,
+  Modal,
 } from 'antd';
-import SliderInputNumber from './FormComponent/SliderInputNumber';
-import MyEditor from './MyEditor';
-import NumberComponent from './FormComponent/NumberComponent';
+import SliderInputNumber from '../FormComponent/SliderInputNumber';
+import MyEditor from '../MyEditor';
+import NumberComponent from '../FormComponent/NumberComponent';
 import styled from 'styled-components';
+import {
+HOST,
+GRID_HEIGHT,
+GRID_WIDTH,
+COLS,
+MARGIN_LR,
+MARGIN_TB,
+CONTAINER_TYPE,
+CONTAINER_HEIGHT,
+DEFAULT_HOST,
+METHOD_LIST,
+CONTENT_TYPE_LIST,
+GRID_BREAK_POINTS,
+DEFAULT_GRID_WIDTH,
+DEFAULT_GRID_HEIGHT,
+DEFAULT_MARGIN_LR,
+DEFAULT_MARGIN_TB,
+DEFAULT_COLS,
+SETTING_DRAWER_WIDTH,
+DEFAULT_CONTAINER_TYPE,
+DEFAULT_CONTAINER_HEIGHT,
+DRAWER_MASK_STYLE,
+DEFAULT_BREAK_POINTS,
+} from '../globalSetting';
 const {Item,create}=Form;
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 const ReactGridLayout = WidthProvider(RGL);
-const store=new Store();
-
 const Block=styled.div`
   box-sizing: border-box;
   overflow: hidden;
@@ -58,76 +82,14 @@ const DevelopShadowContainer=styled.div`
   :hover{
     background:rgba(0, 0, 0,0.3);
   }
-  ${'' /* z-index: 1; */}
+  z-index: 1;
 `;
 const RadioButton=Radio.Button;
 const RadioGroup=Radio.Group;
 const CheckboxGroup=Checkbox.Group;
 const {Option,OptGroup}=Select;
 
-const HOST='host';//主机路径
-const GRID_HEIGHT='gridHeight';//格子单位高度
-const GRID_WIDTH='gridWidth';//格子单位宽度
-const COLS='cols';//格子单位宽度
-const MARGIN_LR=`marginLR`;//左右间距
-const MARGIN_TB=`marginTB`;//上下间距
-const CONTAINER_TYPE=`containerType`;
-const CONTAINER_HEIGHT=`containerHeight`;
-const DEFAULT_HOST=`http://localhost:8080/`;//默认单位宽度
-const METHOD_LIST=[`GET`,`POST`,`PUT`,`DELETE`];//请求方法列表
-const CONTENT_TYPE_LIST=[
-  {
-    name:`Form`,
-    value:`application/x-www-form-urlencoded`,
-  },
-  {
-    name:`JSON`,
-    value:`application/json`,
-  },
-];//contenttype
-const GRID_BREAK_POINTS=[
-  {
-    value:`lg`,
-    width:1200,
-    props:{
-      disabled:true,
-    }
-  },
-  {
-    value:`md`,
-    width:996,
-  },
-  {
-    value:`sm`,
-    width:768,
-  },
-  {
-    value:`xs`,
-    width:480,
-  },
-  {
-    value:`xxs`,
-    width:0,
-  },
-];
-const DEFAULT_GRID_WIDTH=10;//默认单位宽度
-const DEFAULT_GRID_HEIGHT=32;//默认单位高度
-const DEFAULT_MARGIN_LR=0;//默认左右间距
-const DEFAULT_MARGIN_TB=0;//默认上下间距
-const DEFAULT_COLS=['lg'];//默认栅格
-const SETTING_DRAWER_WIDTH=512;//布局抽屉宽度
-const DEFAULT_CONTAINER_TYPE=0;
-const DEFAULT_CONTAINER_HEIGHT=[null,null];
-const DRAWER_MASK_STYLE={
-  background:`transparent`,
-};//抽屉遮罩样式
-const DEFAULT_BREAK_POINTS={
-  lg: 1200,
-  md: 996,
-  sm: 768,
-  xs: 480,
-  xxs: 0
-}
+
 
 
 function generateLayout() {
@@ -156,342 +118,84 @@ const formItemLayout = {
 };
 
 
-//Fled Page Reader
-@create()
-@observer
-export class FPR extends Component {
-  state={
-    store:null,
-  }
-  static getDerivedStateFromProps(props, state){
-    const {
-      store,
-      gridHeight,
-      marginLR,
-      marginTB,
-      cols,
-      containerHeight,
-      host,
-    }=props;
-    if(props.store){
-      return {
-        store,
-        gridHeight,
-        marginLR,
-        marginTB,
-        cols,
-        containerHeight,
-        host,
-      }
-    }
-    return null;
-  }
 
-  componentDidMount(){
-    const {setting,layout,layoutData}=this.props;
-    if(setting&&layout&&layoutData){
-      const store=new Store();
-      store.layout=layout;
-      store.layoutData=layoutData;
-      store.mode='production';
-      store.createBasicLayoutClass();
-      this.setState({
-        store,
-        ...setting,
-      })
-    }
-  }
-
-  onBreakpointChange=(newBreakpoint,newCols)=>{
-    console.log('onBreakpointChange',newBreakpoint,newCols,this.state.store.layoutData);
-    this.state.store.setBreakPoint(newBreakpoint)
-  }
-
-  resize=()=>{
-    setTimeout(debounce(this.resizeEvent,200),200);
-  }
-  resizeEvent=()=>{
-    const event = document.createEvent('HTMLEvents');
-    event.initEvent('resize', true, false);
-    window.dispatchEvent(event);
-  }
-
-  onLayoutChange=(layout,layouts)=>{
-    console.log(`onLayoutChange`,layout,layouts);
-    this.state.store.setLayoutData(layouts)
-  }
-
-  getFunction=(item,{host})=>()=>{
-    switch (item.functionUse) {
-      case 'submit':
-        this.props.form.validateFields(async (err, params) => {
-            if (!err) {
-              const {
-                url,
-                method,
-                contentType,
-                responseType,
-              }=item.functionProps;
-              const res=await axios({
-                method,
-                params,
-                data:params,
-                url:`${host}${url}`,
-                responseType,
-                headers:{
-                  'content-type':contentType,
-                }
-              });
-              console.log(res);
-            }
-          });
-        break;
-      default:
-
-    }
-  }
-
-  render(){
-    const {
-      form:{
-        getFieldDecorator
-      },
-
-    }=this.props;
-    const {
-      store,
-      gridHeight,
-      marginLR,
-      marginTB,
-      cols,
-      containerHeight,
-      host,
-    }=this.state;
-    const breakpoints={};
-    cols.forEach((e)=>breakpoints[e]=DEFAULT_BREAK_POINTS[e]);
-    return (
-      <Skeleton
-        active
-        loading={!store||store.loading}
-        paragraph={{ rows: 6 }}
-      >
-        {
-          store&&
-          <Observer>
-            {
-              ()=>{
-                const {
-                  layout,
-                  layoutData,
-                  mode,
-                  isResizable,
-                  isDraggable,
-                  deleteItem,
-                  isEditing,
-                  editingItem,
-                  showItemSettingDrawer,
-                  compact,
-                  bindRef,
-                  preventCollision,
-                  change,
-                  containerBorder,
-                }=store;
-                editingItem?.fixGrid
-                return (
-                  <div
-                    className="FPB-container"
-                    style={{
-                      width:`100%`,
-                      height:containerHeight[1]&&containerHeight[0]&&`${containerHeight[1]}${containerHeight[0]}`,
-                      border:containerBorder
-                    }}
-                  >
-                    {do{
-                      if(layout.length===0){
-                        <Empty/>
-                      }else{
-                        <ResponsiveReactGridLayout
-                          ref={this.layoutRef}
-                          isDraggable={isDraggable}
-                          isResizable={isResizable}
-                          layouts={toJS(layoutData)}
-                          onLayoutChange={this.onLayoutChange}
-                          measureBeforeMount={false}
-                          margin={[marginLR,marginTB]}
-                          rowHeight={gridHeight}
-                          breakpoints={breakpoints}
-                          cols={{
-                            lg: 12,
-                            md: 10,
-                            sm: 6,
-                            xs: 4,
-                            xxs: 2
-                          }}
-                          onBreakpointChange={this.onBreakpointChange}
-                          compactType={compact}
-                          preventCollision={preventCollision}
-                          onDragStop={this.resize}
-                          onResizeStop={this.resize}
-                        >
-                          {
-                            layout.map((e,i)=>{
-                              const {
-                                ComponentClass,
-                                ComponentType,
-                                ComponentProps,
-                                ComponentChildrenClass,
-                                fieldName,
-                              }=e;
-                              return (
-                                <Block
-                                  data-grid={e}
-                                  key={e.i}
-                                >
-                                  <div
-                                    ref={dom=>bindRef?.(dom,e,marginTB,gridHeight)}
-                                  >
-                                    {do{
-                                      if(ComponentClass&&ComponentType===`form`){
-                                        <Item
-                                          colon={false}
-                                          label={
-                                              ComponentProps.showLabel&&
-                                            <div
-                                              style={{display:`inline-block`}}
-                                              dangerouslySetInnerHTML={
-                                                {
-                                                    __html:ComponentProps.label
-                                                }
-                                              }
-                                            />
-                                          }
-                                        >
-                                          {
-                                              ComponentClass&&
-                                            getFieldDecorator(fieldName||`errorFiedName`,{
-                                              // getValueFromEvent:(e)=>{
-                                              //   console.log(e);
-                                              //   return e.format(`YYYY-MM-DD`)
-                                              // },
-                                                rules:[
-                                              {
-                                                  required:ComponentProps.rules.isRequired.value,
-                                                  message:ComponentProps.rules.isRequired.message,
-                                              }
-                                                ]
-                                            })(
-                                              <ComponentClass {...ComponentProps.props}>
-                                                {do{
-                                                  if(ComponentProps.rowShowNumber){
-                                                    <Row>
-                                                      {
-                                                        ComponentProps.ChildrenProps?.map((e,i)=>(
-                                                          <Col
-                                                            key={`children${i}`}
-                                                            span={24/ComponentProps.rowShowNumber}
-                                                          >
-                                                            <ComponentChildrenClass
-                                                              key={`c${i}`}
-                                                              {...e}
-                                                            />
-                                                          </Col>
-                                                        ))
-                                                      }
-                                                    </Row>
-                                                  }else{
-                                                    ComponentProps.ChildrenProps?.map((e,i)=>(
-                                                      <ComponentChildrenClass
-                                                        key={`c${i}`}
-                                                        {...e}
-                                                      />
-                                                    ))
-                                                  }
-                                                }}
-                                              </ComponentClass>
-                                            )
-                                          }
-                                        </Item>
-                                      }else if(ComponentClass&&ComponentType===`layout`){
-                                          ComponentClass&&
-                                        <ComponentClass/>
-                                      }else if(ComponentClass&&ComponentType===`function`){
-                                        ComponentClass&&
-                                        <ComponentClass
-                                          {...ComponentProps.props}
-                                          {...{[ComponentProps.props.trigger]:this.getFunction(e,{host})}}
-                                        >
-                                          {e.text}
-                                        </ComponentClass>
-                                      }
-                                    }}
-                                  </div>
-                                  <Popover
-                                    placement={`bottom`}
-                                    trigger="contextMenu"
-                                    content={
-                                      <Fragment>
-                                        <Button
-                                          icon="edit"
-                                          type="primary"
-                                          onClick={_=>showItemSettingDrawer(e)}
-                                        />
-                                        <Divider
-                                          type="vertical"
-                                        />
-                                        <Button
-                                          icon="delete"
-                                          type="danger"
-                                          onClick={_=>deleteItem(e)}
-                                        />
-                                      </Fragment>
-                                    }
-                                  >
-                                    <DevelopShadowContainer
-                                      mode={mode}
-                                      editing={editingItem&&editingItem!==e}
-                                    >
-
-                                    </DevelopShadowContainer>
-                                  </Popover>
-                                </Block>
-                              );
-                            })
-                          }
-                        </ResponsiveReactGridLayout>
-                      }
-                    }}
-                  </div>
-
-                )
-              }
-            }
-          </Observer>
-        }
-      </Skeleton>
-    )
-  }
-}
 
 //Fled Page Builder
-@create({
-  onFieldsChange(props, fields){
-    if(fields.gridHeight){
-      // store.setChange()
-    }
-  }
-})
+@create()
 export default class FPB extends Component {
+  state={
+
+  };
   layoutRef=React.createRef();
   toolRef=React.createRef();
 
+  static getDerivedStateFromProps(props, state){
+    let {store}=props;
+    if(store){
+      return {
+        store
+      }
+    }else if(state.store){
+      return null;
+    }else{
+      return {
+        store:new Store(),
+      }
+    }
+  }
+
   componentDidMount(){
-    window.addEventListener(`resize`,()=>console.log(`resize`))
-    store.setDefaultLeft(this.toolRef.current.clientWidth-18)
+    const {
+      props:{
+        pageData,
+        form,
+      },
+      state:{
+        store
+      }
+    }=this;
+    store.setDefaultLeft(this.toolRef.current.clientWidth-18);
+    if(pageData){
+      const {
+        setting,
+        layout,
+        layoutData,
+        counter,
+      }=pageData;
+      if(setting&&layout&&layoutData&&counter){
+        store.setLayout(layout);
+        store.counter=counter;
+        store.setLayoutData(layoutData);
+        store.createBasicLayoutClass();
+        form.setFieldsValue(setting);
+      }
+    }
+
+
   }
 
   savePageData=()=>{
-    const setting=this.props.form.getFieldsValue();
-    store.savePageData({setting});
+    const {
+      parentPage,
+      form:{
+        getFieldsValue,
+      }
+    }=this.props;
+    const {
+      store:{
+        saveParentPageData,
+        savePageData,
+      },
+    }=this.state;
+    const setting=getFieldsValue();
+    if(parentPage){
+      saveParentPageData({
+        parentPage,
+        setting,
+      })
+    }else{
+      savePageData({setting});
+    }
   }
 
 
@@ -505,6 +209,9 @@ export default class FPB extends Component {
       }
     }=this.props;
     const {
+      store
+    }=this.state;
+    const {
       host=DEFAULT_HOST,
       gridHeight=DEFAULT_GRID_HEIGHT,
       marginLR=DEFAULT_MARGIN_LR,
@@ -513,25 +220,16 @@ export default class FPB extends Component {
       containerType=DEFAULT_CONTAINER_TYPE,
       containerHeight=DEFAULT_CONTAINER_HEIGHT,
     }=getFieldsValue();
-    const FPRProps={
-      gridHeight,
-      marginLR,
-      marginTB,
-      cols,
-      containerHeight,
-      store,
-      host,
-    };
+
     return (
       <Fragment>
         {/* 工具栏开始 */}
-        <Observer>
+        <Observer name="test">
           {
             ()=>{
               const {
                 showSettingDrawer,
                 addItem,
-                addDisabled,
                 toggleTool,
               }=store;
               return (
@@ -565,13 +263,22 @@ export default class FPB extends Component {
                             <Tooltip
                               title="添加元素"
                             >
-                              <Button
-                                onClick={addItem}
-                                disabled={addDisabled}
-                                icon="plus"
-                                shape="circle"
-                                type="primary"
-                              />
+                              <Observer>
+                                {
+                                  ()=>{
+                                    const {addDisabled}=store;
+                                    return (
+                                      <Button
+                                        onClick={addItem}
+                                        disabled={addDisabled}
+                                        icon="plus"
+                                        shape="circle"
+                                        type="primary"
+                                      />
+                                    )
+                                  }
+                                }
+                              </Observer>
                             </Tooltip>
                             <Divider type="vertical"/>
                             {/* 模式切换开始 */}
@@ -862,9 +569,28 @@ export default class FPB extends Component {
           }
         </Observer>
         {/* 工具栏结束 */}
-        <FPR
-          {...FPRProps}
-        />
+        <Observer>
+          {
+            ()=>{
+              const FPRProps={
+                gridHeight,
+                marginLR,
+                marginTB,
+                cols,
+                containerHeight,
+                store,
+                host,
+              };
+              return (
+                <FPR
+                  type="parent"
+                  {...FPRProps}
+                />
+              )
+            }
+          }
+        </Observer>
+
         {/* 元素设置窗口开始 */}
         <Observer>
           {
@@ -882,6 +608,7 @@ export default class FPB extends Component {
                 itemFieldNameChange,
                 blurCheck,
                 showLabelChange,
+                editingItem,
               }=store;
               return (
                 <Drawer
@@ -987,6 +714,35 @@ export default class FPB extends Component {
                         </Observer>
                       </Item>
                     </Col>
+                    {do{
+                      if(editingItem?.fixGrid!==undefined){
+                        <Col span={12}>
+                          <Item
+                            label="适应高度"
+                          >
+                            <Observer>
+                              {
+                                ()=>{
+                                  const {
+                                    editingItem,
+                                    fixGridChange,
+                                  }=store;
+                                  return (
+                                    <Switch
+                                      checkedChildren="适应"
+                                      unCheckedChildren="不适应"
+                                      checked={editingItem?.fixGrid}
+                                      onChange={fixGridChange}
+                                    />
+                                  )
+                                }
+                              }
+                            </Observer>
+                          </Item>
+                        </Col>
+                      }
+                    }}
+
                     <Observer>
                       {
                         ()=>{
@@ -1040,30 +796,7 @@ export default class FPB extends Component {
                                       </Observer>
                                     </Item>
                                   </Col>
-                                  <Col span={12}>
-                                    <Item
-                                      label="适应高度"
-                                    >
-                                      <Observer>
-                                        {
-                                          ()=>{
-                                            const {
-                                              editingItem,
-                                              fixGridChange,
-                                            }=store;
-                                            return (
-                                              <Switch
-                                                checkedChildren="适应"
-                                                unCheckedChildren="不适应"
-                                                checked={editingItem?.fixGrid}
-                                                onChange={fixGridChange}
-                                              />
-                                            )
-                                          }
-                                        }
-                                      </Observer>
-                                    </Item>
-                                  </Col>
+
                                   <Col span={24}>
                                     <Item
                                       label="Label内容"
@@ -1264,7 +997,122 @@ export default class FPB extends Component {
                                   }}
                                 </Fragment>
                               }else if(editingItem.ComponentType===`layout`){
-                                <span/>
+                                <Fragment>
+                                  <Col span={24}>
+                                    <Item
+                                      label="选项卡"
+                                    >
+                                      <Observer>
+                                        {
+                                          ()=>{
+                                            const {
+                                              itemChildrenPropsChange,
+                                              addChildrenProps,
+                                              minusChildrenProps,
+                                              hasMinusButton,
+                                              showChildPageDesign,
+                                            }=store;
+                                            return (
+                                              editingItem.ComponentProps.ChildrenProps.map((e,i)=>(
+                                                <Row
+                                                  gutter={10}
+                                                  key={`childrenProps${i}`}
+                                                >
+                                                  <Col span={2}>
+                                                    <Tooltip
+                                                      title="设计选项卡内容"
+                                                    >
+                                                      <Button
+                                                        onClick={_=>showChildPageDesign(e)}
+                                                        icon="edit"
+                                                        type="ghost"
+                                                      />
+                                                    </Tooltip>
+                                                  </Col>
+                                                  <Col span={9}>
+                                                    <Item
+                                                      label="标题"
+                                                      style={{marginBottom:5}}
+                                                      {...formItemLayout}
+                                                    >
+                                                      <Observer>
+                                                        {
+                                                          ()=>{
+                                                            return (
+                                                              <Input
+                                                                value={e.tab}
+                                                                onChange={_=>itemChildrenPropsChange(e,'tab',_.target.value)}
+                                                              />
+                                                            )
+                                                          }
+                                                        }
+                                                      </Observer>
+                                                    </Item>
+                                                  </Col>
+                                                  <Col span={6}>
+                                                    <Item
+                                                      label="键"
+                                                      style={{marginBottom:5}}
+                                                      {...formItemLayout}
+                                                    >
+                                                      <Observer>
+                                                        {
+                                                          ()=>{
+                                                            return (
+                                                              <Input
+                                                                value={e.key}
+                                                                onChange={_=>itemChildrenPropsChange(e,'key',_.target.value)}
+                                                              />
+                                                            )
+                                                          }
+                                                        }
+                                                      </Observer>
+                                                    </Item>
+                                                  </Col>
+                                                  <Col span={6}>
+                                                    <Tooltip
+                                                      title="下方插入一个选项卡"
+                                                    >
+                                                      <Button
+                                                        icon="plus"
+                                                        type="primary"
+                                                        onClick={_=>addChildrenProps(i)}
+                                                      />
+                                                    </Tooltip>
+                                                    {do{
+                                                      const minusButton=(
+                                                        <Fragment>
+                                                          <Divider type="vertical"/>
+                                                          <Tooltip
+                                                            title="删除此选项卡"
+                                                          >
+                                                            <Button
+                                                              onClick={_=>minusChildrenProps(i)}
+                                                              icon="minus"
+                                                              type="danger"
+                                                            />
+                                                          </Tooltip>
+                                                        </Fragment>
+                                                      )
+                                                      if(i===0){
+                                                        if(hasMinusButton){
+                                                          minusButton
+                                                        }
+                                                      }else{
+                                                        minusButton
+                                                      }
+                                                    }}
+
+                                                  </Col>
+                                                </Row>
+                                              ))
+                                            )
+                                          }
+                                        }
+                                      </Observer>
+                                    </Item>
+                                  </Col>
+                                </Fragment>
                               }else if(editingItem.ComponentType===`function`){
                                 <Fragment>
                                   {do{
@@ -1454,7 +1302,42 @@ export default class FPB extends Component {
           }
         </Observer>
         {/* 元素设置窗口结束 */}
+        {/* 子页面设计窗口开始 */}
+        <Observer>
+          {
+            ()=>{
+              const {
+                childPageDesignVisible,
+                hideChildPageDesign,
+                parentPage,
+              }=store;
+              const FPBForm=Form.create()(FPB)
+              return (
+                <Modal
+                  width={`100%`}
+                  title={`测试`}
+                  centered
+                  style={{padding:0}}
+                  footer={null}
+                  bodyStyle={{
+                    height:document.documentElement.clientHeight-55,
+                    overflow:`auto`,
+                  }}
+                  onCancel={hideChildPageDesign}
+                  visible={childPageDesignVisible}
+                >
+                  <FPBForm
+                    parentPage={parentPage}
+                    pageData={parentPage?.pageData}
+                  />
+                </Modal>
+              )
+            }
+          }
+        </Observer>
+        {/* 子页面设计窗口结束 */}
       </Fragment>
     );
   }
 }
+// window.FPB=FPB

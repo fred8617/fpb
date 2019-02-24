@@ -6,6 +6,9 @@ import {
   toJS,
   runInAction,
 } from 'mobx';
+import debounce from 'lodash/debounce';
+import React from 'react';
+import {message} from 'antd';
 import _ from 'lodash';
 import axios from 'axios';
 import { EditorState, convertToRaw, ContentState,convertFromHTML } from 'draft-js';
@@ -56,10 +59,17 @@ async function loadAntElement(name){
       element.ComponentClass=(await import('antd/lib/divider')).default;
       element.ComponentType=`layout`;
       break;
+    case 'tabs':
+      ComponentClass=(await import('antd/lib/tabs')).default;
+      element.ComponentClass=ComponentClass;
+      element.ComponentChildrenClass=ComponentClass.TabPane;
+      element.ComponentType=`layout`;
+      break;
     case 'button':
       element.ComponentClass=(await import('antd/lib/button')).default;
       element.ComponentType=`function`;
       break;
+
     default:
       element.ComponentClass=(await import('antd/lib/input')).default;
       element.ComponentType=`form`;
@@ -108,13 +118,18 @@ export default class Store {
       name:`分割线`,
       value:`divider`,
     },
+    {
+      name:`选项卡`,
+      value:`tabs`,
+    },
   ]
   functionElements=[
     {
       name:`按钮`,
       value:`button`,
     },
-  ]
+  ];
+  unmountList=[];
   @observable change=1;//标识符
   @observable mode="develop";//开发模式
   @observable compact="vertical";//碰撞模式
@@ -122,6 +137,9 @@ export default class Store {
   @observable toolDefaultLeft=9999;//默认左偏移
   @computed get toolIcon(){//工具板图标
     return this.toolHide?`right`:`left`;
+  }
+  @computed get isEmpty(){//空面板
+    return this.layout.length===0;
   }
   @computed get preventCollision(){//碰撞失效
     return this.compact===`none`;
@@ -172,8 +190,10 @@ export default class Store {
   @observable itemSettingDrawerVisible=false;//元素设置
   @observable editingItem=null;//编辑中元素
   // @observable dom=null;//绑定编辑中dom
+  @observable childPageDesignVisible=false;//子页面设计窗口
   @observable breakPoint='lg';
   @observable layout=[];
+  @observable layoutRefs={};
   @observable layoutData={
         lg: [],
         md: [],
@@ -181,21 +201,36 @@ export default class Store {
         xs: [],
         xxs: [],
   };
-  @observable loading=false;
+  @computed get loading(){
+
+    return false;
+    // this.layout.some(e=>!e.ComponentClass&&e.type!==`blank`)
+  };
+  @observable parentPage=null;//父页面变量
   @action setBreakPoint=(breakPoint)=>{//设置当前断点
     this.breakPoint=breakPoint;
   }
-  @action createBasicLayoutClass=async ()=>{
-    this.loading=true;
+  @action showChildPageDesign=(item)=>{//子页面设计器出现
+    this.parentPage=item;
+    this.childPageDesignVisible=true;
+  }
+  @action hideChildPageDesign=()=>{//子页面设计器关闭
+    this.childPageDesignVisible=false;
+  }
+  @action createBasicLayoutClass=async ()=>{//FPR读取
     for(let i=0;i<this.layout.length;i++){
-      const el=await loadAntElement(this.layout[i].type);
-      runInAction(()=>{
-        this.layout[i]={...this.layout[i],...el};
-      });
+      if(!this.layout[i].ComponentClass&&this.layout[i].type!==`blank`){
+        const el=await loadAntElement(this.layout[i].type);
+        let loadEl;
+        runInAction(loadEl=()=>{
+          this.layout[i]={...this.layout[i],...el};
+        });
+      }
     }
-    runInAction(()=>{
-      this.loading=false;
-    });
+    // let loadReady;
+    // runInAction(loadReady=()=>{
+    //   this.loading=false;
+    // });
   }
 
   @action toggleTool=(e)=>{//工具版切换
@@ -204,17 +239,47 @@ export default class Store {
   getLayoutItem=(item)=>{
     return this.layoutData[this.breakPoint]?.filter(e=>e.i===item.i)[0];
   }
-  @action bindRef=(dom,item,marginTB,gridHeight)=>{//绑定
+  @observable unmount=false;
+  @computed
+  get excuteParentCacl(){
+    return !this.unmount&&this.parentCacl&&debounce(this.parentCacl,50)
+  }
+  @action bindRef=(dom,item,marginTB,gridHeight,type)=>{//绑定
     const caclNewH=action(()=>{
       if(item.fixGrid&&dom){
-        // this.dom=dom;
-        const {clientHeight}=dom;
+        // console.log(dom,item);
+        console.log(`cacl-${type}-${item.i}`);
+        this.layoutRefs[item.i]=dom;
         const itemLayout=this.getLayoutItem(item);
         const {h}=itemLayout;
+
+        // console.log(itemLayout,newH);
+        const {clientHeight}=dom;
         const newH=Math.ceil(clientHeight/(gridHeight+marginTB));
         itemLayout.maxH=newH;
         itemLayout.minH=newH;
         itemLayout.h=newH;
+        // this.excuteParentCacl?.()
+        // setTimeout(()=>{
+        //   setTimeout(()=>{
+        //
+        //
+        //   },500)
+        //
+        //
+        // },500);
+
+
+        // const test=
+        // setTimeout(()=>{
+        //   let caclNewH={}
+        //   runInAction(caclNewH[item.i]=()=>{
+        //     // console.log(this.parentCacl);
+        //     // setTimeout(,50)
+        //
+        //
+        //   })
+        // },0);
       }
     });
     if(item===this.editingItem&&this.developing){
@@ -224,7 +289,16 @@ export default class Store {
     }
   }
   @action addChildrenProps=(index)=>{//添加子选项
-    this.editingItem.ComponentProps.ChildrenProps.splice(index+1,0,{children:``,value:``})
+    let newChild;
+    switch (this.editingItem.type) {
+      case `tabs`:
+        newChild={tab:``,key:``}
+        break;
+      default:
+        newChild={children:``,value:``}
+    }
+    this.editingItem.ComponentProps.ChildrenProps.splice(index+1,0,newChild);
+
   }
   @action minusChildrenProps=(index)=>{//添加子选项
     this.editingItem.ComponentProps.ChildrenProps.splice(index,1)
@@ -246,22 +320,28 @@ export default class Store {
     this.settingDrawerVisible=true;
   }
   @action setLayoutData=(layoutData)=>{
-    const grids=Object.keys(layoutData);
-    const newLayoutData={};
-    // grids.forEach((e,i)=>{
-    //   const layout=layoutData[e];
-    //   const beforeLayout=newLayoutData[grids[i-1]];
-    //   if(layout.length===0&&beforeLayout){
-    //     newLayoutData[e]=beforeLayout;
-    //   }else{
-    //     newLayoutData[e]=layout;
-    //   }
-    // })
-    // console.log(`newLayoutData`,newLayoutData);
-    this.layoutData=layoutData;
+    this.layoutData=layoutData
+    // Object.keys(layoutData).forEach(e=>{
+    //   const oriLayout=this.layoutData[e];
+    //   const nowLayout=layoutData[e];
+    //   nowLayout.forEach((s,i)=>{
+    //     if(
+    //       (s&&
+    //       oriLayout[i]&&
+    //       JSON.stringify(toJS(s))!==JSON.stringify(toJS(oriLayout[i])))||
+    //       !oriLayout[i]
+    //     ){
+    //       oriLayout[i]=s;
+    //     }
+    //   })
+    // });
+  }
+  @action setLayout=(layout)=>{
+    this.layout=layout;
   }
   @action showItemSettingDrawer=(e)=>{//开始编辑
     this.editingItem=e;
+    // this.layouts=null;
     this.itemSettingDrawerVisible=true;
   }
 
@@ -305,14 +385,25 @@ export default class Store {
     this.editingItem.ComponentProps.rules.isRequired.value=e;
   }
 
+  @action saveParentPageData=({setting,parentPage})=>{//保存转换页面数据
+    const pageData={
+      setting,
+      layout:this.layout,
+      layoutData:this.layoutData,
+      counter:this.counter,
+    };
+    parentPage.pageData=pageData;
+    message.success('保存成功')
+  }
   @action savePageData=({setting})=>{//保存转换页面数据
     const saveData={
       setting,
       layout:toJS(this.layout),
       layoutData:toJS(this.layoutData),
+      counter:this.counter,
     }
     axios.post('asd',saveData)
-    // console.log();
+    console.log(JSON.stringify(saveData));
   }
 
   @action textChange=(e)=>{//是否必填
@@ -338,6 +429,9 @@ export default class Store {
   }
   @action itemChildrenPropsChange=(e,prop,value)=>{//每行显示数量
     e[prop]=value;
+  }
+  @action designInner=(index)=>{//每行显示数量
+    this.editingItem.ComponentProps.ChildrenProps[index].editing=true;
   }
 
   @action setElementBasicProps=(element,item)=>{//设置元素基础属性
@@ -375,7 +469,7 @@ export default class Store {
                 children:`default2`,
                 value:`default2`,
               },
-            )
+            );
             element.ComponentProps.ChildrenProps=ChildrenProps;
             break;
           default:
@@ -396,6 +490,26 @@ export default class Store {
           break;
         }
         break;
+      case 'layout':
+        switch (type) {
+          case 'tabs':
+            let ChildrenProps=[];
+            element.ComponentProps.ChildrenProps=ChildrenProps;
+            ChildrenProps.push({
+              tab:`TabX`,
+              key:`1`,
+              pageData:{
+                setting:{
+
+                },
+                layout:[],
+                layoutData:{},
+              },
+            });
+            break;
+          default:
+
+        }
       default:
 
     }
@@ -424,8 +538,8 @@ export default class Store {
     }
     const el=await loadAntElement(e);
     this.setElementBasicProps(el,this.editingItem);
-
-    runInAction(()=>{
+    let loadAddingEl;
+    runInAction(loadAddingEl=()=>{
       for(let key in el){
         set(this.editingItem,key,el[key])
       }
@@ -440,12 +554,14 @@ export default class Store {
   }
   @action addItem=()=>{
     const counterNum=this.counter;
+    const i=`item${counterNum}`;
+    set(this.layoutRefs,i,React.createRef())
     this.layout.push({
       x:0,
       w:1,
       h:3,
       y:Infinity,
-      i:`item${counterNum}`,
+      i,
       counterNum,
       type:'blank',
       ComponentClass:null,
