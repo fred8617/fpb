@@ -155,7 +155,7 @@ export default class FPR extends Component {
 
   onBreakpointChange=(newBreakpoint,newCols)=>{
     console.log(`onBreakpointChange-${this.props.type}`,newBreakpoint,newCols,this.state.store.layoutData);
-    this.caclParentHeight();
+    // this.caclParentHeight();
     this.state.store.setBreakPoint(newBreakpoint)
   }
 
@@ -211,8 +211,8 @@ export default class FPR extends Component {
   }
 
   componentDidUpdate(){
-    console.log(`componentDidUpdate`);
-    this.caclParentHeight();
+    // console.log(`componentDidUpdate`);
+    // this.caclParentHeight();
   }
   caclParentHeight=()=>{
     const {
@@ -417,7 +417,7 @@ export default class FPR extends Component {
                                                               ComponentProps.ChildrenProps?.map((l,i)=>(
                                                                 <ComponentChildrenClass
                                                                   key={`c${i}`}
-                                                                  onClick={this.forceUpdate}
+                                                                  // onClick={this.forceUpdate}
                                                                   {...l}
                                                                 >
                                                                   <Observer>
@@ -428,12 +428,12 @@ export default class FPR extends Component {
                                                                           <FPR
                                                                             form={this.props.form}
                                                                             type={'child'}
-                                                                            parentStore={store}
-                                                                            parentMarginTB={marginTB}
-                                                                            parentNode={layoutRefs[e.i]}
-                                                                            parentItem={e}
-                                                                            parentGridHeight={gridHeight}
-                                                                            parentCacl={bindRef.bind(store,layoutRefs[e.i],e,marginTB,gridHeight,type)}
+                                                                            // parentStore={store}
+                                                                            // parentMarginTB={marginTB}
+                                                                            // parentNode={layoutRefs[e.i]}
+                                                                            // parentItem={e}
+                                                                            // parentGridHeight={gridHeight}
+                                                                            // parentCacl={bindRef.bind(store,layoutRefs[e.i],e,marginTB,gridHeight,type)}
                                                                             {...pageData}
                                                                           />
                                                                         )

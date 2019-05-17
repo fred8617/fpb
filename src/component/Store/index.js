@@ -14,8 +14,8 @@ import axios from 'axios';
 import { EditorState, convertToRaw, ContentState,convertFromHTML } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
-
-
+import elementResizeDetectorMaker from 'element-resize-detector';
+const erd = elementResizeDetectorMaker();
 async function loadAntElement(name){
   let element={
 
@@ -245,48 +245,66 @@ export default class Store {
     return !this.unmount&&this.parentCacl&&debounce(this.parentCacl,50)
   }
   @action bindRef=(dom,item,marginTB,gridHeight,type)=>{//绑定
-    const caclNewH=action(()=>{
-      if(item.fixGrid&&dom){
-        // console.log(dom,item);
-        console.log(`cacl-${type}-${item.i}`);
-        this.layoutRefs[item.i]=dom;
+    if(dom&&item.fixGrid){
+      console.log(`bindref`);
+      erd.listenTo(dom, (element)=> {
+        var width = element.offsetWidth;
+        var clientHeight = element.offsetHeight;
+        console.log("Size: " + width + "x" + clientHeight);
         const itemLayout=this.getLayoutItem(item);
-        const {h}=itemLayout;
+            const {h}=itemLayout;
 
-        // console.log(itemLayout,newH);
-        const {clientHeight}=dom;
-        const newH=Math.ceil(clientHeight/(gridHeight+marginTB));
-        itemLayout.maxH=newH;
-        itemLayout.minH=newH;
-        itemLayout.h=newH;
-        // this.excuteParentCacl?.()
-        // setTimeout(()=>{
-        //   setTimeout(()=>{
-        //
-        //
-        //   },500)
-        //
-        //
-        // },500);
-
-
-        // const test=
-        // setTimeout(()=>{
-        //   let caclNewH={}
-        //   runInAction(caclNewH[item.i]=()=>{
-        //     // console.log(this.parentCacl);
-        //     // setTimeout(,50)
-        //
-        //
-        //   })
-        // },0);
-      }
-    });
-    if(item===this.editingItem&&this.developing){
-      caclNewH();
-    }else{
-      caclNewH();
+            // console.log(itemLayout,newH);
+            // const {clientHeight}=dom;
+            const newH=Math.max(1,Math.ceil(clientHeight/(gridHeight+marginTB)));
+            itemLayout.maxH=newH;
+            itemLayout.minH=newH;
+            itemLayout.h=newH;
+      });
     }
+
+    // const caclNewH=action(()=>{
+    //   if(item.fixGrid&&dom){
+    //     // console.log(dom,item);
+    //     console.log(`cacl-${type}-${item.i}`);
+    //     this.layoutRefs[item.i]=dom;
+    //     const itemLayout=this.getLayoutItem(item);
+    //     const {h}=itemLayout;
+    //
+    //     // console.log(itemLayout,newH);
+    //     const {clientHeight}=dom;
+    //     const newH=Math.ceil(clientHeight/(gridHeight+marginTB));
+    //     itemLayout.maxH=newH;
+    //     itemLayout.minH=newH;
+    //     itemLayout.h=newH;
+    //     // this.excuteParentCacl?.()
+    //     // setTimeout(()=>{
+    //     //   setTimeout(()=>{
+    //     //
+    //     //
+    //     //   },500)
+    //     //
+    //     //
+    //     // },500);
+    //
+    //
+    //     // const test=
+    //     // setTimeout(()=>{
+    //     //   let caclNewH={}
+    //     //   runInAction(caclNewH[item.i]=()=>{
+    //     //     // console.log(this.parentCacl);
+    //     //     // setTimeout(,50)
+    //     //
+    //     //
+    //     //   })
+    //     // },0);
+    //   }
+    // });
+    // if(item===this.editingItem&&this.developing){
+    //   caclNewH();
+    // }else{
+    //   caclNewH();
+    // }
   }
   @action addChildrenProps=(index)=>{//添加子选项
     let newChild;
@@ -498,6 +516,7 @@ export default class Store {
             ChildrenProps.push({
               tab:`TabX`,
               key:`1`,
+              forceRender:true,
               pageData:{
                 setting:{
 
