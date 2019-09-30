@@ -1,0 +1,43 @@
+import useSizeMe from './useSizeMe';
+import CalTag from './CalTag';
+import debounce from 'lodash/debounce';
+import { useEffect, useCallback } from 'react';
+import { Tag } from 'antd';
+import { useLocalStore, useObserver } from 'mobx-react-lite';
+import React from 'react';
+/**
+ * 区块
+ */
+export interface BlockProps {
+  /**
+   * 父元素自动响应高度
+   * @param height 区块内部高度
+   */
+  onParentHeightChange(height: number);
+  breakPoint: string;
+}
+const Block: React.SFC<BlockProps> = props => {
+  const [sized, width, height] = useSizeMe(
+    size => (
+      <div style={{ position: `relative` }}>
+        {/* 计量维度的tag */}
+        {/* <CalTag {...size} /> */}
+        {props.children}
+      </div>
+    ),
+    {
+      monitorHeight: true,
+      // refreshMode: 'debounce',
+      // refreshRate: 200,
+    },
+  );
+  const setParent = useCallback(debounce(props.onParentHeightChange, 200), [
+    props.onParentHeightChange,
+  ]);
+  useEffect(() => {
+    setParent(height as number);
+  }, [height, props.breakPoint]);
+
+  return <>{sized}</>;
+};
+export { Block as default };
