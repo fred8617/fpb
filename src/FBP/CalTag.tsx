@@ -7,12 +7,12 @@ interface CalTagProps {
   /**
    * 计量宽高
    */
-  height: any;
-  width: any;
+  height: number;
+  width: number;
 }
 const CalTag: React.SFC<CalTagProps> = ({ width, height }) => {
-  let timeout; //计量维度定时器
   const store = useLocalStore(() => ({
+    timeout:null,//计量维度定时器
     /**
      * 计量维度的透明度
      */
@@ -28,9 +28,9 @@ const CalTag: React.SFC<CalTagProps> = ({ width, height }) => {
     },
   }));
   useEffect(() => {
-    clearTimeout(timeout);
+    clearTimeout(store.timeout);
     store.showCalTag();
-    timeout = setTimeout(() => {
+    store.timeout = setTimeout(() => {
       store.hideCalTag();
     }, 1000);
   }, [height, width]);
@@ -38,6 +38,7 @@ const CalTag: React.SFC<CalTagProps> = ({ width, height }) => {
     <Tag
       style={{
         position: `absolute`,
+        zIndex:2,
         top: 0,
         left: 0,
         transition: store.transition,

@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
-import React from "react";
+import React, { SFC } from "react";
 import { useLocalStore, useObserver, useForceUpdate } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import { toJS, set } from "mobx";
@@ -126,8 +126,40 @@ export interface FPBStore extends RGLConfig {
    * 创建一个元素
    */
   createItem();
+  /**
+   * 根据主键查询当前断点下的item
+   * @param key 主键
+   */
+  findItem(key): RGLItem;
+  /**
+   * 获取元素高度
+   * @param key 主键
+   */
+  getItemHeight(key): number;
+  /**
+   * item的resize事件
+   */
+  onResize: RGLItemCallBack;
+  onResizeStop: RGLItemCallBack;
+  /**
+   * 操作中的item
+   */
+  operatedItem: RGLItem;
 }
-
+type RGLItemCallBack = (
+  layout: RGLItem[],
+  /**
+   * 旧数据
+   */
+  oldItem: RGLItem,
+  /**
+   * 新数据
+   */
+  newItem: RGLItem,
+  placeholder: RGLItem,
+  e: MouseEvent,
+  element: HTMLElement
+) => void;
 export interface FPBItemIndexList {
   [key: string]: FBPItem;
 }
@@ -139,6 +171,30 @@ export interface FBPItem {
   i;
 }
 
+export interface ObservableBlockProps {
+  i;
+  store: FPBStore;
+}
+const ObservableBlock: SFC<ObservableBlockProps> = (
+  props: ObservableBlockProps
+) =>
+  useObserver(() => {
+    return (
+      <Block
+        height={
+          props.store.operatedItem && props.store.operatedItem.i === props.i
+            ? props.store.operatedItem.h
+            : props.store.getItemHeight(props.i)
+        }
+        breakPoint={props.store.breakPoint}
+        onParentHeightChange={height => {
+          props.store.caclHeight(height, props.i);
+        }}
+      >
+        <Input.TextArea />
+      </Block>
+    );
+  });
 const FPB: React.SFC<FPBProps> = React.memo(props => {
   const force = useForceUpdate();
   const store: FPBStore = useLocalStore<FPBStore, FPBProps>(source => ({
@@ -170,16 +226,32 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           rowHeight: store.rowHeight,
           margin: store.margin,
           onBreakpointChange: store.setBreakPoint,
-          onLayoutChange: store.setLayouts
+          onLayoutChange: store.setLayouts,
+          onResize: store.onResize,
+          onResizeStop: store.onResizeStop
         },
         { recurseEverything: true }
       );
+    },
+    operatedItem: null,
+    onResize(layout, oldItem, newItem) {
+      store.operatedItem = newItem;
+    },
+    onResizeStop() {
+      store.operatedItem = null;
+    },
+    findItem(key) {
+      return store.layouts[store.breakPoint].find(b => b.i === key);
+    },
+    getItemHeight(key) {
+      const item = store.findItem(key);
+      return item && item.h;
     },
     caclHeight(height, key) {
       if (height === null || height === undefined) {
         return;
       }
-      const item = store.layouts[store.breakPoint].find(b => b.i === key);
+      const item = store.findItem(key);
       const h = Math.ceil(height / store.rowHeight);
       item.h = h || 30;
     },
@@ -219,7 +291,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
               />
               <ResponsiveGridLayout
                 style={{ display: !store.hasLayout() ? "none" : "block" }}
-                // draggableHandle=".drag"
+                draggableHandle=".drag"
                 className="layout"
                 // onLayout
                 breakpoints={{
@@ -232,18 +304,13 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
                 {...store.jsConfig}
               >
-                {Object.entries(store.datas).map(([key]) => (
-                  <div key={key} style={{ border: `1px solid #d3d3d3` }}>
-                    <Block
-                      breakPoint={store.breakPoint}
-                      onParentHeightChange={height => {
-                        store.caclHeight(height, key);
-                      }}
-                    >
-                      {/* <Input.TextArea /> */}
-                    </Block>
-                  </div>
-                ))}
+                {Object.entries(store.datas).map(([key]) => {
+                  return (
+                    <div key={key} style={{ border: `1px solid #d3d3d3` }}>
+                      <ObservableBlock store={store} i={key} />
+                    </div>
+                  );
+                })}
               </ResponsiveGridLayout>
             </>
           ))}
