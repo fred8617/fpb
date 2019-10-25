@@ -1,4 +1,5 @@
-.Resizer {
+.FPB {
+  .Resizer {
     background: #000;
     opacity: 0.2;
     z-index: 1;
@@ -9,12 +10,12 @@
     -webkit-background-clip: padding;
     background-clip: padding-box;
   }
-  
+
   .Resizer:hover {
     -webkit-transition: all 2s ease;
     transition: all 2s ease;
   }
-  
+
   .Resizer.horizontal {
     height: 11px;
     margin: -5px 0;
@@ -23,12 +24,12 @@
     cursor: row-resize;
     width: 100%;
   }
-  
+
   .Resizer.horizontal:hover {
     border-top: 5px solid rgba(0, 0, 0, 0.5);
     border-bottom: 5px solid rgba(0, 0, 0, 0.5);
   }
-  
+
   .Resizer.vertical {
     width: 11px;
     margin: 0 -5px;
@@ -38,7 +39,7 @@
     position: relative;
     z-index: 1001;
   }
-  
+
   .Resizer.vertical:hover {
     border-left: 5px solid rgba(0, 0, 0, 0.5);
     border-right: 5px solid rgba(0, 0, 0, 0.5);
@@ -49,3 +50,25 @@
   .Resizer.disabled:hover {
     border-color: transparent;
   }
+  .function-container {
+    opacity: 0;
+    transition: all 0.3s;
+    background: transparent;
+    z-index: 1;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
+  .function-container:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .item-container {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+  }
+  .react-resizable-handle {
+    z-index: 2;
+  }
+}

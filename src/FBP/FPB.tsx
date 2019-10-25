@@ -1,21 +1,18 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
-import React, { SFC } from "react";
+import React from "react";
 import { useLocalStore, useObserver, useForceUpdate } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import { toJS, set } from "mobx";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
-import Block from "./Block";
-import { Input, Empty, Row, Button, Col, Divider } from "antd";
+import { Empty, Row, Button, Col, Form, Popover, Drawer } from "antd";
 import SplitPane, { Size } from "react-split-pane";
 import shortid from "shortid";
+import ItemSettingForm, { ItemSettingProps } from "./ItemSettingForm";
+import ObservableBlock from "./ObservableBlock";
+import ObservableBlockContainer from "./ObservableBlockContainer";
 const ResponsiveGridLayout = WidthProvider(Responsive);
-var layout: RGLItem[] = [
-  { i: "a", x: 0, y: 0, w: 1, h: 2 },
-  { i: "b", x: 1, y: 0, w: 3, h: 2 },
-  { i: "c", x: 4, y: 0, w: 1, h: 2 }
-];
 const emptyLayouts: BreakPointsLayouts = {
   lg: [],
   md: [],
@@ -78,6 +75,59 @@ export interface BreakPointsLayouts {
   xs?: RGLItem[];
   xxs?: RGLItem[];
 }
+
+/**
+ * 组件基础
+ */
+export interface BaseComponentType {
+  /**
+   * 主键
+   */
+  id: string;
+  /**
+   * 组件名称
+   */
+  label: string;
+  /**
+   * 组件引入名称
+   */
+  name: string;
+  /**
+   * 子组件
+   */
+  children?: BaseComponentType[];
+  /**
+   * 父组件
+   */
+  parent?: BaseComponentType;
+  /**
+   * 组件,本想dynamic import 一下，但是webpack不支持
+   */
+  Component: React.ComponentClass;
+}
+
+/**
+ * 组件类型
+ */
+export interface ComponentType extends BaseComponentType {
+  /**
+   * 引入路径
+   */
+  path: string;
+  /**
+   * 是否为默认引入
+   */
+  isDefault: boolean;
+  /**
+   * 分组
+   */
+  group?: string;
+}
+
+export interface ComponentGroup {
+  [groupName: string]: ComponentType[] | string;
+}
+
 export interface FPBProps {
   /**
    * 默认配置
@@ -91,12 +141,16 @@ export interface FPBProps {
    * 左侧布局的默认宽度
    */
   contentDefaultSize?: Size;
+  /**
+   * 导入组件
+   */
+  components: ComponentType[];
 }
 
 /**
  * pb的store
  */
-export interface FPBStore extends RGLConfig {
+export interface FPBStore extends RGLConfig, ItemSettingProps {
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
   breakPoint: "lg" | "md" | "sm" | "xs" | "xxs";
@@ -145,6 +199,28 @@ export interface FPBStore extends RGLConfig {
    * 操作中的item
    */
   operatedItem: RGLItem;
+  /**
+   * 设置操作中数据
+   * @param item @interface RGLItem
+   */
+  setOperatedItem(item: RGLItem);
+  /**
+   * 编辑中的数据
+   */
+  editingItem: FBPItem;
+  /**
+   * 设置编辑中的数据
+   * @param item @interface FBPItem
+   */
+  setEditingItem(item: FBPItem);
+  /**
+   * 编辑状态
+   */
+  isEditing: boolean;
+  /**
+   * 平铺组件，方便查找
+   */
+  flatComponents: { [id: string]: ComponentType };
 }
 type RGLItemCallBack = (
   layout: RGLItem[],
@@ -168,113 +244,180 @@ export interface FPBItemIndexList {
  * fpb元素
  */
 export interface FBPItem {
+  /**
+   * 主键
+   */
   i;
+  /**
+   * 组件类
+   */
+  Component: React.ComponentClass;
+  /**
+   * 自适应高度
+   */
+  autoHeight: boolean;
+  /**
+   * 组件id
+   */
+  componentId: string;
 }
 
-export interface ObservableBlockProps {
-  i;
-  store: FPBStore;
-}
-const ObservableBlock: SFC<ObservableBlockProps> = (
-  props: ObservableBlockProps
-) =>
-  useObserver(() => {
-    return (
-      <Block
-        height={
-          props.store.operatedItem && props.store.operatedItem.i === props.i
-            ? props.store.operatedItem.h
-            : props.store.getItemHeight(props.i)
-        }
-        breakPoint={props.store.breakPoint}
-        onParentHeightChange={height => {
-          props.store.caclHeight(height, props.i);
-        }}
-      >
-        <Input.TextArea />
-      </Block>
-    );
-  });
 const FPB: React.SFC<FPBProps> = React.memo(props => {
   const force = useForceUpdate();
-  const store: FPBStore = useLocalStore<FPBStore, FPBProps>(source => ({
-    rowHeight: 1,
-    margin: [0, 0],
-    layouts: emptyLayouts,
-    /*********************** */
-    datas: {},
-    hasLayout() {
-      return Object.keys(store.datas).length !== 0;
-    },
-    breakPoint: null,
-    setLayouts(currentLayout, layouts) {
-      if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
-        return;
-      }
-      console.log("layout-change", toJS(store.layouts), layouts);
-      store.layouts = layouts;
-    },
-    setBreakPoint(breakPoint, col) {
-      console.log("setBreakPoint", breakPoint);
+  const store: FPBStore = useLocalStore<FPBStore, FPBProps>(
+    source => ({
+      rowHeight: 1,
+      margin: [0, 0],
+      layouts: emptyLayouts,
+      /*********************** */
+      datas: {},
+      hasLayout() {
+        return Object.keys(store.datas).length !== 0;
+      },
+      breakPoint: null,
+      setLayouts(_currentLayout, layouts) {
+        if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
+          return;
+        }
+        console.log("layout-change", toJS(store.layouts), layouts);
+        store.layouts = layouts;
+      },
+      setBreakPoint(breakPoint, _col) {
+        console.log("setBreakPoint", breakPoint);
 
-      store.breakPoint = breakPoint;
-    },
-    get jsConfig() {
-      return toJS(
-        {
-          layouts: store.layouts,
-          rowHeight: store.rowHeight,
-          margin: store.margin,
-          onBreakpointChange: store.setBreakPoint,
-          onLayoutChange: store.setLayouts,
-          onResize: store.onResize,
-          onResizeStop: store.onResizeStop
-        },
-        { recurseEverything: true }
-      );
-    },
-    operatedItem: null,
-    onResize(layout, oldItem, newItem) {
-      store.operatedItem = newItem;
-    },
-    onResizeStop() {
-      store.operatedItem = null;
-    },
-    findItem(key) {
-      return store.layouts[store.breakPoint].find(b => b.i === key);
-    },
-    getItemHeight(key) {
-      const item = store.findItem(key);
-      return item && item.h;
-    },
-    caclHeight(height, key) {
-      if (height === null || height === undefined) {
-        return;
+        store.breakPoint = breakPoint;
+      },
+      get jsConfig() {
+        return toJS(
+          {
+            layouts: store.layouts,
+            rowHeight: store.rowHeight,
+            margin: store.margin,
+            onBreakpointChange: store.setBreakPoint,
+            onLayoutChange: store.setLayouts,
+            onResize: store.onResize,
+            onResizeStop: store.onResizeStop,
+            isDraggable: store.editingItem === null,
+            isResizable: store.editingItem === null
+          },
+          { recurseEverything: true }
+        );
+      },
+      operatedItem: null,
+      setOperatedItem(operatedItem) {
+        store.operatedItem = operatedItem;
+      },
+      onResize(_layout, _oldItem, newItem) {
+        store.setOperatedItem(newItem);
+      },
+      onResizeStop() {
+        store.setOperatedItem(null);
+      },
+      findItem(key) {
+        return store.layouts[store.breakPoint].find(b => b.i === key);
+      },
+      getItemHeight(key) {
+        const item = store.findItem(key);
+        return item && item.h;
+      },
+      caclHeight(height, key) {
+        const itemData = store.datas[key];
+        const item = store.findItem(key);
+        if (!itemData.autoHeight) {
+          delete item.maxH;
+          delete item.minH;
+          return;
+        }
+        if (height === null || height === undefined) {
+          return;
+        }
+        //store中对应的数据，非布局
+        const h = Math.ceil(height / store.rowHeight);
+        item.h = h || 30;
+        item.maxH = item.h;
+        item.minH = item.h;
+      },
+      createItem() {
+        const i = shortid.generate();
+        // store.layouts[store.breakPoint].push(item);
+        set(store.datas, i, { i, Component: null, autoHeight: true });
+        force();
+        setTimeout(doWindowResize, 0);
+      },
+      editingItem: null,
+      onItemTypeChange(value) {
+        if (!value) {
+          store.editingItem.Component = null;
+          return;
+        }
+        const component = store.flatComponents[value];
+
+        store.editingItem.Component = component.Component;
+        store.editingItem.componentId = value;
+
+        // set(store.editingItem, field, value);
+      },
+      onItemPropsChange(field, value) {
+        store.editingItem[field] = value;
+      },
+      get isEditing() {
+        return store.editingItem !== null;
+      },
+      setEditingItem(editingItem) {
+        store.editingItem = editingItem;
+      },
+      get flatComponents() {
+        const flatComponents = {};
+        const dealChildren = (
+          arr: (ComponentType | BaseComponentType)[] = source.components,
+          parent?: ComponentType | BaseComponentType
+        ) => {
+          arr.forEach(component => {
+            flatComponents[component.id] = component;
+            if (parent) {
+              component.parent = parent;
+            }
+            if (component.children) {
+              dealChildren(component.children, component);
+            }
+          });
+        };
+        dealChildren();
+        return flatComponents;
+      },
+      get componentGroup() {
+        //有分组组件
+        const componentsHasGroup = source.components.filter(
+          component => component.group
+        );
+        //无分组组件
+        const componentsNoGroup = source.components.filter(
+          component => !component.group
+        );
+        //全部分组
+        const allGroup = componentsHasGroup.map(component => component.group);
+        //自动分组
+        const returnGroup = [];
+        allGroup.forEach(group => {
+          const filterGroup = componentsHasGroup.filter(
+            component => component.group === group
+          );
+          returnGroup.push({ [group]: filterGroup, groupName: group });
+        });
+        componentsNoGroup.forEach(component => {
+          returnGroup.push(component);
+        });
+        return returnGroup;
       }
-      const item = store.findItem(key);
-      const h = Math.ceil(height / store.rowHeight);
-      item.h = h || 30;
-    },
-    createItem() {
-      const i = shortid.generate();
-      const item: RGLItem = {
-        i,
-        x: 0,
-        y: Infinity,
-        w: 1,
-        h: 30
-      };
-      // store.layouts[store.breakPoint].push(item);
-      set(store.datas, i, { i });
-      force();
-      setTimeout(doWindowResize, 0);
-    }
-  }));
+    }),
+    { components: props.components }
+  );
   console.log("render");
 
   return (
     <>
       <SplitPane
+        className="FPB"
         onDragFinished={doWindowResize}
         paneStyle={{ position: `relative` }}
         style={{ position: "relative" }}
@@ -291,7 +434,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
               />
               <ResponsiveGridLayout
                 style={{ display: !store.hasLayout() ? "none" : "block" }}
-                draggableHandle=".drag"
+                // draggableHandle=".drag"
                 className="layout"
                 // onLayout
                 breakpoints={{
@@ -304,9 +447,16 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
                 {...store.jsConfig}
               >
-                {Object.entries(store.datas).map(([key]) => {
+                {Object.entries(store.datas).map(([key, data]) => {
+                  
                   return (
-                    <div key={key} style={{ border: `1px solid #d3d3d3` }}>
+                    <div key={key}>
+                      <ObservableBlockContainer
+                        store={store}
+                        itemKey={key}
+                        data={data}
+                      />
+
                       <ObservableBlock store={store} i={key} />
                     </div>
                   );
@@ -326,7 +476,72 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           >
             <div key="tree"></div>
             <div key="setting">
+              {useObserver(() => (
+                <Drawer
+                  title={store.editingItem && store.editingItem.i}
+                  placement="right"
+                  width={`100%`}
+                  closable={store.isEditing}
+                  onClose={_ => store.setEditingItem(null)}
+                  visible={store.isEditing}
+                  getContainer={false}
+                  style={{ position: "absolute" }}
+                >
+                  <ItemSettingForm
+                    item={store.editingItem}
+                    onItemTypeChange={store.onItemTypeChange}
+                    onItemPropsChange={store.onItemPropsChange}
+                    componentGroup={store.componentGroup}
+                  />
+                </Drawer>
+              ))}
+
               <Row>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={store.createItem}>
+                    添加元素
+                  </Button>
+                </Col>
                 <Col>
                   <Button type="primary" onClick={store.createItem}>
                     添加元素

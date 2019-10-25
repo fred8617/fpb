@@ -22,6 +22,10 @@ export interface BlockProps {
    * 断点
    */
   breakPoint: string;
+  /**
+   * 开启计算高度
+   */
+  autoHeight: boolean;
 }
 const Block: React.SFC<BlockProps> = props => {
   const [sized, width, height] = useSizeMe(
@@ -45,7 +49,7 @@ const Block: React.SFC<BlockProps> = props => {
   ]);
   useEffect(() => {
     setParent(height as number);
-  }, [height, props.breakPoint]);
+  }, [height, props.breakPoint, props.autoHeight]);
 
   return <>{sized}</>;
 };
