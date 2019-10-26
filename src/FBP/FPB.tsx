@@ -6,7 +6,7 @@ import { toJS, set } from "mobx";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
-import { Empty, Row, Button, Col, Form, Popover, Drawer } from "antd";
+import { Empty, Row, Button, Col, Form, Popover, Drawer, Radio } from "antd";
 import SplitPane, { Size } from "react-split-pane";
 import shortid from "shortid";
 import ItemSettingForm, { ItemSettingProps } from "./ItemSettingForm";
@@ -20,6 +20,7 @@ const emptyLayouts: BreakPointsLayouts = {
   xs: [],
   xxs: []
 };
+
 /**
  * RGL的基础配置
  */
@@ -76,6 +77,33 @@ export interface BreakPointsLayouts {
   xxs?: RGLItem[];
 }
 
+interface ComponentProp {
+  /**
+   * 属性名称
+   */
+  label: string;
+  /**
+   * 类型
+   */
+  type: "array" | "string" | "number";
+  /**
+   * 组件
+   */
+  component?: React.ComponentClass;
+  /**
+   * type为array时是否默认增加一个元素
+   */
+  createDefault?: boolean;
+  /**
+   * 存在组件的话可设置组件默认属性
+   */
+  componentProps?:ComponentProps;
+}
+
+interface ComponentProps {
+  [propName: string]: ComponentProp;
+}
+
 /**
  * 组件基础
  */
@@ -104,6 +132,10 @@ export interface BaseComponentType {
    * 组件,本想dynamic import 一下，但是webpack不支持
    */
   Component: React.ComponentClass;
+  /**
+   * 组件属性
+   */
+  props?: ComponentProps;
 }
 
 /**
@@ -297,6 +329,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
             onLayoutChange: store.setLayouts,
             onResize: store.onResize,
             onResizeStop: store.onResizeStop,
+            //此处是个问题
             isDraggable: store.editingItem === null,
             isResizable: store.editingItem === null
           },
@@ -395,7 +428,9 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           component => !component.group
         );
         //全部分组
-        const allGroup = componentsHasGroup.map(component => component.group);
+        const allGroup = [
+          ...new Set(componentsHasGroup.map(component => component.group))
+        ];
         //自动分组
         const returnGroup = [];
         allGroup.forEach(group => {
@@ -448,7 +483,6 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 {...store.jsConfig}
               >
                 {Object.entries(store.datas).map(([key, data]) => {
-                  
                   return (
                     <div key={key}>
                       <ObservableBlockContainer
@@ -495,59 +529,86 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                   />
                 </Drawer>
               ))}
-
-              <Row>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={store.createItem}>
-                    添加元素
-                  </Button>
-                </Col>
-              </Row>
+              <Form layout="inline">
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    icon="plus"
+                    shape="circle-outline"
+                    onClick={store.createItem}
+                  ></Button>
+                </Form.Item>
+                <Form.Item>
+                  <Radio.Group buttonStyle="solid">
+                    <Radio.Button>设计</Radio.Button>
+                    <Radio.Button>预览</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Form>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
             </div>
           </SplitPane>
         </div>

@@ -15,8 +15,6 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
   props: ObservableBlockProps
 ) =>
   useObserver(() => {
-    console.log("ObservableBlock render");
-
     const { Component, autoHeight } = props.store.datas[props.i];
     return (
       <Block
