@@ -1,6 +1,6 @@
 import React from "react";
 import FPB from "./FBP";
-import { Input, Button, Tabs } from "antd";
+import { Input, Button, Tabs, Radio } from "antd";
 
 const App: React.FC = () => {
   return (
@@ -14,12 +14,48 @@ const App: React.FC = () => {
           path: "antd",
           group: "antd",
           Component: Input,
+          componentProps: {
+            placeholder: {
+              label: "空白占位符",
+              type: "string"
+            }
+          },
           children: [
             {
               id: "antd-textarea",
               label: "文本域",
               name: "TextArea",
               Component: Input.TextArea
+            }
+          ]
+        },
+        {
+          id: "antd-radio",
+          label: "单选按钮",
+          name: "Radio",
+          isDefault: false,
+          path: "antd",
+          group: "antd",
+          Component: Radio,
+          children: [
+            {
+              id: "antd-radio-group",
+              label: "单选按钮组",
+              name: "Group",
+              Component: Radio.Group,
+              componentProps: {
+                children: {
+                  type: "array",
+                  label: "单选框",
+                  Component: Radio,
+                  componentProps: {
+                    children: {
+                      type: "string",
+                      label: "label"
+                    }
+                  }
+                }
+              }
             }
           ]
         },
@@ -40,12 +76,18 @@ const App: React.FC = () => {
           path: "antd",
           group: "antd",
           Component: Tabs,
-          props: {
+          componentProps: {
             children: {
               label: "子元素",
               type: "array",
-              component: Tabs.TabPane,
-              createDefault:true,
+              Component: Tabs.TabPane,
+              createDefault: true,
+              componentProps: {
+                tab: {
+                  label: "标题",
+                  type: "string"
+                }
+              }
             }
           }
         }

@@ -89,7 +89,7 @@ interface ComponentProp {
   /**
    * 组件
    */
-  component?: React.ComponentClass;
+  Component?: React.ComponentClass;
   /**
    * type为array时是否默认增加一个元素
    */
@@ -97,10 +97,11 @@ interface ComponentProp {
   /**
    * 存在组件的话可设置组件默认属性
    */
-  componentProps?:ComponentProps;
+  componentProps?: ComponentProps;
 }
 
-interface ComponentProps {
+export interface ComponentProps {
+  children?: ComponentProp;
   [propName: string]: ComponentProp;
 }
 
@@ -135,7 +136,7 @@ export interface BaseComponentType {
   /**
    * 组件属性
    */
-  props?: ComponentProps;
+  componentProps?: ComponentProps;
 }
 
 /**
@@ -285,6 +286,10 @@ export interface FBPItem {
    */
   Component: React.ComponentClass;
   /**
+   * 组件属性
+   */
+  componentProps: { [key: string]: any };
+  /**
    * 自适应高度
    */
   autoHeight: boolean;
@@ -373,7 +378,12 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       createItem() {
         const i = shortid.generate();
         // store.layouts[store.breakPoint].push(item);
-        set(store.datas, i, { i, Component: null, autoHeight: true });
+        set(store.datas, i, {
+          i,
+          Component: null,
+          autoHeight: true,
+          componentProps: {}
+        });
         force();
         setTimeout(doWindowResize, 0);
       },
@@ -386,6 +396,9 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         const component = store.flatComponents[value];
 
         store.editingItem.Component = component.Component;
+        store.editingItem.componentProps = {};
+        // Object.entries(component.componentProps).
+        // store.editingItem.componentProps = ;
         store.editingItem.componentId = value;
 
         // set(store.editingItem, field, value);
@@ -526,6 +539,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                     onItemTypeChange={store.onItemTypeChange}
                     onItemPropsChange={store.onItemPropsChange}
                     componentGroup={store.componentGroup}
+                    flatComponents={store.flatComponents}
                   />
                 </Drawer>
               ))}
