@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
-import React from "react";
+import React, { ExoticComponent } from "react";
 import { useLocalStore, useObserver, useForceUpdate } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import { toJS, set } from "mobx";
@@ -85,11 +85,11 @@ interface ComponentProp {
   /**
    * 类型
    */
-  type: "array" | "string" | "number";
+  type: "array:component" | "array:string" | "string" | "number";
   /**
    * 组件
    */
-  Component?: React.ComponentClass;
+  Component?: React.ComponentClass | ExoticComponent;
   /**
    * type为array时是否默认增加一个元素
    */

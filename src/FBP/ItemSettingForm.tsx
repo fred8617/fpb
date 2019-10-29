@@ -12,7 +12,7 @@ import {
 import { FormComponentProps } from "antd/lib/form";
 import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./FPB";
 import React, { useState, useEffect } from "react";
-
+import _ from "lodash";
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
 export interface ItemSettingProps {
@@ -58,7 +58,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   }, [keyCounter]);
   const { form, item, onItemPropsChange } = props;
   const initialValue: FBPItem | { [key: string]: any } = item || {};
-  const { getFieldDecorator, getFieldsValue } = form;
+  const { getFieldDecorator, getFieldsValue, getFieldValue } = form;
   const renderTypeTreeNode = component => {
     if (component.children) {
       return (
@@ -98,8 +98,11 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
       if (prop.type === "string") {
         setting = getFieldDecorator(propName, { initialValue: "" })(<Input />);
-      } else if (prop.type === "array") {
-        const props = getFieldsValue()[prefix];
+      } else if (
+        prop.type === "array:component" ||
+        prop.type === "array:string"
+      ) {
+        // const props = getFieldsValue()[prefix];
         // const prop = (props && props[name]) || [];
         let mapedArr;
         if (keyCounter[propName] && keyCounter[propName]) {
@@ -113,13 +116,13 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           mapedArr = [];
         }
 
-        debugger;
+        // debugger;
         setting = (
           <>
             <Button
               icon="plus"
-              onClick={_ => {
-                const props = getFieldsValue()[prefix] || {};
+              onClick={e => {
+                const props = _.get(getFieldsValue(), prefix) || {};
                 if (!props[name]) {
                   //没有则默认设置为空数组并默认添加一个
                   keyCounter[propName] = [{}];
@@ -137,15 +140,26 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                 // console.log(values);
               }}
             ></Button>
-            {/* {getFieldDecorator(propName, { initialValue: [] })} */}
-            {mapedArr.map((p, pi) => {
-              console.log(`${propName}[${pi}].componentProps`);
-
-              return createComponentPropsForm(
-                componentProps[name].componentProps,
-                `${propName}[${pi}].componentProps`
-              );
-            })}
+            {(prop.type === "array:component" &&
+              mapedArr.map((p, pi) => {
+                console.log(`${propName}[${pi}].componentProps`);
+                return createComponentPropsForm(
+                  componentProps[name].componentProps,
+                  `${propName}[${pi}].componentProps`
+                );
+              })) ||
+              (prop.type === "array:string" &&
+                mapedArr.map((p, pi) => {
+                  const key=`${propName}[${pi}]`
+                  console.log(key);
+                  return (
+                    <Item key={key}>
+                      {getFieldDecorator(key, {
+                        initialValue: ""
+                      })(<Input />)}
+                    </Item>
+                  );
+                }))}
           </>
         );
       }
