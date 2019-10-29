@@ -46,7 +46,7 @@ const App: React.FC = () => {
               componentProps: {
                 defaultValue:{
                   type: "array:string",
-                  label: "默认值"
+                  label: "默认值",
                 },
                 value: {
                   type: "array:string",
@@ -59,7 +59,7 @@ const App: React.FC = () => {
                   componentProps: {
                     children: {
                       type: "string",
-                      label: "label"
+                      label: "label",
                     },
                     value: {
                       type: "string",

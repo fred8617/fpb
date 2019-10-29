@@ -100,9 +100,76 @@ interface ComponentProp {
   componentProps?: ComponentProps;
 }
 
+/**
+ * 组件基础属性
+ */
+interface BaseComponentProp {
+ /**
+   * 属性名称
+   */
+  label: string;
+  /**
+   * 类型
+   */
+  type: "array:component" | "array:string" | "string" | "number";
+  /**
+   * 组件
+   */
+  Component?: React.ComponentClass | ExoticComponent;
+  /**
+   * type为array时是否默认增加一个元素
+   */
+  createDefault?: boolean;
+  /**
+   * 存在组件的话可设置组件默认属性
+   */
+  componentProps?: ComponentProps; 
+}
+/**
+ * 数组组件属性
+ */
+export interface ArrayComponentProp extends BaseComponentProp {
+  /**
+   * 类型
+   */
+  type: "array:component";
+  /**
+   * 组件
+   */
+  Component: React.ComponentClass | ExoticComponent;
+  /**
+   * type为array时是否默认增加一个元素
+   */
+  createDefault?: boolean;
+  /**
+   * 存在组件的话可设置组件默认属性
+   */
+  componentProps?: ComponentProps;
+}
+/**
+ * 数组字符串
+ */
+export interface ArrayStringProp extends BaseComponentProp {
+  /**
+   * 类型
+   */
+  type: "array:string";
+  /**
+   * type为array时是否默认增加一个元素
+   */
+  createDefault?: boolean;
+}
+
+export interface StringProp extends BaseComponentProp {
+  /**
+   * 类型
+   */
+  type: "string";
+}
+
 export interface ComponentProps {
-  children?: ComponentProp;
-  [propName: string]: ComponentProp;
+  [propName: string]: ArrayComponentProp | ArrayStringProp | StringProp;
+  children?: ArrayComponentProp | ArrayStringProp | StringProp;
 }
 
 /**

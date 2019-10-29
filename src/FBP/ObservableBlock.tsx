@@ -1,5 +1,5 @@
 import React, { SFC } from "react";
-import { FPBStore } from "./FPB";
+import { FPBStore, ArrayComponentProp } from "./FPB";
 import { useObserver } from "mobx-react-lite";
 import Block from "./Block";
 import { toJS } from "mobx";
@@ -48,7 +48,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
         //   chil.push({})
         // }
         return chil.map((child, i) => {
-          const Comp = comp.componentProps.children.Component; //获取子组件组件类型
+          const Comp = comp.componentProps.children.Component  ; //获取子组件组件类型
           const { children, ...rest } =
             toJS(child.componentProps, { recurseEverything: true }) || {};
           return (
