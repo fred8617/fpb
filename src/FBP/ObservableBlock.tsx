@@ -1,9 +1,10 @@
 import React, { SFC } from "react";
 import { FPBStore, ArrayComponentProp } from "./FPB";
-import { useObserver } from "mobx-react-lite";
+import { useObserver, Observer } from "mobx-react-lite";
 import Block from "./Block";
 import { toJS } from "mobx";
 import { Consumer } from "./FormContext";
+import FormConsumerComponent from "./FormConsumerComponent";
 
 export interface ObservableBlockProps {
   i;
@@ -18,13 +19,14 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
 ) =>
   useObserver(() => {
     const { store } = props;
+    const item = props.store.datas[props.i];
     const {
       Component,
       componentProps,
       autoHeight,
       componentId,
       isFormField
-    } = props.store.datas[props.i];
+    } = item;
     const { children, ...rest } = toJS(componentProps || {}, {
       recurseEverything: true
     });
@@ -81,12 +83,9 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
     let renderedComponent;
     if (isFormField && finalComponent) {
       renderedComponent = (
-        <Consumer>
-          {({ form }) => (
-            <>{form.getFieldDecorator("123321")(finalComponent)}</>
-          )}
-        </Consumer>
+        <FormConsumerComponent item={item} component={finalComponent} />
       );
+      //
     } else {
       renderedComponent = finalComponent;
     }

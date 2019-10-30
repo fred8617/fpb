@@ -13,6 +13,7 @@ import { FormComponentProps } from "antd/lib/form";
 import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./FPB";
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
+import CommonInput from "./CommonInput";
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
 export interface ItemSettingProps {
@@ -81,10 +82,31 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
       />
     );
   };
+  //组件类型
   const componentTypeDec = getFieldDecorator("componentId", {
     initialValue: initialValue.componentId
   });
-  const { componentId } = getFieldsValue();
+  /**
+   * 自适应高度
+   */
+  const autoHeightDec = getFieldDecorator("autoHeight", {
+    valuePropName: "checked",
+    initialValue: initialValue.autoHeight
+  });
+  /**
+   * 是否作为表单域
+   */
+  const isFormFieldDec = getFieldDecorator("isFormField", {
+    valuePropName: "checked",
+    initialValue: initialValue.isFormField
+  });
+  /**
+   * 是否作为表单域
+   */
+  const $idDec = getFieldDecorator("$id", {
+    initialValue: initialValue.$id
+  });
+  const { componentId, isFormField } = getFieldsValue();
   // console.log(props.flatComponents[componentId]);
   const { componentProps = {}, formField } =
     props.flatComponents[componentId] || {};
@@ -98,7 +120,9 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
       const propName = `${prefix}.${name}`;
 
       if (prop.type === "string") {
-        setting = getFieldDecorator(propName, { initialValue: "" })(<Input />);
+        setting = getFieldDecorator(propName, { initialValue: "" })(
+          <CommonInput />
+        );
       } else if (
         prop.type === "array:component" ||
         prop.type === "array:string"
@@ -157,7 +181,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                     <Item key={key}>
                       {getFieldDecorator(key, {
                         initialValue: ""
-                      })(<Input />)}
+                      })(<CommonInput />)}
                     </Item>
                   );
                 }))}
@@ -172,14 +196,6 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     });
   };
   const propsDecModels = createComponentPropsForm(componentProps);
-  const autoHeightDec = getFieldDecorator("autoHeight", {
-    valuePropName: "checked",
-    initialValue: initialValue.autoHeight
-  });
-  const isFormFieldDec = getFieldDecorator("isFormField", {
-    valuePropName: "checked",
-    initialValue: initialValue.isFormField
-  });
 
   return (
     <>
@@ -232,11 +248,16 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
         )}
       </Item>
       {formField && (
-        <Item label={"是否作为表单域"}>
-          {isFormFieldDec(
-            <Switch checkedChildren={"是"} unCheckedChildren={"否"} />
+        <>
+          <Item label={"是否作为表单域"}>
+            {isFormFieldDec(
+              <Switch checkedChildren={"是"} unCheckedChildren={"否"} />
+            )}
+          </Item>
+          {isFormField && (
+            <Item label={"id"}>{$idDec(<CommonInput placeholder={'表单域传值字段，不填写默认为区块id'}/>)}</Item>
           )}
-        </Item>
+        </>
       )}
       {propsDecModels}
     </>

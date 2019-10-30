@@ -14,6 +14,8 @@ import ObservableBlock from "./ObservableBlock";
 import ObservableBlockContainer from "./ObservableBlockContainer";
 import { FormProps, FormComponentProps } from "antd/lib/form";
 import { Provider } from "./FormContext";
+console.log(shortid);
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const emptyLayouts: BreakPointsLayouts = {
   lg: [],
@@ -357,7 +359,7 @@ export interface FBPItem {
   /**
    * 主键
    */
-  i;
+  i: string;
   /**
    * 组件类
    */
@@ -378,6 +380,10 @@ export interface FBPItem {
    * 是否为表单域
    */
   isFormField: boolean;
+  /**
+   * 表单域id,默认为i
+   */
+  $id: string;
 }
 
 const FPB: React.SFC<FPBProps> = React.memo(props => {
@@ -460,12 +466,16 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       createItem() {
         const i = shortid.generate();
         // store.layouts[store.breakPoint].push(item);
-        set(store.datas, i, {
+        const newItem: FBPItem = {
           i,
           Component: null,
           autoHeight: true,
-          componentProps: {}
-        });
+          componentProps: {},
+          componentId:null,
+          isFormField:null,
+          $id:null,
+        };
+        set(store.datas, i, newItem);
         force();
         setTimeout(doWindowResize, 0);
       },
@@ -483,6 +493,8 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         store.editingItem.componentProps = {};
         if (component.formField) {
           store.editingItem.isFormField = store.defaultFormField;
+          //这里默认给i值吧
+          // store.editingItem.$id = shortid.generate()
         }
 
         // Object.entries(component.componentProps).
@@ -602,7 +614,197 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
             </>
           ))}
         </div>
-        <div key={"designer"}>
+        <div key="setting">
+          {useObserver(() => (
+            <Drawer
+              title={store.editingItem && store.editingItem.i}
+              placement="right"
+              width={`100%`}
+              closable={store.isEditing}
+              onClose={_ => store.setEditingItem(null)}
+              visible={store.isEditing}
+              getContainer={false}
+              style={{ position: "absolute" }}
+            >
+              <ItemSettingForm
+                item={store.editingItem}
+                onItemTypeChange={store.onItemTypeChange}
+                onItemPropsChange={store.onItemPropsChange}
+                componentGroup={store.componentGroup}
+                flatComponents={store.flatComponents}
+              />
+            </Drawer>
+          ))}
+          <Form layout="inline">
+            <Form.Item>
+              <Button
+                type="primary"
+                icon="plus"
+                shape="circle-outline"
+                onClick={store.createItem}
+              ></Button>
+            </Form.Item>
+            <Form.Item>
+              <Radio.Group buttonStyle="solid">
+                <Radio.Button>设计</Radio.Button>
+                <Radio.Button>预览</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+          </Form>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              icon="plus"
+              shape="circle-outline"
+              onClick={store.createItem}
+            ></Button>
+          </div>
+        </div>
+        {/* <div key={"designer"}>
           <SplitPane
             // onDragFinished={doWindowResize}
             paneStyle={{ position: `relative` }}
@@ -612,198 +814,9 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
             maxSize={`50%`}
           >
             <div key="tree"></div>
-            <div key="setting">
-              {useObserver(() => (
-                <Drawer
-                  title={store.editingItem && store.editingItem.i}
-                  placement="right"
-                  width={`100%`}
-                  closable={store.isEditing}
-                  onClose={_ => store.setEditingItem(null)}
-                  visible={store.isEditing}
-                  getContainer={false}
-                  style={{ position: "absolute" }}
-                >
-                  <ItemSettingForm
-                    item={store.editingItem}
-                    onItemTypeChange={store.onItemTypeChange}
-                    onItemPropsChange={store.onItemPropsChange}
-                    componentGroup={store.componentGroup}
-                    flatComponents={store.flatComponents}
-                  />
-                </Drawer>
-              ))}
-              <Form layout="inline">
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    icon="plus"
-                    shape="circle-outline"
-                    onClick={store.createItem}
-                  ></Button>
-                </Form.Item>
-                <Form.Item>
-                  <Radio.Group buttonStyle="solid">
-                    <Radio.Button>设计</Radio.Button>
-                    <Radio.Button>预览</Radio.Button>
-                  </Radio.Group>
-                </Form.Item>
-              </Form>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-              <div>
-                <Button
-                  type="primary"
-                  icon="plus"
-                  shape="circle-outline"
-                  onClick={store.createItem}
-                ></Button>
-              </div>
-            </div>
+            
           </SplitPane>
-        </div>
+        </div> */}
       </SplitPane>
     </>
   );
