@@ -14,14 +14,16 @@ const App: React.FC = () => {
           path: "antd",
           group: "antd",
           Component: Input,
+          formField:true,
           componentProps: {
             placeholder: {
               label: "空白占位符",
-              type: "string"
+              type: "string",
             }
           },
           children: [
             {
+              formField:true,
               id: "antd-textarea",
               label: "文本域",
               name: "TextArea",
@@ -37,12 +39,14 @@ const App: React.FC = () => {
           group: "antd",
           isDefault: false,
           Component: Checkbox,
+          formField:true,
           children: [
             {
               id: "antd-checkbox-group",
               label: "复选框组",
               name: "Group",
               Component: Checkbox.Group,
+              formField:true,
               componentProps: {
                 defaultValue:{
                   type: "array:string",
@@ -54,7 +58,7 @@ const App: React.FC = () => {
                 },
                 children: {
                   type: "array:component",
-                  label: "单选框",
+                  label: "复选框",
                   Component: Checkbox,
                   componentProps: {
                     children: {
@@ -80,12 +84,14 @@ const App: React.FC = () => {
           path: "antd",
           group: "antd",
           Component: Radio,
+          formField:true,
           children: [
             {
               id: "antd-radio-group",
               label: "单选框组",
               name: "Group",
               Component: Radio.Group,
+              formField:true,
               componentProps: {
                 children: {
                   type: "array:component",
@@ -94,7 +100,7 @@ const App: React.FC = () => {
                   componentProps: {
                     children: {
                       type: "string",
-                      label: "label"
+                      label: "label",
                     },
                     value: {
                       type: "string",

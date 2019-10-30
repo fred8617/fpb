@@ -85,9 +85,10 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     initialValue: initialValue.componentId
   });
   const { componentId } = getFieldsValue();
-  console.log(props.flatComponents[componentId]);
-  const { componentProps = {} } = props.flatComponents[componentId] || {};
-  console.log("cprops", getFieldsValue());
+  // console.log(props.flatComponents[componentId]);
+  const { componentProps = {}, formField } =
+    props.flatComponents[componentId] || {};
+  console.log("cprops", getFieldsValue(), componentProps);
   const createComponentPropsForm = (
     componentProps: ComponentProps,
     prefix = "componentProps"
@@ -142,7 +143,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             ></Button>
             {(prop.type === "array:component" &&
               mapedArr.map((p, pi) => {
-                console.log(`${propName}[${pi}].componentProps`);
+                // console.log(`${propName}[${pi}].componentProps`);
                 return createComponentPropsForm(
                   componentProps[name].componentProps,
                   `${propName}[${pi}].componentProps`
@@ -150,8 +151,8 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
               })) ||
               (prop.type === "array:string" &&
                 mapedArr.map((p, pi) => {
-                  const key=`${propName}[${pi}]`
-                  console.log(key);
+                  const key = `${propName}[${pi}]`;
+                  // console.log(key);
                   return (
                     <Item key={key}>
                       {getFieldDecorator(key, {
@@ -175,12 +176,17 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     valuePropName: "checked",
     initialValue: initialValue.autoHeight
   });
+  const isFormFieldDec = getFieldDecorator("isFormField", {
+    valuePropName: "checked",
+    initialValue: initialValue.isFormField
+  });
 
   return (
     <>
       <Item label={"组件"}>
         {componentTypeDec(
           <TreeSelect
+            onChange={_ => setKeyCounter({})}
             showSearch
             style={{ width: `100%` }}
             dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
@@ -225,6 +231,13 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           <Switch checkedChildren={"开"} unCheckedChildren={"关"} />
         )}
       </Item>
+      {formField && (
+        <Item label={"是否作为表单域"}>
+          {isFormFieldDec(
+            <Switch checkedChildren={"是"} unCheckedChildren={"否"} />
+          )}
+        </Item>
+      )}
       {propsDecModels}
     </>
   );
@@ -236,7 +249,7 @@ export default create<ItemSettingFormProps>({
       return;
     }
     const value = changedValues[field];
-    console.log("onValuesChange", field, allValues[field]);
+    // console.log("onValuesChange", field, allValues[field]);
     if (field === "componentId") {
       props.onItemTypeChange(value);
     } else {

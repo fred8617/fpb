@@ -12,6 +12,8 @@ import shortid from "shortid";
 import ItemSettingForm, { ItemSettingProps } from "./ItemSettingForm";
 import ObservableBlock from "./ObservableBlock";
 import ObservableBlockContainer from "./ObservableBlockContainer";
+import { FormProps, FormComponentProps } from "antd/lib/form";
+import { Provider } from "./FormContext";
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const emptyLayouts: BreakPointsLayouts = {
   lg: [],
@@ -104,7 +106,7 @@ interface ComponentProp {
  * 组件基础属性
  */
 interface BaseComponentProp {
- /**
+  /**
    * 属性名称
    */
   label: string;
@@ -115,7 +117,7 @@ interface BaseComponentProp {
   /**
    * 组件
    */
-  Component?: React.ComponentClass | ExoticComponent;
+  Component?: React.ComponentClass | ExoticComponent | null;
   /**
    * type为array时是否默认增加一个元素
    */
@@ -123,7 +125,7 @@ interface BaseComponentProp {
   /**
    * 存在组件的话可设置组件默认属性
    */
-  componentProps?: ComponentProps; 
+  componentProps?: ComponentProps;
 }
 /**
  * 数组组件属性
@@ -204,6 +206,10 @@ export interface BaseComponentType {
    * 组件属性
    */
   componentProps?: ComponentProps;
+  /**
+   * 是否可为表单域
+   */
+  formField?: boolean;
 }
 
 /**
@@ -228,7 +234,7 @@ export interface ComponentGroup {
   [groupName: string]: ComponentType[] | string;
 }
 
-export interface FPBProps {
+export interface FPBProps extends FormComponentProps {
   /**
    * 默认配置
    */
@@ -321,6 +327,10 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * 平铺组件，方便查找
    */
   flatComponents: { [id: string]: ComponentType };
+  /**
+   * 组件的为formField,则编辑时默认表单域为true
+   */
+  defaultFormField: boolean;
 }
 type RGLItemCallBack = (
   layout: RGLItem[],
@@ -364,17 +374,22 @@ export interface FBPItem {
    * 组件id
    */
   componentId: string;
+  /**
+   * 是否为表单域
+   */
+  isFormField: boolean;
 }
 
 const FPB: React.SFC<FPBProps> = React.memo(props => {
   const force = useForceUpdate();
-  const store: FPBStore = useLocalStore<FPBStore, FPBProps>(
+  const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
     source => ({
       rowHeight: 1,
       margin: [0, 0],
       layouts: emptyLayouts,
       /*********************** */
       datas: {},
+      defaultFormField: true,
       hasLayout() {
         return Object.keys(store.datas).length !== 0;
       },
@@ -458,12 +473,18 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       onItemTypeChange(value) {
         if (!value) {
           store.editingItem.Component = null;
+          store.editingItem.componentProps = null;
+          store.editingItem.isFormField = null;
           return;
         }
         const component = store.flatComponents[value];
 
         store.editingItem.Component = component.Component;
         store.editingItem.componentProps = {};
+        if (component.formField) {
+          store.editingItem.isFormField = store.defaultFormField;
+        }
+
         // Object.entries(component.componentProps).
         // store.editingItem.componentProps = ;
         store.editingItem.componentId = value;
@@ -547,35 +568,37 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 style={{ display: store.hasLayout() ? "none" : "block" }}
                 description={"暂无元素"}
               />
-              <ResponsiveGridLayout
-                style={{ display: !store.hasLayout() ? "none" : "block" }}
-                // draggableHandle=".drag"
-                className="layout"
-                // onLayout
-                breakpoints={{
-                  lg: 1200,
-                  md: 996,
-                  sm: 768,
-                  xs: 480,
-                  xxs: 0
-                }}
-                cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-                {...store.jsConfig}
-              >
-                {Object.entries(store.datas).map(([key, data]) => {
-                  return (
-                    <div key={key}>
-                      <ObservableBlockContainer
-                        store={store}
-                        itemKey={key}
-                        data={data}
-                      />
+              <Provider value={{ form: props.form }}>
+                <ResponsiveGridLayout
+                  style={{ display: !store.hasLayout() ? "none" : "block" }}
+                  // draggableHandle=".drag"
+                  className="layout"
+                  // onLayout
+                  breakpoints={{
+                    lg: 1200,
+                    md: 996,
+                    sm: 768,
+                    xs: 480,
+                    xxs: 0
+                  }}
+                  cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                  {...store.jsConfig}
+                >
+                  {Object.entries(store.datas).map(([key, data]) => {
+                    return (
+                      <div key={key}>
+                        <ObservableBlockContainer
+                          store={store}
+                          itemKey={key}
+                          data={data}
+                        />
 
-                      <ObservableBlock store={store} i={key} />
-                    </div>
-                  );
-                })}
-              </ResponsiveGridLayout>
+                        <ObservableBlock store={store} i={key} />
+                      </div>
+                    );
+                  })}
+                </ResponsiveGridLayout>
+              </Provider>
             </>
           ))}
         </div>
@@ -690,6 +713,94 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                   onClick={store.createItem}
                 ></Button>
               </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  shape="circle-outline"
+                  onClick={store.createItem}
+                ></Button>
+              </div>
             </div>
           </SplitPane>
         </div>
@@ -697,5 +808,5 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
     </>
   );
 });
-
-export { FPB as default };
+const FormFPB = Form.create<FPBProps>({ name: "FPB" })(FPB);
+export { FormFPB as default };

@@ -3,6 +3,7 @@ import { FPBStore, ArrayComponentProp } from "./FPB";
 import { useObserver } from "mobx-react-lite";
 import Block from "./Block";
 import { toJS } from "mobx";
+import { Consumer } from "./FormContext";
 
 export interface ObservableBlockProps {
   i;
@@ -21,9 +22,10 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
       Component,
       componentProps,
       autoHeight,
-      componentId
+      componentId,
+      isFormField
     } = props.store.datas[props.i];
-    const { children, ...rest } = toJS(componentProps, {
+    const { children, ...rest } = toJS(componentProps || {}, {
       recurseEverything: true
     });
     console.log(toJS(componentProps));
@@ -35,7 +37,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
      * @param chil 表单中的子元素部分
      */
     const renderComponentChildren = (comp = component, chil = children) => {
-      console.log(toJS(children));
+      // console.log(toJS(children));
       //debugger;
       // //debugger
       if (
@@ -48,7 +50,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
         //   chil.push({})
         // }
         return chil.map((child, i) => {
-          const Comp = comp.componentProps.children.Component  ; //获取子组件组件类型
+          const Comp = comp.componentProps.children.Component; //获取子组件组件类型
           const { children, ...rest } =
             toJS(child.componentProps, { recurseEverything: true }) || {};
           return (
@@ -65,6 +67,29 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
         return chil; //组件含有属性 //组件属性中包含子元素
       }
     };
+    let finalComponent = Component && //存在Component并且
+      (!component.componentProps || //没有属性或者
+      !component.componentProps.children || //有属性没有子元素或者
+      !component.componentProps.children.createDefault || //或者有子元素不需要默认创建
+        (component.componentProps.children && //有子元素并且需要有默认元素并且类型还是数组的需要长度大于0
+          component.componentProps.children.createDefault &&
+          component.componentProps.children.type === "array:component" &&
+          children &&
+          children.length)) && (
+        <Component {...rest}>{children && renderComponentChildren()}</Component>
+      );
+    let renderedComponent;
+    if (isFormField && finalComponent) {
+      renderedComponent = (
+        <Consumer>
+          {({ form }) => (
+            <>{form.getFieldDecorator("123321")(finalComponent)}</>
+          )}
+        </Consumer>
+      );
+    } else {
+      renderedComponent = finalComponent;
+    }
     return (
       <Block
         autoHeight={autoHeight}
@@ -78,19 +103,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
           props.store.caclHeight(height, props.i);
         }}
       >
-        {Component && //存在Component并且
-          (!component.componentProps || //没有属性或者
-          !component.componentProps.children || //有属性没有子元素或者
-          !component.componentProps.children.createDefault || //或者有子元素不需要默认创建
-            (component.componentProps.children && //有子元素并且需要有默认元素并且类型还是数组的需要长度大于0
-              component.componentProps.children.createDefault &&
-              component.componentProps.children.type === "array:component" &&
-              children &&
-              children.length)) && (
-            <Component {...rest}>
-              {children && renderComponentChildren()}
-            </Component>
-          )}
+        {renderedComponent}
       </Block>
     );
   });
