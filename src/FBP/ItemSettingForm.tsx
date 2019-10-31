@@ -7,15 +7,69 @@ import {
   Tooltip,
   Icon,
   Button,
-  Radio
+  Radio,
+  Collapse,
+  Row,
+  Col,
+  Divider,
+  Card
 } from "antd";
 import { FormComponentProps } from "antd/lib/form";
 import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./FPB";
-import React, { useState, useEffect } from "react";
-import _ from "lodash";
+import React, { useState, useEffect, Fragment } from "react";
+import { get } from "lodash";
 import CommonInput from "./CommonInput";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import useSizeMe from "./useSizeMe";
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
+const { Panel } = Collapse;
+enum Size {
+  SMALL,
+  MIDDLE,
+  LARGE
+}
+// xs	<576
+// sm	≥576
+// md	≥768
+// lg	≥992
+// xl	≥1200
+// xxl ≥1600
+const getFormItemCol = (width: number) => {
+  const col = { labelCol: { span: 24 }, wrapperCol: { span: 24 } };
+  // if (width >= 256) {
+  //   col.labelCol.span = 10;
+  //   col.wrapperCol.span = 14;
+  // }
+  return col;
+};
+const getCol = (width: number, size: Size) => {
+  const col = { span: 24 };
+  if (size === Size.LARGE) {
+    return col;
+  } else if (size === Size.MIDDLE) {
+    if (width >= 576 && width < 1200) {
+      col.span = 8;
+      return col;
+    } else if (width >= 1200) {
+      col.span = 6;
+      return col;
+    }
+    return col;
+  } else if (size === Size.SMALL) {
+    if (width > 256 && width < 576) {
+      col.span = 12;
+      return col;
+    } else if (width >= 576 && width < 1200) {
+      col.span = 6;
+      return col;
+    } else if (width >= 1200) {
+      col.span = 4;
+      return col;
+    }
+    return col;
+  }
+};
 export interface ItemSettingProps {
   /**
    * 分组组件
@@ -120,8 +174,10 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
       const propName = `${prefix}.${name}`;
 
       if (prop.type === "string") {
-        setting = getFieldDecorator(propName, { initialValue: "" })(
-          <CommonInput />
+        setting = (
+          <Item label={prop.label}>
+            {getFieldDecorator(propName, { initialValue: "" })(<CommonInput />)}
+          </Item>
         );
       } else if (
         prop.type === "array:component" ||
@@ -143,11 +199,11 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
         // debugger;
         setting = (
-          <>
+          <Panel header={prop.label} key={`setting${i}`}>
             <Button
               icon="plus"
               onClick={e => {
-                const props = _.get(getFieldsValue(), prefix) || {};
+                const props = get(getFieldsValue(), prefix) || {};
                 if (!props[name]) {
                   //没有则默认设置为空数组并默认添加一个
                   keyCounter[propName] = [{}];
@@ -164,104 +220,174 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                 // props[name].push({});
                 // console.log(values);
               }}
-            ></Button>
+            >
+              添加{prop.label}
+            </Button>
             {(prop.type === "array:component" &&
               mapedArr.map((p, pi) => {
                 // console.log(`${propName}[${pi}].componentProps`);
-                return createComponentPropsForm(
+                return <Card key={`car${pi}`}>{createComponentPropsForm(
                   componentProps[name].componentProps,
                   `${propName}[${pi}].componentProps`
-                );
+                )}</Card>;
               })) ||
-              (prop.type === "array:string" &&
-                mapedArr.map((p, pi) => {
-                  const key = `${propName}[${pi}]`;
-                  // console.log(key);
-                  return (
-                    <Item key={key}>
-                      {getFieldDecorator(key, {
-                        initialValue: ""
-                      })(<CommonInput />)}
-                    </Item>
-                  );
-                }))}
-          </>
+              (prop.type === "array:string" && (
+                <DragDropContext>
+                  <Droppable droppableId={`drop`}>
+                    {provided => {
+                      return (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {mapedArr.map((p, pi) => {
+                            const key = `${propName}[${pi}]`;
+                            // console.log(key);
+                            return (
+                              <Draggable key={key} draggableId={key} index={pi}>
+                                {provided => {
+                                  return (
+                                    <div
+                                      key={key}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      className="ant-form ant-form-inline"
+                                    >
+                                      <Item>
+                                        <div {...provided.dragHandleProps}>
+                                          <Icon type="drag" />
+                                        </div>
+                                      </Item>
+                                      <Item>
+                                        {getFieldDecorator(key, {
+                                          initialValue: ""
+                                        })(<CommonInput />)}
+                                      </Item>
+                                    </div>
+                                  );
+                                }}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </div>
+                      );
+                    }}
+                  </Droppable>
+                </DragDropContext>
+              ))}
+          </Panel>
         );
       }
-      return (
-        <Item key={`props${i}`} label={prop.label}>
-          {setting}
-        </Item>
-      );
+      return setting;
     });
   };
+
   const propsDecModels = createComponentPropsForm(componentProps);
 
-  return (
-    <>
-      <Item label={"组件"}>
-        {componentTypeDec(
-          <TreeSelect
-            onChange={_ => setKeyCounter({})}
-            showSearch
-            style={{ width: `100%` }}
-            dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
-            placeholder="请选择组件"
-            allowClear
-            autoClearSearchValue
-            treeDefaultExpandAll
-          >
-            {props.componentGroup.map((groupOrComponent, index) => {
-              if (groupOrComponent.id) {
-                return renderTypeTreeNode(groupOrComponent);
-              }
-              return (
-                <TreeNode
-                  disabled
-                  value={"group"}
-                  title={groupOrComponent["groupName"]}
-                  key={`group${index}`}
-                >
-                  {groupOrComponent[groupOrComponent["groupName"]].map(
-                    component => {
-                      return renderTypeTreeNode(component);
-                    }
+  const [settingForm] = useSizeMe(size => {
+    const { width } = size;
+    return (
+      <Form {...getFormItemCol(width)}>
+        <Collapse accordion defaultActiveKey={["1"]}>
+          <Panel header={`基础设置`} key="1">
+            <Row gutter={15}>
+              <Col {...getCol(width, Size.MIDDLE)}>
+                <Item label={"组件"}>
+                  {componentTypeDec(
+                    <TreeSelect
+                      onChange={_ => setKeyCounter({})}
+                      showSearch
+                      style={{ width: `100%` }}
+                      dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
+                      placeholder="请选择组件"
+                      allowClear
+                      autoClearSearchValue
+                      treeDefaultExpandAll
+                    >
+                      {props.componentGroup.map((groupOrComponent, index) => {
+                        if (groupOrComponent.id) {
+                          return renderTypeTreeNode(groupOrComponent);
+                        }
+                        return (
+                          <TreeNode
+                            disabled
+                            value={"group"}
+                            title={groupOrComponent["groupName"]}
+                            key={`group${index}`}
+                          >
+                            {groupOrComponent[
+                              groupOrComponent["groupName"]
+                            ].map(component => {
+                              return renderTypeTreeNode(component);
+                            })}
+                          </TreeNode>
+                        );
+                      })}
+                    </TreeSelect>
                   )}
-                </TreeNode>
-              );
-            })}
-          </TreeSelect>
-        )}
-      </Item>
-      <Item
-        label={
-          <span>
-            自适应高度&nbsp;
-            <Tooltip title="开启后区块将自适应内容高度，不能进行纵向resize操作">
-              <Icon type="question-circle-o" />
-            </Tooltip>
-          </span>
-        }
-      >
-        {autoHeightDec(
-          <Switch checkedChildren={"开"} unCheckedChildren={"关"} />
-        )}
-      </Item>
-      {formField && (
-        <>
-          <Item label={"是否作为表单域"}>
-            {isFormFieldDec(
-              <Switch checkedChildren={"是"} unCheckedChildren={"否"} />
-            )}
-          </Item>
-          {isFormField && (
-            <Item label={"id"}>{$idDec(<CommonInput placeholder={'表单域传值字段，不填写默认为区块id'}/>)}</Item>
+                </Item>
+              </Col>
+              <Col {...getCol(width, Size.SMALL)}>
+                <Item
+                  label={
+                    <span>
+                      自适应高度&nbsp;
+                      <Tooltip title="开启后区块将自适应内容高度，不能进行纵向resize操作">
+                        <Icon type="question-circle-o" />
+                      </Tooltip>
+                    </span>
+                  }
+                >
+                  {autoHeightDec(
+                    <Switch checkedChildren={"开"} unCheckedChildren={"关"} />
+                  )}
+                </Item>
+              </Col>
+
+              {formField && (
+                <Fragment key="frag">
+                  <Col {...getCol(width, Size.SMALL)}>
+                    <Item label={"是否作为表单域"}>
+                      {isFormFieldDec(
+                        <Switch
+                          checkedChildren={"是"}
+                          unCheckedChildren={"否"}
+                        />
+                      )}
+                    </Item>
+                  </Col>
+                  {isFormField && (
+                    <Col {...getCol(width, Size.MIDDLE)}>
+                      <Item
+                        label={
+                          <span>
+                            id&nbsp;
+                            <Tooltip title="表单域传值字段，不填写默认为区块id，需保证唯一">
+                              <Icon type="question-circle-o" />
+                            </Tooltip>
+                          </span>
+                        }
+                      >
+                        {$idDec(<CommonInput placeholder={"请填写id"} />)}
+                      </Item>
+                    </Col>
+                  )}
+                </Fragment>
+              )}
+              {/* <Col></Col> */}
+            </Row>
+          </Panel>
+          {propsDecModels.length && (
+            <Panel header={"自定义设置"} key="2">
+              <Collapse accordion>{propsDecModels}</Collapse>
+            </Panel>
           )}
-        </>
-      )}
-      {propsDecModels}
-    </>
-  );
+        </Collapse>
+      </Form>
+    );
+  }, {});
+  return <>{settingForm}</>;
 };
 export default create<ItemSettingFormProps>({
   onValuesChange(props, changedValues, allValues) {

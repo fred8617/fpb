@@ -30,6 +30,11 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
     const { children, ...rest } = toJS(componentProps || {}, {
       recurseEverything: true
     });
+    const finalComponentProps = { ...rest };
+    if (isFormField) {
+      delete finalComponentProps.defaultValue 
+      delete finalComponentProps.value 
+    }
     console.log(toJS(componentProps));
     const component = store.flatComponents[componentId];
 
@@ -78,7 +83,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
           component.componentProps.children.type === "array:component" &&
           children &&
           children.length)) && (
-        <Component {...rest}>{children && renderComponentChildren()}</Component>
+        <Component {...finalComponentProps}>{children && renderComponentChildren()}</Component>
       );
     let renderedComponent;
     if (isFormField && finalComponent) {

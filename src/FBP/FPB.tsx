@@ -471,9 +471,9 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           Component: null,
           autoHeight: true,
           componentProps: {},
-          componentId:null,
-          isFormField:null,
-          $id:null,
+          componentId: null,
+          isFormField: null,
+          $id: null
         };
         set(store.datas, i, newItem);
         force();
@@ -625,6 +625,11 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
               visible={store.isEditing}
               getContainer={false}
               style={{ position: "absolute" }}
+              bodyStyle={{
+                padding: 0,
+                height: `calc( 100% - 54.6px )`,
+                overflow: `auto`
+              }}
             >
               <ItemSettingForm
                 item={store.editingItem}
@@ -659,150 +664,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
               onClick={store.createItem}
             ></Button>
           </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
+          
         </div>
         {/* <div key={"designer"}>
           <SplitPane
