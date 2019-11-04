@@ -10,3 +10,7 @@
 
 # block
 - 删除区块
+- 区块已产生的高度改变autoHeight也会被锁死！先做断点
+
+# global-setting
+- 断点！

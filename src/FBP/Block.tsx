@@ -48,7 +48,10 @@ const Block: React.SFC<BlockProps> = props => {
     props.onParentHeightChange
   ]);
   useEffect(() => {
+    console.log('setHeight');
+    
     setParent(height as number);
+   
   }, [height, props.breakPoint, props.autoHeight]);
 
   return <>{sized}</>;

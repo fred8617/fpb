@@ -1,12 +1,23 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
 import React, { ExoticComponent } from "react";
-import { useLocalStore, useObserver, useForceUpdate } from "mobx-react-lite";
+import { useLocalStore, useObserver, useForceUpdate,Observer } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import { toJS, set } from "mobx";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
-import { Empty, Row, Button, Col, Form, Popover, Drawer, Radio } from "antd";
+import {
+  Empty,
+  Row,
+  Button,
+  Col,
+  Form,
+  Popover,
+  Drawer,
+  Radio,
+  Checkbox,
+  Modal
+} from "antd";
 import SplitPane, { Size } from "react-split-pane";
 import shortid from "shortid";
 import ItemSettingForm, { ItemSettingProps } from "./ItemSettingForm";
@@ -14,6 +25,7 @@ import ObservableBlock from "./ObservableBlock";
 import ObservableBlockContainer from "./ObservableBlockContainer";
 import { FormProps, FormComponentProps } from "antd/lib/form";
 import { Provider } from "./FormContext";
+import BreakPointForm from "./BreakPointForm";
 console.log(shortid);
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -294,7 +306,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    */
   findItem(key): RGLItem;
   /**
-   * 获取元素高度
+   * 获取元素当前响应布局高度高度
    * @param key 主键
    */
   getItemHeight(key): number;
@@ -333,8 +345,13 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * 组件的为formField,则编辑时默认表单域为true
    */
   defaultFormField: boolean;
+  /**
+   * 断点设置弹出
+   */
+  breakPointSettingVisible: boolean;
+  setBreakPointSettingVisible(breakPointSettingVisible: boolean);
 }
-type RGLItemCallBack = (
+export type RGLItemCallBack = (
   layout: RGLItem[],
   /**
    * 旧数据
@@ -386,7 +403,7 @@ export interface FBPItem {
   $id: string;
 }
 
-const FPB: React.SFC<FPBProps> = React.memo(props => {
+const FPB: React.SFC<FPBProps> = props => {
   const force = useForceUpdate();
   const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
     source => ({
@@ -556,11 +573,15 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           returnGroup.push(component);
         });
         return returnGroup;
+      },
+      breakPointSettingVisible: false,
+      setBreakPointSettingVisible(breakPointSettingVisible) {
+        store.breakPointSettingVisible = breakPointSettingVisible;
       }
     }),
     { components: props.components }
   );
-  console.log("render");
+  console.log("render",store);
 
   return (
     <>
@@ -649,6 +670,11 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 onClick={store.createItem}
               ></Button>
             </Form.Item>
+            <Form.Item label="断点">
+              <Button onClick={_ => store.setBreakPointSettingVisible(true)}>
+                断点
+              </Button>
+            </Form.Item>
             <Form.Item>
               <Radio.Group buttonStyle="solid">
                 <Radio.Button>设计</Radio.Button>
@@ -664,7 +690,6 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
               onClick={store.createItem}
             ></Button>
           </div>
-          
         </div>
         {/* <div key={"designer"}>
           <SplitPane
@@ -680,8 +705,17 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
           </SplitPane>
         </div> */}
       </SplitPane>
+      {useObserver(() => (
+        <Modal
+          title={"设置断点"}
+          visible={store.breakPointSettingVisible}
+          onCancel={_ => store.setBreakPointSettingVisible(false)}
+        >
+          <BreakPointForm />
+        </Modal>
+      ))}
     </>
   );
-});
+};
 const FormFPB = Form.create<FPBProps>({ name: "FPB" })(FPB);
 export { FormFPB as default };
