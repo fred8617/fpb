@@ -165,6 +165,29 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   const { componentProps = {}, formField } =
     props.flatComponents[componentId] || {};
   console.log("cprops", getFieldsValue(), componentProps);
+  const sortProps = ({ destination, source }) => {
+    if (!destination) {
+      return;
+    }
+    const values = form.getFieldsValue();
+    const arr = get(values, destination.droppableId);
+    const dragValue = arr[source.index];
+    arr.splice(source.index, 1);
+    arr.splice(destination.index, 0, dragValue);
+    form.setFieldsValue({
+      componentProps: values.componentProps
+    });
+  };
+  const deleteProp = (propName, index) => {
+    const values = getFieldsValue();
+    const arr = get(values, propName);
+    arr.splice(index, 1);
+    keyCounter[propName].splice(index, 1);
+    form.setFieldsValue({
+      componentProps: values.componentProps
+    });
+    setKeyCounter({ ...keyCounter });
+  };
   const createComponentPropsForm = (
     componentProps: ComponentProps,
     prefix = "componentProps"
@@ -175,7 +198,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
       if (prop.type === "string") {
         setting = (
-          <Item label={prop.label}>
+          <Item label={prop.label} key={propName}>
             {getFieldDecorator(propName, { initialValue: "" })(<CommonInput />)}
           </Item>
         );
@@ -215,25 +238,70 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                   keyCounter[propName] = [];
                 }
                 keyCounter[propName].push({});
-                // onItemPropsChange('componentProps' ,keyCounter[propName]);
                 setKeyCounter({ ...keyCounter });
-                // props[name].push({});
-                // console.log(values);
               }}
             >
               添加{prop.label}
             </Button>
-            {(prop.type === "array:component" &&
-              mapedArr.map((p, pi) => {
-                // console.log(`${propName}[${pi}].componentProps`);
-                return <Card key={`car${pi}`}>{createComponentPropsForm(
-                  componentProps[name].componentProps,
-                  `${propName}[${pi}].componentProps`
-                )}</Card>;
-              })) ||
+            {(prop.type === "array:component" && (
+              <DragDropContext onDragEnd={sortProps}>
+                <Droppable droppableId={propName}>
+                  {provided => {
+                    return (
+                      <div {...provided.droppableProps} ref={provided.innerRef}>
+                        {mapedArr.map((p, pi) => {
+                          const key = `${propName}[${pi}]`;
+
+                          
+                          return (
+                            <Draggable key={key} draggableId={key} index={pi}>
+                              {provided => {
+                                console.log(provided.draggableProps);
+                                return (
+                                  <div
+                                   
+                                    key={key}
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    // className="ant-form ant-form-inline"
+                                  >
+                                    <Card
+                                     style={{ margin: `5px 0` }}
+                                      key={`car${pi}`}
+                                      actions={[
+                                        <div {...provided.dragHandleProps}>
+                                          <Icon type="drag" key={"drag"} />
+                                        </div>,
+                                        <Icon
+                                          type="delete"
+                                          key={"delete"}
+                                          onClick={_ =>
+                                            deleteProp(propName, pi)
+                                          }
+                                        />
+                                      ]}
+                                    >
+                                      {createComponentPropsForm(
+                                        componentProps[name].componentProps,
+                                        `${propName}[${pi}].componentProps`
+                                      )}
+                                    </Card>
+                                  </div>
+                                );
+                              }}
+                            </Draggable>
+                          );
+                        })}
+                        {provided.placeholder}
+                      </div>
+                    );
+                  }}
+                </Droppable>
+              </DragDropContext>
+            )) ||
               (prop.type === "array:string" && (
-                <DragDropContext>
-                  <Droppable droppableId={`drop`}>
+                <DragDropContext onDragEnd={sortProps}>
+                  <Droppable droppableId={propName}>
                     {provided => {
                       return (
                         <div
@@ -262,6 +330,18 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                                         {getFieldDecorator(key, {
                                           initialValue: ""
                                         })(<CommonInput />)}
+                                      </Item>
+                                      <Item>
+                                        <Icon
+                                          onClick={_ =>
+                                            deleteProp(propName, pi)
+                                          }
+                                          type="delete"
+                                          style={{
+                                            color: `red`,
+                                            cursor: `pointer`
+                                          }}
+                                        />
                                       </Item>
                                     </div>
                                   );
@@ -396,7 +476,7 @@ export default create<ItemSettingFormProps>({
       return;
     }
     const value = changedValues[field];
-    // console.log("onValuesChange", field, allValues[field]);
+    console.log("onValuesChange", field, allValues[field]);
     if (field === "componentId") {
       props.onItemTypeChange(value);
     } else {

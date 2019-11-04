@@ -5,6 +5,7 @@ import Block from "./Block";
 import { toJS } from "mobx";
 import { Consumer } from "./FormContext";
 import FormConsumerComponent from "./FormConsumerComponent";
+import ReactDOM from "react-dom";
 
 export interface ObservableBlockProps {
   i;
@@ -35,7 +36,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
       delete finalComponentProps.defaultValue 
       delete finalComponentProps.value 
     }
-    console.log(toJS(componentProps));
+    console.log(toJS(finalComponentProps));
     const component = store.flatComponents[componentId];
 
     /**
@@ -94,6 +95,8 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
     } else {
       renderedComponent = finalComponent;
     }
+    // console.log(renderedComponent,ReactDOM);
+    
     return (
       <Block
         autoHeight={autoHeight}

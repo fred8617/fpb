@@ -21,10 +21,11 @@ const checkbox: ComponentType = {
           type: "array:string",
           label: "默认值"
         },
-        value: {
-          type: "array:string",
-          label: "值"
-        },
+        //不应该有值这个属性，有的话也应该与变量绑定后期再说
+        // value: {
+        //   type: "array:string",
+        //   label: "值"
+        // },
         children: {
           type: "array:component",
           label: "复选框",
