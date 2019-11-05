@@ -1,5 +1,5 @@
 import { SFC, useEffect } from "react";
-import { useObserver } from "mobx-react-lite";
+import { useObserver, Observer } from "mobx-react-lite";
 import { Consumer } from "./FormContext";
 import { FBPItem } from "./FPB";
 import React from "react";
@@ -25,15 +25,19 @@ const FormConsumerComponent: SFC<FormConsumerComponentProps> = ({
     console.log("FormConsumerComponentProps");
   }, []);
 
-  return useObserver(() => {
-    const { $id, i } = item;
-    const id = ($id && $id.trim()) || i;
-    return (
-      <Consumer>
-        {({ form }) => <>{form.getFieldDecorator(id)(component)}</>}
-      </Consumer>
-    );
-  });
+  return (
+    <Observer>
+      {() => {
+        const { $id, i } = item;
+        const id = ($id && $id.trim()) || i;
+        return (
+          <Consumer>
+            {({ form }) => <>{form.getFieldDecorator(id)(component)}</>}
+          </Consumer>
+        );
+      }}
+    </Observer>
+  );
 };
 
 export default FormConsumerComponent;

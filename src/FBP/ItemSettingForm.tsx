@@ -103,6 +103,8 @@ export interface ItemSettingFormProps
 const { create, Item } = Form;
 
 const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
+  console.log('ItemSettingForm',props);
+  
   const [keyCounter, setKeyCounter] = useState({});
   useEffect(() => {
     //临时解决方案

@@ -1,6 +1,11 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
 import React, { ExoticComponent } from "react";
-import { useLocalStore, useObserver, useForceUpdate,Observer } from "mobx-react-lite";
+import {
+  useLocalStore,
+  useObserver,
+  useForceUpdate,
+  Observer
+} from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import { toJS, set } from "mobx";
 import "react-grid-layout/css/styles.css";
@@ -581,7 +586,7 @@ const FPB: React.SFC<FPBProps> = props => {
     }),
     { components: props.components }
   );
-  console.log("render",store);
+  console.log("render", store);
 
   return (
     <>
@@ -595,72 +600,78 @@ const FPB: React.SFC<FPBProps> = props => {
         maxSize={1201}
       >
         <div style={{ position: `relative` }} key={"builder"}>
-          {useObserver(() => (
-            <>
-              <Empty
-                style={{ display: store.hasLayout() ? "none" : "block" }}
-                description={"暂无元素"}
-              />
-              <Provider value={{ form: props.form }}>
-                <ResponsiveGridLayout
-                  style={{ display: !store.hasLayout() ? "none" : "block" }}
-                  // draggableHandle=".drag"
-                  className="layout"
-                  // onLayout
-                  breakpoints={{
-                    lg: 1200,
-                    md: 996,
-                    sm: 768,
-                    xs: 480,
-                    xxs: 0
-                  }}
-                  cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-                  {...store.jsConfig}
-                >
-                  {Object.entries(store.datas).map(([key, data]) => {
-                    return (
-                      <div key={key}>
-                        <ObservableBlockContainer
-                          store={store}
-                          itemKey={key}
-                          data={data}
-                        />
+          <Observer>
+            {() => (
+              <>
+                <Empty
+                  style={{ display: store.hasLayout() ? "none" : "block" }}
+                  description={"暂无元素"}
+                />
+                <Provider value={{ form: props.form }}>
+                  <ResponsiveGridLayout
+                    style={{ display: !store.hasLayout() ? "none" : "block" }}
+                    // draggableHandle=".drag"
+                    className="layout"
+                    // onLayout
+                    breakpoints={{
+                      lg: 1200,
+                      md: 996,
+                      sm: 768,
+                      xs: 480,
+                      xxs: 0
+                    }}
+                    cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                    {...store.jsConfig}
+                  >
+                    {Object.entries(store.datas).map(([key, data]) => {
+                      return (
+                        <div key={key}>
+                          <ObservableBlockContainer
+                            store={store}
+                            itemKey={key}
+                            data={data}
+                          />
 
-                        <ObservableBlock store={store} i={key} />
-                      </div>
-                    );
-                  })}
-                </ResponsiveGridLayout>
-              </Provider>
-            </>
-          ))}
+                          <ObservableBlock store={store} i={key} />
+                        </div>
+                      );
+                    })}
+                  </ResponsiveGridLayout>
+                </Provider>
+              </>
+            )}
+          </Observer>
         </div>
         <div key="setting">
-          {useObserver(() => (
-            <Drawer
-              title={store.editingItem && store.editingItem.i}
-              placement="right"
-              width={`100%`}
-              closable={store.isEditing}
-              onClose={_ => store.setEditingItem(null)}
-              visible={store.isEditing}
-              getContainer={false}
-              style={{ position: "absolute" }}
-              bodyStyle={{
-                padding: 0,
-                height: `calc( 100% - 54.6px )`,
-                overflow: `auto`
-              }}
-            >
-              <ItemSettingForm
-                item={store.editingItem}
-                onItemTypeChange={store.onItemTypeChange}
-                onItemPropsChange={store.onItemPropsChange}
-                componentGroup={store.componentGroup}
-                flatComponents={store.flatComponents}
-              />
-            </Drawer>
-          ))}
+          <Observer>
+            {() => (
+              <Drawer
+                destroyOnClose
+                title={store.editingItem && store.editingItem.i}
+                placement="right"
+                width={`100%`}
+                closable={store.isEditing}
+                onClose={_ => store.setEditingItem(null)}
+                visible={store.isEditing}
+                getContainer={false}
+                style={{ position: "absolute" }}
+                bodyStyle={{
+                  padding: 0,
+                  height: `calc( 100% - 54.6px )`,
+                  overflow: `auto`
+                }}
+              >
+                <ItemSettingForm
+                  item={store.editingItem}
+                  onItemTypeChange={store.onItemTypeChange}
+                  onItemPropsChange={store.onItemPropsChange}
+                  componentGroup={store.componentGroup}
+                  flatComponents={store.flatComponents}
+                />
+              </Drawer>
+            )}
+          </Observer>
+
           <Form layout="inline">
             <Form.Item>
               <Button
@@ -705,15 +716,17 @@ const FPB: React.SFC<FPBProps> = props => {
           </SplitPane>
         </div> */}
       </SplitPane>
-      {useObserver(() => (
-        <Modal
-          title={"设置断点"}
-          visible={store.breakPointSettingVisible}
-          onCancel={_ => store.setBreakPointSettingVisible(false)}
-        >
-          <BreakPointForm />
-        </Modal>
-      ))}
+      <Observer>
+        {() => (
+          <Modal
+            title={"设置断点"}
+            visible={store.breakPointSettingVisible}
+            onCancel={_ => store.setBreakPointSettingVisible(false)}
+          >
+            <BreakPointForm />
+          </Modal>
+        )}
+      </Observer>
     </>
   );
 };
