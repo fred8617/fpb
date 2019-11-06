@@ -54,7 +54,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
           comp.componentProps.children && //组件属性中包含子元素
           comp.componentProps.children.type === "array:component" //子元素为数组
         ) {
-          // if(comp.componentProps.children.createDefault){
+          // if(comp.componentProps.children.shouldHaveOne){
           //   //debugger
           //   chil.push({})
           // }
@@ -79,9 +79,9 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
       let finalComponent = Component && //存在Component并且
         (!component.componentProps || //没有属性或者
         !component.componentProps.children || //有属性没有子元素或者
-        !component.componentProps.children.createDefault || //或者有子元素不需要默认创建
+        !component.componentProps.children.shouldHaveOne || //或者有子元素不需要默认创建
           (component.componentProps.children && //有子元素并且需要有默认元素并且类型还是数组的需要长度大于0
-            component.componentProps.children.createDefault &&
+            component.componentProps.children.shouldHaveOne &&
             component.componentProps.children.type === "array:component" &&
             children &&
             children.length)) && (

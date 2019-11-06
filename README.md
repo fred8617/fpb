@@ -2,17 +2,20 @@
 
 # form-setting
 
-- 修复自定义设置类型显示不正确
+- 设计FPR
+- 增加componentType FPB
 - 表单值域 id 去重
 - 布局
-- ~~分组 Panel~~
 - 区块高度
 - 排序组件封装
 - 删除提示没想好加不加
-- ~~表单域 label~~
 - 表单域 option(rules)
-- 增加componentType FPB
-- 自定义元素回显
+- 表单域label布局
+- ~~分组 Panel~~
+- ~~表单域 label~~
+- ~~修复自定义设置类型显示不正确~~
+- ~~自定义元素回显~~
+- ~~createDefault定义修改~~
 
 # block
 

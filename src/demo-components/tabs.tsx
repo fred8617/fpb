@@ -14,7 +14,7 @@ const tabs: ComponentType ={
         label: "子元素",
         type: "array:component",
         Component: Tabs.TabPane,
-        createDefault: true,
+        shouldHaveOne: true,
         componentProps: {
           tab: {
             label: "标题",

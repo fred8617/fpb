@@ -1,10 +1,10 @@
 import React, { SFC } from "react";
 import { Form, Modal, Checkbox, Radio } from "antd";
 import { FormComponentProps } from "antd/lib/form";
-import { breakpointsConfig } from "./FPB";
+import { BreakpointsConfig } from "./FPB";
 const { create, Item } = Form;
 interface BreakpointFormProps extends FormComponentProps {
-  initialData: breakpointsConfig;
+  initialData: BreakpointsConfig;
 }
 const BreakpointForm: React.SFC<BreakpointFormProps> = props => {
   const { form, initialData } = props;

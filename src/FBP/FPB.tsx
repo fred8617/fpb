@@ -140,7 +140,7 @@ interface ComponentProp {
   /**
    * type为array时是否默认增加一个元素
    */
-  createDefault?: boolean;
+  shouldHaveOne?: boolean;
   /**
    * 存在组件的话可设置组件默认属性
    */
@@ -166,7 +166,7 @@ interface BaseComponentProp {
   /**
    * type为array时是否默认增加一个元素
    */
-  createDefault?: boolean;
+  shouldHaveOne?: boolean;
   /**
    * 存在组件的话可设置组件默认属性
    */
@@ -187,7 +187,7 @@ export interface ArrayComponentProp extends BaseComponentProp {
   /**
    * type为array时是否默认增加一个元素
    */
-  createDefault?: boolean;
+  shouldHaveOne?: boolean;
   /**
    * 存在组件的话可设置组件默认属性
    */
@@ -204,7 +204,7 @@ export interface ArrayStringProp extends BaseComponentProp {
   /**
    * type为array时是否默认增加一个元素
    */
-  createDefault?: boolean;
+  shouldHaveOne?: boolean;
 }
 
 export interface StringProp extends BaseComponentProp {
@@ -297,7 +297,7 @@ export interface FPBProps extends FormComponentProps {
    */
   components: ComponentType[];
 }
-export interface breakpointsConfig {
+export interface BreakpointsConfig {
   breakpoints: string[];
   cols: Cols;
 }
@@ -319,7 +319,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    *断点计算配置用于表单初始值
    */
-  breakpointsConfig: breakpointsConfig;
+  breakpointsConfig: BreakpointsConfig;
   /**
    * 布局变更
    * @param currentLayout 当前布局
@@ -792,9 +792,8 @@ const FPB: React.SFC<FPBProps> = props => {
               <Button
                 type="primary"
                 icon="plus"
-                shape="circle-outline"
                 onClick={store.createItem}
-              ></Button>
+              >添加元素</Button>
             </Form.Item>
             <Form.Item label="断点">
               <Button onClick={_ => store.setBreakpointSettingVisible(true)}>
@@ -808,14 +807,6 @@ const FPB: React.SFC<FPBProps> = props => {
               </Radio.Group>
             </Form.Item>
           </Form>
-          <div>
-            <Button
-              type="primary"
-              icon="plus"
-              shape="circle-outline"
-              onClick={store.createItem}
-            ></Button>
-          </div>
         </div>
       </SplitPane>
       <Observer>

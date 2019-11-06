@@ -258,11 +258,11 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             // if (keyCounter[propName] && keyCounter[propName]) {
             //   const itemVal = get(getFieldsValue(), propName) || [];
             //   mapedArr = keyCounter[propName];
-            //   if (prop.createDefault && itemVal.length > mapedArr.length) {
+            //   if (prop.shouldHaveOne && itemVal.length > mapedArr.length) {
             //     mapedArr = mapedArr.concat([{}]);
             //   }
             //   // mapedArr = mapedArr.concat([{}]);
-            // } else if (prop.createDefault) {
+            // } else if (prop.shouldHaveOne) {
             //   mapedArr = [{}];
             // } else {
             //   mapedArr = [];
@@ -281,7 +281,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                       setKeyCounter({ ...keyCounter });
                       return;
                     }
-                    //这里是有createDefault的情况，只走这里
+                    //这里是有shouldHaveOne的情况，只走这里
                     if (!keyCounter[propName]) {
                       keyCounter[propName] = [];
                     }
