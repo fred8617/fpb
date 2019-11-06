@@ -26,14 +26,19 @@ export interface BlockProps {
    * 开启计算高度
    */
   autoHeight: boolean;
+  /**
+   * 显示计量标签
+   */
+  showTag?: boolean;
 }
 const Block: React.SFC<BlockProps> = props => {
+  const { showTag = true } = props;
   const [sized, width, height] = useSizeMe(
     size => {
       return (
         <div style={{ position: `relative` }}>
           {/* 计量维度的tag */}
-          <CalTag width={width} height={props.height} />
+          {showTag && <CalTag width={width} height={props.height} />}
           {props.children}
         </div>
       );
@@ -48,10 +53,9 @@ const Block: React.SFC<BlockProps> = props => {
     props.onParentHeightChange
   ]);
   useEffect(() => {
-    console.log('setHeight');
-    
+    console.log("setHeight");
+
     setParent(height as number);
-   
   }, [height, props.breakpoint, props.autoHeight]);
 
   return <>{sized}</>;

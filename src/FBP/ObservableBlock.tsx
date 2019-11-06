@@ -102,6 +102,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
 
       return (
         <Block
+          showTag={!store.isPreview}
           autoHeight={autoHeight}
           height={
             props.store.operatedItem && props.store.operatedItem.i === props.i

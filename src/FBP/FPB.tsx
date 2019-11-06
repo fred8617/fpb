@@ -31,6 +31,7 @@ import ObservableBlockContainer from "./ObservableBlockContainer";
 import { FormProps, FormComponentProps } from "antd/lib/form";
 import { Provider } from "./FormContext";
 import BreakpointForm from "./BreakpointForm";
+import { RadioChangeEvent } from "antd/lib/radio";
 console.log(shortid);
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -305,6 +306,16 @@ export interface BreakpointsConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  /**
+   * 模式
+   * @enum Mode
+   */
+  mode: Mode;
+  changeMode: (e: RadioChangeEvent) => void;
+  isPreview:boolean;
+  /**
+   * 索引数据源
+   */
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
   breakpoint: "xxl" | "xl" | "lg" | "md" | "sm" | "xs";
@@ -423,6 +434,17 @@ export interface FPBItemIndexList {
   [key: string]: FBPItem;
 }
 
+export enum Mode {
+  /**
+   * 设计模式
+   */
+  DESIGN = "design",
+  /**
+   * 预览模式
+   */
+  PRIVIEW = "priview"
+}
+
 /**
  * fpb元素
  */
@@ -484,6 +506,13 @@ const FPB: React.SFC<FPBProps> = props => {
       breakpoints: defaultbreakpoints,
       cols: defaultCols,
       /*********************** */
+      mode: Mode.DESIGN,
+      get isPreview() {
+        return store.mode === Mode.PRIVIEW;
+      },
+      changeMode(e) {
+        store.mode = e.target.value;
+      },
       datas: {},
       breakpoint: null,
       defaultFormField: true,
@@ -544,8 +573,10 @@ const FPB: React.SFC<FPBProps> = props => {
             onResize: store.onResize,
             onResizeStop: store.onResizeStop,
             //此处是个问题
-            isDraggable: store.editingItem === null,
-            isResizable: store.editingItem === null
+            isDraggable:
+              store.editingItem === null && !store.isPreview,
+            isResizable:
+              store.editingItem === null && !store.isPreview
           },
           { recurseEverything: true }
         );
@@ -741,11 +772,17 @@ const FPB: React.SFC<FPBProps> = props => {
                     {Object.entries(store.datas).map(([key, data]) => {
                       return (
                         <div key={key}>
-                          <ObservableBlockContainer
-                            store={store}
-                            itemKey={key}
-                            data={data}
-                          />
+                          <Observer>
+                            {() =>
+                              store.mode === Mode.DESIGN && (
+                                <ObservableBlockContainer
+                                  store={store}
+                                  itemKey={key}
+                                  data={data}
+                                />
+                              )
+                            }
+                          </Observer>
 
                           <ObservableBlock store={store} i={key} />
                         </div>
@@ -789,11 +826,9 @@ const FPB: React.SFC<FPBProps> = props => {
 
           <Form layout="inline">
             <Form.Item>
-              <Button
-                type="primary"
-                icon="plus"
-                onClick={store.createItem}
-              >添加元素</Button>
+              <Button type="primary" icon="plus" onClick={store.createItem}>
+                添加元素
+              </Button>
             </Form.Item>
             <Form.Item label="断点">
               <Button onClick={_ => store.setBreakpointSettingVisible(true)}>
@@ -801,10 +836,18 @@ const FPB: React.SFC<FPBProps> = props => {
               </Button>
             </Form.Item>
             <Form.Item>
-              <Radio.Group buttonStyle="solid">
-                <Radio.Button>设计</Radio.Button>
-                <Radio.Button>预览</Radio.Button>
-              </Radio.Group>
+              <Observer>
+                {() => (
+                  <Radio.Group
+                    buttonStyle="solid"
+                    onChange={store.changeMode}
+                    value={store.mode}
+                  >
+                    <Radio.Button value={Mode.DESIGN}>设计</Radio.Button>
+                    <Radio.Button value={Mode.PRIVIEW}>预览</Radio.Button>
+                  </Radio.Group>
+                )}
+              </Observer>
             </Form.Item>
           </Form>
         </div>
