@@ -455,6 +455,10 @@ export interface FBPItem {
    * 表单域id,默认为i
    */
   $id: string;
+  /**
+   * 表单域的label
+   */
+  label?: string;
 }
 const breakpointsStandard: Breakpoints = {
   xl: 1600,
@@ -616,6 +620,7 @@ const FPB: React.SFC<FPBProps> = props => {
           store.editingItem.Component = null;
           store.editingItem.componentProps = null;
           store.editingItem.isFormField = null;
+          delete store.editingItem.label;
           return;
         }
         const component = store.flatComponents[value];
@@ -624,6 +629,9 @@ const FPB: React.SFC<FPBProps> = props => {
         store.editingItem.componentProps = {};
         if (component.formField) {
           store.editingItem.isFormField = store.defaultFormField;
+          // store.editingItem.label = "";
+          set(store.editingItem, "label", "");
+          // .label = '';
           //这里默认给i值吧
           // store.editingItem.$id = shortid.generate()
         }
@@ -809,19 +817,6 @@ const FPB: React.SFC<FPBProps> = props => {
             ></Button>
           </div>
         </div>
-        {/* <div key={"designer"}>
-          <SplitPane
-            // onDragFinished={doWindowResize}
-            paneStyle={{ position: `relative` }}
-            style={{ position: "relative" }}
-            defaultSize={`50%`}
-            minSize={200}
-            maxSize={`50%`}
-          >
-            <div key="tree"></div>
-            
-          </SplitPane>
-        </div> */}
       </SplitPane>
       <Observer>
         {() => (

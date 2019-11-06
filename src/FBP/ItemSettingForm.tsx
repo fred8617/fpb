@@ -16,11 +16,13 @@ import {
 } from "antd";
 import { FormComponentProps } from "antd/lib/form";
 import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./FPB";
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { get } from "lodash";
 import CommonInput from "./CommonInput";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useSizeMe from "./useSizeMe";
+import { toJS } from "mobx";
+import { getObjectKeysWhenIsArray } from "./utils";
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
 const { Panel } = Collapse;
@@ -103,14 +105,35 @@ export interface ItemSettingFormProps
 const { create, Item } = Form;
 
 const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
-  console.log('ItemSettingForm',props);
-  
-  const [keyCounter, setKeyCounter] = useState({});
+  console.log("ItemSettingForm", toJS(props, { recurseEverything: true }));
+
+  const [keyCounter, setKeyCounter] = useState(
+    (props.item &&
+      getObjectKeysWhenIsArray(
+        toJS(props.item.componentProps) || {},
+        "componentProps"
+      )) ||
+      {}
+  );
+  // useEffect(() => {
+  //   props.item &&
+  //     console.log(
+  //       toJS(props.item.componentProps),
+  //       getObjectKeysWhenIsArray(
+  //         toJS(props.item.componentProps) || {},
+  //         "componentProps"
+  //       )
+  //     );
+  //   console.log(keyCounter);
+  // });
   useEffect(() => {
+    console.log(keyCounter);
+
     //临时解决方案
     Object.keys(keyCounter).length &&
+      props.form.getFieldsValue().componentProps &&
       props.form.setFieldsValue({
-        componentProps: props.form.getFieldsValue().componentProps || {}
+        componentProps: props.form.getFieldsValue().componentProps
       });
   }, [keyCounter]);
   const { form, item, onItemPropsChange } = props;
@@ -141,6 +164,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   //组件类型
   const componentTypeDec = getFieldDecorator("componentId", {
     initialValue: initialValue.componentId
+    //preserve: true
   });
   /**
    * 自适应高度
@@ -148,6 +172,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   const autoHeightDec = getFieldDecorator("autoHeight", {
     valuePropName: "checked",
     initialValue: initialValue.autoHeight
+    //preserve: true
   });
   /**
    * 是否作为表单域
@@ -155,18 +180,26 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   const isFormFieldDec = getFieldDecorator("isFormField", {
     valuePropName: "checked",
     initialValue: initialValue.isFormField
+    //preserve: true
   });
   /**
-   * 是否作为表单域
+   * 是否作为表单域id
    */
   const $idDec = getFieldDecorator("$id", {
     initialValue: initialValue.$id
+    //preserve: true
+  });
+  /**
+   * 是否作为表单域label
+   */
+  const labelDec = getFieldDecorator("label", {
+    initialValue: initialValue.label
+    //preserve: true
   });
   const { componentId, isFormField } = getFieldsValue();
   // console.log(props.flatComponents[componentId]);
   const { componentProps = {}, formField } =
     props.flatComponents[componentId] || {};
-  console.log("cprops", getFieldsValue(), componentProps);
   const sortProps = ({ destination, source }) => {
     if (!destination) {
       return;
@@ -194,175 +227,199 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     componentProps: ComponentProps,
     prefix = "componentProps"
   ) => {
-    return Object.entries(componentProps).map(([name, prop], i) => {
-      let setting;
-      const propName = `${prefix}.${name}`;
+    const componentPropsEntries = Object.entries(componentProps);
+    return [
+      ...componentPropsEntries
+        .filter(([, prop]) => prop.type.indexOf("array") < 0)
+        .map(([name, prop], i) => {
+          let setting;
+          const propName = `${prefix}.${name}`;
+          setting = (
+            <Item label={prop.label} key={propName}>
+              {getFieldDecorator(propName, {
+                initialValue: get(item, propName)
+                //preserve: true
+              })(<CommonInput />)}
+            </Item>
+          );
+          return setting;
+        }),
+      <Collapse key={`settings`} accordion destroyInactivePanel={false}>
+        {componentPropsEntries
+          .filter(([, prop]) => prop.type.indexOf("array") >= 0)
+          .map(([name, prop], i) => {
+            let setting;
+            const propName = `${prefix}.${name}`;
 
-      if (prop.type === "string") {
-        setting = (
-          <Item label={prop.label} key={propName}>
-            {getFieldDecorator(propName, { initialValue: "" })(<CommonInput />)}
-          </Item>
-        );
-      } else if (
-        prop.type === "array:component" ||
-        prop.type === "array:string"
-      ) {
-        // const props = getFieldsValue()[prefix];
-        // const prop = (props && props[name]) || [];
-        let mapedArr;
-        if (keyCounter[propName] && keyCounter[propName]) {
-          mapedArr = keyCounter[propName];
-          if (prop.createDefault) {
-            mapedArr = mapedArr.concat([{}]);
-          }
-        } else if (prop.createDefault) {
-          mapedArr = [{}];
-        } else {
-          mapedArr = [];
-        }
+            // const props = getFieldsValue()[prefix];
+            // const prop = (props && props[name]) || [];
+            let mapedArr;
+            mapedArr = keyCounter[propName] || [];
+            // if (keyCounter[propName] && keyCounter[propName]) {
+            //   const itemVal = get(getFieldsValue(), propName) || [];
+            //   mapedArr = keyCounter[propName];
+            //   if (prop.createDefault && itemVal.length > mapedArr.length) {
+            //     mapedArr = mapedArr.concat([{}]);
+            //   }
+            //   // mapedArr = mapedArr.concat([{}]);
+            // } else if (prop.createDefault) {
+            //   mapedArr = [{}];
+            // } else {
+            //   mapedArr = [];
+            // }
 
-        // debugger;
-        setting = (
-          <Panel header={prop.label} key={`setting${i}`}>
-            <Button
-              icon="plus"
-              onClick={e => {
-                const props = get(getFieldsValue(), prefix) || {};
-                if (!props[name]) {
-                  //没有则默认设置为空数组并默认添加一个
-                  keyCounter[propName] = [{}];
-                  setKeyCounter({ ...keyCounter });
-                  return;
-                }
-                //这里是有createDefault的情况，只走这里
-                if (!keyCounter[propName]) {
-                  keyCounter[propName] = [];
-                }
-                keyCounter[propName].push({});
-                setKeyCounter({ ...keyCounter });
-              }}
-            >
-              添加{prop.label}
-            </Button>
-            {(prop.type === "array:component" && (
-              <DragDropContext onDragEnd={sortProps}>
-                <Droppable droppableId={propName}>
-                  {provided => {
-                    return (
-                      <div {...provided.droppableProps} ref={provided.innerRef}>
-                        {mapedArr.map((p, pi) => {
-                          const key = `${propName}[${pi}]`;
-
-                          
-                          return (
-                            <Draggable key={key} draggableId={key} index={pi}>
-                              {provided => {
-                                console.log(provided.draggableProps);
-                                return (
-                                  <div
-                                   
-                                    key={key}
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    // className="ant-form ant-form-inline"
-                                  >
-                                    <Card
-                                     style={{ margin: `5px 0` }}
-                                      key={`car${pi}`}
-                                      actions={[
-                                        <div {...provided.dragHandleProps}>
-                                          <Icon type="drag" key={"drag"} />
-                                        </div>,
-                                        <Icon
-                                          type="delete"
-                                          key={"delete"}
-                                          onClick={_ =>
-                                            deleteProp(propName, pi)
-                                          }
-                                        />
-                                      ]}
-                                    >
-                                      {createComponentPropsForm(
-                                        componentProps[name].componentProps,
-                                        `${propName}[${pi}].componentProps`
-                                      )}
-                                    </Card>
-                                  </div>
-                                );
-                              }}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    );
+            // debugger;
+            setting = (
+              <Panel header={prop.label} key={`setting${i}`}>
+                <Button
+                  icon="plus"
+                  onClick={e => {
+                    const props = get(item, prefix) || {};
+                    if (!props[name]) {
+                      //没有则默认设置为空数组并默认添加一个
+                      keyCounter[propName] = [{}];
+                      setKeyCounter({ ...keyCounter });
+                      return;
+                    }
+                    //这里是有createDefault的情况，只走这里
+                    if (!keyCounter[propName]) {
+                      keyCounter[propName] = [];
+                    }
+                    keyCounter[propName].push({});
+                    setKeyCounter({ ...keyCounter });
                   }}
-                </Droppable>
-              </DragDropContext>
-            )) ||
-              (prop.type === "array:string" && (
-                <DragDropContext onDragEnd={sortProps}>
-                  <Droppable droppableId={propName}>
-                    {provided => {
-                      return (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                        >
-                          {mapedArr.map((p, pi) => {
-                            const key = `${propName}[${pi}]`;
-                            // console.log(key);
-                            return (
-                              <Draggable key={key} draggableId={key} index={pi}>
-                                {provided => {
-                                  return (
-                                    <div
-                                      key={key}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      className="ant-form ant-form-inline"
-                                    >
-                                      <Item>
-                                        <div {...provided.dragHandleProps}>
-                                          <Icon type="drag" />
+                >
+                  添加{prop.label}
+                </Button>
+                {(prop.type === "array:component" && (
+                  <DragDropContext onDragEnd={sortProps}>
+                    <Droppable droppableId={propName}>
+                      {provided => {
+                        return (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                          >
+                            {mapedArr.map((p, pi) => {
+                              const key = `${propName}[${pi}]`;
+
+                              return (
+                                <Draggable
+                                  key={key}
+                                  draggableId={key}
+                                  index={pi}
+                                >
+                                  {provided => {
+                                    return (
+                                      <div
+                                        key={key}
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        // className="ant-form ant-form-inline"
+                                      >
+                                        <Card
+                                          style={{ margin: `5px 0` }}
+                                          key={`car${pi}`}
+                                          actions={[
+                                            <div {...provided.dragHandleProps}>
+                                              <Icon type="drag" key={"drag"} />
+                                            </div>,
+                                            <Icon
+                                              type="delete"
+                                              key={"delete"}
+                                              onClick={_ =>
+                                                deleteProp(propName, pi)
+                                              }
+                                            />
+                                          ]}
+                                        >
+                                          {createComponentPropsForm(
+                                            componentProps[name].componentProps,
+                                            `${propName}[${pi}].componentProps`
+                                          )}
+                                        </Card>
+                                      </div>
+                                    );
+                                  }}
+                                </Draggable>
+                              );
+                            })}
+                            {provided.placeholder}
+                          </div>
+                        );
+                      }}
+                    </Droppable>
+                  </DragDropContext>
+                )) ||
+                  (prop.type === "array:string" && (
+                    <DragDropContext onDragEnd={sortProps}>
+                      <Droppable droppableId={propName}>
+                        {provided => {
+                          return (
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                            >
+                              {mapedArr.map((p, pi) => {
+                                const key = `${propName}[${pi}]`;
+                                // console.log(key);
+                                return (
+                                  <Draggable
+                                    key={key}
+                                    draggableId={key}
+                                    index={pi}
+                                  >
+                                    {provided => {
+                                      return (
+                                        <div
+                                          key={key}
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          className="ant-form ant-form-inline"
+                                        >
+                                          <Item>
+                                            <div {...provided.dragHandleProps}>
+                                              <Icon type="drag" />
+                                            </div>
+                                          </Item>
+                                          <Item>
+                                            {getFieldDecorator(key, {
+                                              //preserve: true,
+                                              initialValue: get(item, key)
+                                            })(<CommonInput />)}
+                                          </Item>
+                                          <Item>
+                                            <Icon
+                                              onClick={_ =>
+                                                deleteProp(propName, pi)
+                                              }
+                                              type="delete"
+                                              style={{
+                                                color: `red`,
+                                                cursor: `pointer`
+                                              }}
+                                            />
+                                          </Item>
                                         </div>
-                                      </Item>
-                                      <Item>
-                                        {getFieldDecorator(key, {
-                                          initialValue: ""
-                                        })(<CommonInput />)}
-                                      </Item>
-                                      <Item>
-                                        <Icon
-                                          onClick={_ =>
-                                            deleteProp(propName, pi)
-                                          }
-                                          type="delete"
-                                          style={{
-                                            color: `red`,
-                                            cursor: `pointer`
-                                          }}
-                                        />
-                                      </Item>
-                                    </div>
-                                  );
-                                }}
-                              </Draggable>
-                            );
-                          })}
-                          {provided.placeholder}
-                        </div>
-                      );
-                    }}
-                  </Droppable>
-                </DragDropContext>
-              ))}
-          </Panel>
-        );
-      }
-      return setting;
-    });
+                                      );
+                                    }}
+                                  </Draggable>
+                                );
+                              })}
+                              {provided.placeholder}
+                            </div>
+                          );
+                        }}
+                      </Droppable>
+                    </DragDropContext>
+                  ))}
+              </Panel>
+            );
+
+            return setting;
+          })}
+      </Collapse>
+    ];
   };
 
   const propsDecModels = createComponentPropsForm(componentProps);
@@ -371,7 +428,11 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     const { width } = size;
     return (
       <Form {...getFormItemCol(width)}>
-        <Collapse accordion defaultActiveKey={["1"]}>
+        <Collapse
+          accordion
+          defaultActiveKey={["1"]}
+          destroyInactivePanel={false}
+        >
           <Panel header={`基础设置`} key="1">
             <Row gutter={15}>
               <Col {...getCol(width, Size.MIDDLE)}>
@@ -440,20 +501,27 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                     </Item>
                   </Col>
                   {isFormField && (
-                    <Col {...getCol(width, Size.MIDDLE)}>
-                      <Item
-                        label={
-                          <span>
-                            id&nbsp;
-                            <Tooltip title="表单域传值字段，不填写默认为区块id，需保证唯一">
-                              <Icon type="question-circle-o" />
-                            </Tooltip>
-                          </span>
-                        }
-                      >
-                        {$idDec(<CommonInput placeholder={"请填写id"} />)}
-                      </Item>
-                    </Col>
+                    <>
+                      <Col {...getCol(width, Size.MIDDLE)}>
+                        <Item
+                          label={
+                            <span>
+                              id&nbsp;
+                              <Tooltip title="表单域传值字段，不填写默认为区块id，需保证唯一">
+                                <Icon type="question-circle-o" />
+                              </Tooltip>
+                            </span>
+                          }
+                        >
+                          {$idDec(<CommonInput placeholder={"请填写id"} />)}
+                        </Item>
+                      </Col>
+                      <Col {...getCol(width, Size.MIDDLE)}>
+                        <Item label={<span>label</span>}>
+                          {labelDec(<CommonInput placeholder={""} />)}
+                        </Item>
+                      </Col>
+                    </>
                   )}
                 </Fragment>
               )}
@@ -462,7 +530,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           </Panel>
           {propsDecModels.length && (
             <Panel header={"自定义设置"} key="2">
-              <Collapse accordion>{propsDecModels}</Collapse>
+              {propsDecModels}
             </Panel>
           )}
         </Collapse>
