@@ -108,7 +108,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
               ? props.store.operatedItem.h
               : props.store.getItemHeight(props.i)
           }
-          breakPoint={props.store.breakPoint}
+          breakpoint={props.store.breakpoint}
           onParentHeightChange={height => {
             props.store.caclHeight(height, props.i);
           }}

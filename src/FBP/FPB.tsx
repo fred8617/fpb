@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
-import React, { ExoticComponent } from "react";
+import React, { ExoticComponent, useRef } from "react";
 import {
   useLocalStore,
   useObserver,
@@ -30,18 +30,35 @@ import ObservableBlock from "./ObservableBlock";
 import ObservableBlockContainer from "./ObservableBlockContainer";
 import { FormProps, FormComponentProps } from "antd/lib/form";
 import { Provider } from "./FormContext";
-import BreakPointForm from "./BreakPointForm";
+import BreakpointForm from "./BreakpointForm";
 console.log(shortid);
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
-const emptyLayouts: BreakPointsLayouts = {
+const emptyLayouts: breakpointsLayouts = {
+  xxl: [],
+  xl: [],
   lg: [],
   md: [],
   sm: [],
-  xs: [],
-  xxs: []
+  xs: []
 };
-
+interface Breakpoints {
+  xxl?: number;
+  xl?: number;
+  lg?: number;
+  md?: number;
+  sm?: number;
+  xs?: number;
+}
+type ColNumber = 1 | 2 | 3 | 4 | 6 | 8 | 12 | 24;
+interface Cols {
+  xxl?: ColNumber;
+  xl?: ColNumber;
+  lg?: ColNumber;
+  md?: ColNumber;
+  sm?: ColNumber;
+  xs?: ColNumber;
+}
 /**
  * RGL的基础配置
  */
@@ -57,7 +74,15 @@ export interface RGLConfig {
   /**
    *元素的断点布局
    */
-  layouts: BreakPointsLayouts;
+  layouts: breakpointsLayouts;
+  /**
+   * 响应断点宽度
+   */
+  breakpoints: Breakpoints;
+  /**
+   * 断点对应格子数
+   */
+  cols: Cols;
 }
 
 /**
@@ -90,12 +115,13 @@ export interface RGLItem {
 /**
  * 断点布局
  */
-export interface BreakPointsLayouts {
+export interface breakpointsLayouts {
+  xxl?: RGLItem[];
+  xl?: RGLItem[];
   lg?: RGLItem[];
   md?: RGLItem[];
   sm?: RGLItem[];
   xs?: RGLItem[];
-  xxs?: RGLItem[];
 }
 
 interface ComponentProp {
@@ -261,7 +287,7 @@ export interface FPBProps extends FormComponentProps {
   /**
    * 默认布局
    */
-  defaultLayouts?: BreakPointsLayouts;
+  defaultLayouts?: breakpointsLayouts;
   /**
    * 左侧布局的默认宽度
    */
@@ -271,26 +297,41 @@ export interface FPBProps extends FormComponentProps {
    */
   components: ComponentType[];
 }
-
+export interface breakpointsConfig {
+  breakpoints: string[];
+  cols: Cols;
+}
 /**
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
-  breakPoint: "lg" | "md" | "sm" | "xs" | "xxs";
+  breakpoint: "xxl" | "xl" | "lg" | "md" | "sm" | "xs";
+  /**
+   * 断点数组的key
+   */
+  breakpointsArr: string[];
+  /**
+   * 获取当前所有断点的布局数组
+   */
+  computedLayout: breakpointsLayouts;
+  /**
+   *断点计算配置用于表单初始值
+   */
+  breakpointsConfig: breakpointsConfig;
   /**
    * 布局变更
    * @param currentLayout 当前布局
    * @param layouts 变更后布局
    */
-  setLayouts(currentLayout: BreakPointsLayouts, layouts: BreakPointsLayouts);
+  setLayouts(currentLayout: breakpointsLayouts, layouts: breakpointsLayouts);
   /**
    * 设置当前断点
-   * @param breakPoint 当前断点
+   * @param breakpoint 当前断点
    * @param col 布局列
    */
-  setBreakPoint(breakPoint, col);
+  setBreakpoint(breakpoint, col);
   /**
    * RGLConfig
    */
@@ -309,7 +350,11 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * 根据主键查询当前断点下的item
    * @param key 主键
    */
-  findItem(key): RGLItem;
+  findItem(key: string): RGLItem;
+  /**
+   * 找出全部断点下的当前item
+   */
+  findItemInAllBreakpoints(key: string): { [point: string]: RGLItem };
   /**
    * 获取元素当前响应布局高度高度
    * @param key 主键
@@ -353,8 +398,12 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    * 断点设置弹出
    */
-  breakPointSettingVisible: boolean;
-  setBreakPointSettingVisible(breakPointSettingVisible: boolean);
+  breakpointSettingVisible: boolean;
+  setBreakpointSettingVisible(breakpointSettingVisible: boolean);
+  /**
+   * 设置布局断点配置
+   */
+  setBreakpointConfig();
 }
 export type RGLItemCallBack = (
   layout: RGLItem[],
@@ -407,21 +456,50 @@ export interface FBPItem {
    */
   $id: string;
 }
-
+const breakpointsStandard: Breakpoints = {
+  xl: 1600,
+  lg: 1200,
+  md: 992,
+  sm: 768,
+  xs: 576
+  // xs: 0
+};
+const defaultbreakpoints: Breakpoints = {
+  lg: breakpointsStandard.lg,
+  md: breakpointsStandard.md
+};
+const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
 const FPB: React.SFC<FPBProps> = props => {
   const force = useForceUpdate();
+  const breakpointFormRef = useRef<any>();
   const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
     source => ({
       rowHeight: 1,
       margin: [0, 0],
       layouts: emptyLayouts,
+      breakpoints: defaultbreakpoints,
+      cols: defaultCols,
       /*********************** */
       datas: {},
+      breakpoint: null,
       defaultFormField: true,
+      get breakpointsConfig() {
+        return {
+          breakpoints: store.breakpointsArr,
+          cols: store.cols
+        };
+      },
+      get breakpointsArr() {
+        return Object.keys(store.breakpoints);
+      },
+      get computedLayout() {
+        return Object.fromEntries(
+          store.breakpointsArr.map(point => [point, store.layouts[point] || []])
+        );
+      },
       hasLayout() {
         return Object.keys(store.datas).length !== 0;
       },
-      breakPoint: null,
       setLayouts(_currentLayout, layouts) {
         if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
           return;
@@ -429,18 +507,35 @@ const FPB: React.SFC<FPBProps> = props => {
         console.log("layout-change", toJS(store.layouts), layouts);
         store.layouts = layouts;
       },
-      setBreakPoint(breakPoint, _col) {
-        console.log("setBreakPoint", breakPoint);
+      setBreakpoint(breakpoint, _col) {
+        console.log("setBreakpoint", breakpoint);
 
-        store.breakPoint = breakPoint;
+        store.breakpoint = breakpoint;
+      },
+      setBreakpointConfig() {
+        breakpointFormRef.current.validateFieldsAndScroll((err, values) => {
+          if (err) {
+            return;
+          }
+          store.breakpoints = Object.fromEntries(
+            values.breakpoints.map(point => [point, breakpointsStandard[point]])
+          );
+          store.cols = {
+            ...store.cols,
+            ...values.cols
+          };
+          store.setBreakpointSettingVisible(false);
+        });
       },
       get jsConfig() {
         return toJS(
           {
-            layouts: store.layouts,
+            layouts: store.computedLayout,
             rowHeight: store.rowHeight,
             margin: store.margin,
-            onBreakpointChange: store.setBreakPoint,
+            breakpoints: store.breakpoints,
+            cols: store.cols,
+            onBreakpointChange: store.setBreakpoint,
             onLayoutChange: store.setLayouts,
             onResize: store.onResize,
             onResizeStop: store.onResizeStop,
@@ -462,7 +557,15 @@ const FPB: React.SFC<FPBProps> = props => {
         store.setOperatedItem(null);
       },
       findItem(key) {
-        return store.layouts[store.breakPoint].find(b => b.i === key);
+        return store.layouts[store.breakpoint].find(b => b.i === key);
+      },
+      findItemInAllBreakpoints(key) {
+        return Object.fromEntries(
+          Object.entries(store.layouts).map(([point, items]) => [
+            point,
+            items.find(item => item.i === key)
+          ])
+        );
       },
       getItemHeight(key) {
         const item = store.findItem(key);
@@ -471,9 +574,15 @@ const FPB: React.SFC<FPBProps> = props => {
       caclHeight(height, key) {
         const itemData = store.datas[key];
         const item = store.findItem(key);
+        const breakpointsItems = store.findItemInAllBreakpoints(key);
         if (!itemData.autoHeight) {
-          delete item.maxH;
-          delete item.minH;
+          Object.values(breakpointsItems).forEach(item => {
+            if (item) {
+              delete item.maxH;
+              delete item.minH;
+            }
+          });
+
           return;
         }
         if (height === null || height === undefined) {
@@ -487,7 +596,7 @@ const FPB: React.SFC<FPBProps> = props => {
       },
       createItem() {
         const i = shortid.generate();
-        // store.layouts[store.breakPoint].push(item);
+        // store.layouts[store.breakpoint].push(item);
         const newItem: FBPItem = {
           i,
           Component: null,
@@ -579,9 +688,9 @@ const FPB: React.SFC<FPBProps> = props => {
         });
         return returnGroup;
       },
-      breakPointSettingVisible: false,
-      setBreakPointSettingVisible(breakPointSettingVisible) {
-        store.breakPointSettingVisible = breakPointSettingVisible;
+      breakpointSettingVisible: false,
+      setBreakpointSettingVisible(breakpointSettingVisible) {
+        store.breakpointSettingVisible = breakpointSettingVisible;
       }
     }),
     { components: props.components }
@@ -597,7 +706,7 @@ const FPB: React.SFC<FPBProps> = props => {
         style={{ position: "relative" }}
         defaultSize={props.contentDefaultSize || `50%`}
         minSize={479}
-        maxSize={1201}
+        maxSize={1600}
       >
         <div style={{ position: `relative` }} key={"builder"}>
           <Observer>
@@ -613,14 +722,12 @@ const FPB: React.SFC<FPBProps> = props => {
                     // draggableHandle=".drag"
                     className="layout"
                     // onLayout
-                    breakpoints={{
-                      lg: 1200,
-                      md: 996,
-                      sm: 768,
-                      xs: 480,
-                      xxs: 0
-                    }}
-                    cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                    // xs	<576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+                    // sm	≥576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+                    // md	≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+                    // lg	≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+                    // xl	≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+                    // xxl
                     {...store.jsConfig}
                   >
                     {Object.entries(store.datas).map(([key, data]) => {
@@ -682,7 +789,7 @@ const FPB: React.SFC<FPBProps> = props => {
               ></Button>
             </Form.Item>
             <Form.Item label="断点">
-              <Button onClick={_ => store.setBreakPointSettingVisible(true)}>
+              <Button onClick={_ => store.setBreakpointSettingVisible(true)}>
                 断点
               </Button>
             </Form.Item>
@@ -719,11 +826,18 @@ const FPB: React.SFC<FPBProps> = props => {
       <Observer>
         {() => (
           <Modal
+            centered
+            destroyOnClose
+            maskClosable={false}
             title={"设置断点"}
-            visible={store.breakPointSettingVisible}
-            onCancel={_ => store.setBreakPointSettingVisible(false)}
+            visible={store.breakpointSettingVisible}
+            onOk={store.setBreakpointConfig}
+            onCancel={_ => store.setBreakpointSettingVisible(false)}
           >
-            <BreakPointForm />
+            <BreakpointForm
+              ref={breakpointFormRef}
+              initialData={store.breakpointsConfig}
+            />
           </Modal>
         )}
       </Observer>

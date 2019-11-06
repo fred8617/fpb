@@ -1,7 +1,7 @@
 import {
   RGLConfig,
   FPBItemIndexList,
-  BreakPointsLayouts,
+  breakpointsLayouts,
   RGLItem,
   FBPItem,
   RGLItemCallBack,
@@ -27,19 +27,19 @@ interface FPBStore extends RGLConfig, ItemSettingProps {
   force: any;
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
-  breakPoint: "lg" | "md" | "sm" | "xs" | "xxs";
+  breakpoint: "lg" | "md" | "sm" | "xs" | "xxs";
   /**
    * 布局变更
    * @param currentLayout 当前布局
    * @param layouts 变更后布局
    */
-  setLayouts(currentLayout: BreakPointsLayouts, layouts: BreakPointsLayouts);
+  setLayouts(currentLayout: breakpointsLayouts, layouts: breakpointsLayouts);
   /**
    * 设置当前断点
-   * @param breakPoint 当前断点
+   * @param breakpoint 当前断点
    * @param col 布局列
    */
-  setBreakPoint(breakPoint, col);
+  setbreakpoint(breakpoint, col);
   /**
    * RGLConfig
    */
@@ -102,10 +102,10 @@ interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    * 断点设置弹出
    */
-  breakPointSettingVisible: boolean;
-  setBreakPointSettingVisible(breakPointSettingVisible: boolean);
+  breakpointSettingVisible: boolean;
+  setbreakpointSettingVisible(breakpointSettingVisible: boolean);
 }
-const emptyLayouts: BreakPointsLayouts = {
+const emptyLayouts: breakpointsLayouts = {
   lg: [],
   md: [],
   sm: [],
@@ -128,7 +128,7 @@ export class Store implements FPBStore {
   @action hasLayout = () => {
     return Object.keys(this.datas).length !== 0;
   };
-  @observable breakPoint = null;
+  @observable breakpoint = null;
   @action setLayouts = (_currentLayout, layouts) => {
     if (JSON.stringify(this.layouts) == JSON.stringify(layouts)) {
       return;
@@ -136,10 +136,10 @@ export class Store implements FPBStore {
     console.log("layout-change", toJS(this.layouts), layouts);
     this.layouts = layouts;
   };
-  @action setBreakPoint = (breakPoint, _col) => {
-    console.log("setBreakPoint", breakPoint);
+  @action setbreakpoint = (breakpoint, _col) => {
+    console.log("setbreakpoint", breakpoint);
 
-    this.breakPoint = breakPoint;
+    this.breakpoint = breakpoint;
   };
   @computed get jsConfig() {
     return toJS(
@@ -147,7 +147,7 @@ export class Store implements FPBStore {
         layouts: this.layouts,
         rowHeight: this.rowHeight,
         margin: this.margin,
-        onBreakpointChange: this.setBreakPoint,
+        onbreakpointChange: this.setbreakpoint,
         onLayoutChange: this.setLayouts,
         onResize: this.onResize,
         onResizeStop: this.onResizeStop,
@@ -169,7 +169,7 @@ export class Store implements FPBStore {
     this.setOperatedItem(null);
   };
   @action findItem = key => {
-    return this.layouts[this.breakPoint].find(b => b.i === key);
+    return this.layouts[this.breakpoint].find(b => b.i === key);
   };
   @action getItemHeight = key => {
     const item = this.findItem(key);
@@ -195,7 +195,7 @@ export class Store implements FPBStore {
   @action createItem = () => {
     debugger;
     const i = shortid.generate();
-    // this.layouts[this.breakPoint].push(item);
+    // this.layouts[this.breakpoint].push(item);
     const newItem: FBPItem = {
       i,
       Component: null,
@@ -290,9 +290,9 @@ export class Store implements FPBStore {
     });
     return returnGroup;
   }
-  @observable breakPointSettingVisible: false;
-  @action setBreakPointSettingVisible = breakPointSettingVisible => {
-    this.breakPointSettingVisible = breakPointSettingVisible;
+  @observable breakpointSettingVisible: false;
+  @action setbreakpointSettingVisible = breakpointSettingVisible => {
+    this.breakpointSettingVisible = breakpointSettingVisible;
   };
 }
 const storeContext = React.createContext({  });

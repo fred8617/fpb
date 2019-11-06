@@ -21,7 +21,7 @@ export interface BlockProps {
   /**
    * 断点
    */
-  breakPoint: string;
+  breakpoint: string;
   /**
    * 开启计算高度
    */
@@ -52,7 +52,7 @@ const Block: React.SFC<BlockProps> = props => {
     
     setParent(height as number);
    
-  }, [height, props.breakPoint, props.autoHeight]);
+  }, [height, props.breakpoint, props.autoHeight]);
 
   return <>{sized}</>;
 };
