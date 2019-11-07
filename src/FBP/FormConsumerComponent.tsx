@@ -2,7 +2,7 @@ import { SFC, useEffect } from "react";
 import { Form } from "antd";
 import { useObserver, Observer } from "mobx-react-lite";
 import { Consumer } from "./FormContext";
-import { FBPItem } from "./FPB";
+import { FBPItem } from "./useFPBStore";
 import React from "react";
 const { Item } = Form;
 /**

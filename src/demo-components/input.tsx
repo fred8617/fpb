@@ -1,5 +1,5 @@
 import { Input } from "antd";
-import { ComponentType } from "FBP/FPB";
+import { ComponentType } from "FBP/useFPBStore";
 const input:ComponentType={
     id: "antd-input",
     label: "输入框",

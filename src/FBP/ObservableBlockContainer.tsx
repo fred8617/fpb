@@ -1,6 +1,6 @@
 import React from "react";
 import { Popover, Form, Button } from "antd";
-import { FPBStore, FBPItem } from "./FPB";
+import { FPBStore, FBPItem } from "./useFPBStore";
 import { useObserver, Observer } from "mobx-react-lite";
 export interface ObservableBlockContainerProps {
   /**

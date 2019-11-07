@@ -15,7 +15,7 @@ import {
   Card
 } from "antd";
 import { FormComponentProps } from "antd/lib/form";
-import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./FPB";
+import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./useFPBStore";
 import React, { useState, useEffect, Fragment, useRef } from "react";
 import { get } from "lodash";
 import CommonInput from "./CommonInput";

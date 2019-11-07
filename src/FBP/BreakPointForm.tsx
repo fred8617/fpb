@@ -1,7 +1,7 @@
 import React, { SFC } from "react";
 import { Form, Modal, Checkbox, Radio } from "antd";
 import { FormComponentProps } from "antd/lib/form";
-import { BreakpointsConfig } from "./FPB";
+import { BreakpointsConfig } from "./useFPBStore";
 const { create, Item } = Form;
 interface BreakpointFormProps extends FormComponentProps {
   initialData: BreakpointsConfig;

@@ -1,5 +1,5 @@
 import React, { SFC } from "react";
-import { FPBStore, ArrayComponentProp } from "./FPB";
+import { FPBStore, ArrayComponentProp } from "./useFPBStore";
 import { useObserver, Observer } from "mobx-react-lite";
 import Block from "./Block";
 import { toJS } from "mobx";
