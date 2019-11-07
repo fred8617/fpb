@@ -48,7 +48,7 @@ const ObservableBlockContainer: React.SFC<
                         />
                       </Form.Item>
                       <Form.Item>
-                        <Button icon="delete" type="danger" />
+                        <Button icon="delete" type="danger" onClick={_=>props.store.deleteItem(props.itemKey)}/>
                       </Form.Item>
                     </Form>
                   </>

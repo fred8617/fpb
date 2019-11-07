@@ -15,7 +15,12 @@ import {
   Card
 } from "antd";
 import { FormComponentProps } from "antd/lib/form";
-import { ComponentGroup, ComponentType, FBPItem, ComponentProps } from "./useFPBStore";
+import {
+  ComponentGroup,
+  ComponentType,
+  FBPItem,
+  ComponentProps
+} from "./useFPBStore";
 import React, { useState, useEffect, Fragment, useRef } from "react";
 import { get } from "lodash";
 import CommonInput from "./CommonInput";
@@ -23,6 +28,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useSizeMe from "./useSizeMe";
 import { toJS } from "mobx";
 import { getObjectKeysWhenIsArray } from "./utils";
+import FPBForm from "./FPBForm";
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
 const { Panel } = Collapse;
@@ -100,6 +106,7 @@ export interface ItemSettingFormProps
    * 编辑中数据，用于初始化值
    */
   item: FBPItem;
+  components: ComponentType[];
 }
 
 const { create, Item } = Form;
@@ -234,14 +241,26 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
         .map(([name, prop], i) => {
           let setting;
           const propName = `${prefix}.${name}`;
-          setting = (
-            <Item label={prop.label} key={propName}>
-              {getFieldDecorator(propName, {
-                initialValue: get(item, propName)
-                //preserve: true
-              })(<CommonInput />)}
-            </Item>
-          );
+          if (prop.type === "string") {
+            setting = (
+              <Item label={prop.label} key={propName}>
+                {getFieldDecorator(propName, {
+                  initialValue: get(item, propName)
+                  //preserve: true
+                })(<CommonInput />)}
+              </Item>
+            );
+          } else if (prop.type === "FPR") {
+            setting = (
+              <Item label={prop.label} key={propName}>
+                {getFieldDecorator(propName, {
+                  // initialValue: get(item, propName)
+                  //preserve: true
+                })(<FPBForm components={props.components}/>)}
+              </Item>
+            );
+          }
+
           return setting;
         }),
       <Collapse key={`settings`} accordion destroyInactivePanel={false}>

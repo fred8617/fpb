@@ -22,14 +22,14 @@ const tabs: ComponentType ={
           },
           children: {
             label: "选项卡内容",
-            type: "array:component",
-            Component: Fragment,
-            componentProps: {
-              children: {
-                label: "内容",
-                type: "string"
-              }
-            }
+            type: "FPR",
+            // Component: Fragment,
+            // componentProps: {
+            //   children: {
+            //     label: "内容",
+            //     type: "string"
+            //   }
+            // }
           }
         }
       }

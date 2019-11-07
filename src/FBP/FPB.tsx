@@ -1,32 +1,39 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
-import React, { useRef } from "react";
-import {
-  Observer
-} from "mobx-react-lite";
+import React, { useRef, useEffect } from "react";
+import { Observer } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
-import {
-  Empty,
-  Button,
-  Form,
-  Drawer,
-  Radio,
-  Modal
-} from "antd";
+import { Empty, Button, Form, Drawer, Radio, Modal } from "antd";
 import SplitPane from "react-split-pane";
-import shortid from "shortid";
 import ItemSettingForm from "./ItemSettingForm";
 import ObservableBlock from "./ObservableBlock";
 import ObservableBlockContainer from "./ObservableBlockContainer";
 import { Provider } from "./FormContext";
 import BreakpointForm from "./BreakpointForm";
 import useFPBStore, { FPBProps, Mode } from "./useFPBStore";
+import { toJS } from "mobx";
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = props => {
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
+  useEffect(() => {
+    if (props.defaultDatas) {
+      store.setDatas(props.defaultDatas.datas);
+      store.setLayouts([] as any, props.defaultDatas.layouts);
+      setTimeout(doWindowResize, 0);
+      // doWindowResize();
+    }
+  }, [props.defaultDatas]);
+  //@ts-ignore
+  global.window.getStore = () => toJS(store);
+  //@ts-ignore
+  global.window.getData = () => ({
+    datas: toJS(store).datas,
+    layouts: toJS(store).layouts
+  });
   console.log("render", store);
   return (
     <>
@@ -50,9 +57,7 @@ const FPB: React.SFC<FPBProps> = props => {
                 <Provider value={{ form: props.form }}>
                   <ResponsiveGridLayout
                     style={{ display: !store.hasLayout() ? "none" : "block" }}
-                    // draggableHandle=".drag"
                     className="layout"
-                    // onLayout
                     {...store.jsConfig}
                   >
                     {Object.entries(store.datas).map(([key, data]) => {
@@ -100,6 +105,7 @@ const FPB: React.SFC<FPBProps> = props => {
                 }}
               >
                 <ItemSettingForm
+                  components={props.components}
                   item={store.editingItem}
                   onItemTypeChange={store.onItemTypeChange}
                   onItemPropsChange={store.onItemPropsChange}

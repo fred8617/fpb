@@ -1,8 +1,7 @@
 import React, { ExoticComponent } from "react";
-import {
-  useLocalStore, useForceUpdate} from "mobx-react-lite";
+import { useLocalStore, useForceUpdate } from "mobx-react-lite";
 import { doWindowResize } from "./utils";
-import { toJS, set } from "mobx";
+import { toJS, set, remove } from "mobx";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
@@ -12,7 +11,7 @@ import { ItemSettingProps } from "./ItemSettingForm";
 import { FormComponentProps } from "antd/lib/form";
 import { RadioChangeEvent } from "antd/lib/radio";
 
-const emptyLayouts: breakpointsLayouts = {
+const emptyLayouts: BreakpointsLayouts = {
   xxl: [],
   xl: [],
   lg: [],
@@ -52,7 +51,7 @@ export interface RGLConfig {
   /**
    *元素的断点布局
    */
-  layouts: breakpointsLayouts;
+  layouts: BreakpointsLayouts;
   /**
    * 响应断点宽度
    */
@@ -93,7 +92,7 @@ export interface RGLItem {
 /**
  * 断点布局
  */
-export interface breakpointsLayouts {
+export interface BreakpointsLayouts {
   xxl?: RGLItem[];
   xl?: RGLItem[];
   lg?: RGLItem[];
@@ -101,7 +100,6 @@ export interface breakpointsLayouts {
   sm?: RGLItem[];
   xs?: RGLItem[];
 }
-
 
 /**
  * 组件基础属性
@@ -114,7 +112,7 @@ interface BaseComponentProp {
   /**
    * 类型
    */
-  type: "array:component" | "array:string" | "string" | "number";
+  type: "array:component" | "array:string" | "string" | "number" | "FPR";
   /**
    * 组件
    */
@@ -163,6 +161,10 @@ export interface ArrayStringProp extends BaseComponentProp {
   shouldHaveOne?: boolean;
 }
 
+export interface FPRProp extends BaseComponentProp {
+  type: "FPR";
+}
+
 export interface StringProp extends BaseComponentProp {
   /**
    * 类型
@@ -171,8 +173,12 @@ export interface StringProp extends BaseComponentProp {
 }
 
 export interface ComponentProps {
-  [propName: string]: ArrayComponentProp | ArrayStringProp | StringProp;
-  children?: ArrayComponentProp | ArrayStringProp | StringProp;
+  [propName: string]:
+    | FPRProp
+    | ArrayComponentProp
+    | ArrayStringProp
+    | StringProp;
+  children?: FPRProp | ArrayComponentProp | ArrayStringProp | StringProp;
 }
 
 /**
@@ -236,6 +242,7 @@ export interface ComponentGroup {
 }
 
 export interface FPBProps extends FormComponentProps {
+  defaultDatas?: any;
   /**
    * 默认配置
    */
@@ -243,7 +250,7 @@ export interface FPBProps extends FormComponentProps {
   /**
    * 默认布局
    */
-  defaultLayouts?: breakpointsLayouts;
+  defaultLayouts?: BreakpointsLayouts;
   /**
    * 左侧布局的默认宽度
    */
@@ -261,6 +268,11 @@ export interface BreakpointsConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  /**
+   * 删除区块
+   * @param itemKey 主键
+   */
+  deleteItem(itemKey: string): void;
   /**
    * 模式
    * @enum Mode
@@ -281,7 +293,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    * 获取当前所有断点的布局数组
    */
-  computedLayout: breakpointsLayouts;
+  computedLayout: BreakpointsLayouts;
   /**
    *断点计算配置用于表单初始值
    */
@@ -291,7 +303,13 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * @param currentLayout 当前布局
    * @param layouts 变更后布局
    */
-  setLayouts(currentLayout: breakpointsLayouts, layouts: breakpointsLayouts);
+  setLayouts(currentLayout: BreakpointsLayouts, layouts: BreakpointsLayouts);
+  /**
+   * 数据集合变更
+   *
+   * @param datas 数据集合
+   */
+  setDatas(datas);
   /**
    * 设置当前断点
    * @param breakpoint 当前断点
@@ -457,8 +475,8 @@ const defaultbreakpoints: Breakpoints = {
 };
 const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
 
-const useFPBStore = (props):FPBStore => {
-  const force=useForceUpdate();
+const useFPBStore = (props): FPBStore => {
+  const force = useForceUpdate();
   const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
     source => ({
       rowHeight: 1,
@@ -494,6 +512,15 @@ const useFPBStore = (props):FPBStore => {
       hasLayout() {
         return Object.keys(store.datas).length !== 0;
       },
+      setDatas(datas: any) {
+        const entries= Object.fromEntries(
+          Object.entries(datas).map(([key, data]:[string,any]) => [
+            key,
+            { ...data, Component: store.flatComponents[data.componentId].Component }
+          ])
+        ) as any;
+        store.datas =entries
+      },
       setLayouts(_currentLayout, layouts) {
         if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
           return;
@@ -515,6 +542,10 @@ const useFPBStore = (props):FPBStore => {
           ...values.cols
         };
         store.setBreakpointSettingVisible(false);
+      },
+      deleteItem(key) {
+        remove(store.datas, key);
+        force();
       },
       get jsConfig() {
         return toJS(
@@ -552,7 +583,7 @@ const useFPBStore = (props):FPBStore => {
         return Object.fromEntries(
           Object.entries(store.layouts).map(([point, items]) => [
             point,
-            items.find(item => item.i === key)
+            items.find((item: { i: string }) => item.i === key)
           ])
         );
       },
