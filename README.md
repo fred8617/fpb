@@ -2,11 +2,7 @@
 
 # form-setting
 
-- 新增预览模式
-- 设计FPR
-- 读取FPB数据
-- 框内样式，用padding模拟gutter
-- 增加componentType FPB
+
 - 表单值域 id 去重
 - 布局
 - 区块高度
@@ -14,7 +10,7 @@
 - 删除提示没想好加不加
 - 表单域 option(rules)
 - 表单域label布局
-- interface以及其他类型整理
+
 - ~~分组 Panel~~
 - ~~表单域 label~~
 - ~~修复自定义设置类型显示不正确~~
@@ -29,3 +25,12 @@
 # global-setting
 
 - ~~断点！~~
+
+# 待办
+- useFPBStore
+- 设计FPR
+- 读取FPB数据
+- 框内样式，用padding模拟gutter
+- 增加componentType FPB
+- interface以及其他类型整理
+- ~~新增预览模式~~

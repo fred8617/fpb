@@ -482,12 +482,12 @@ export interface FBPItem {
    */
   label?: string;
 }
- // xs	<576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
-  // sm	≥576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
-  // md	≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
-  // lg	≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
-  // xl	≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
-  // xxl
+// xs	<576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+// sm	≥576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+// md	≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+// lg	≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+// xl	≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
+// xxl
 const breakpointsStandard: Breakpoints = {
   xl: 1600,
   lg: 1200,
@@ -501,9 +501,8 @@ const defaultbreakpoints: Breakpoints = {
   md: breakpointsStandard.md
 };
 const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
-const FPB: React.SFC<FPBProps> = props => {
-  const force = useForceUpdate();
-  const breakpointFormRef = useRef<any>();
+
+const useFPBStore = (props,force) => {
   const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
     source => ({
       rowHeight: 1,
@@ -738,154 +737,7 @@ const FPB: React.SFC<FPBProps> = props => {
     }),
     { components: props.components }
   );
-  console.log("render", store);
-
-  return (
-    <>
-      <SplitPane
-        className="FPB"
-        onDragFinished={doWindowResize}
-        paneStyle={{ position: `relative` }}
-        style={{ position: "relative" }}
-        defaultSize={props.contentDefaultSize || `50%`}
-        minSize={479}
-        maxSize={1600}
-      >
-        <div style={{ position: `relative` }} key={"builder"}>
-          <Observer>
-            {() => (
-              <>
-                <Empty
-                  style={{ display: store.hasLayout() ? "none" : "block" }}
-                  description={"暂无元素"}
-                />
-                <Provider value={{ form: props.form }}>
-                  <ResponsiveGridLayout
-                    style={{ display: !store.hasLayout() ? "none" : "block" }}
-                    // draggableHandle=".drag"
-                    className="layout"
-                    // onLayout
-                    {...store.jsConfig}
-                  >
-                    {Object.entries(store.datas).map(([key, data]) => {
-                      return (
-                        <div key={key}>
-                          <Observer>
-                            {() =>
-                              store.mode === Mode.DESIGN && (
-                                <ObservableBlockContainer
-                                  store={store}
-                                  itemKey={key}
-                                  data={data}
-                                />
-                              )
-                            }
-                          </Observer>
-
-                          <ObservableBlock store={store} i={key} />
-                        </div>
-                      );
-                    })}
-                  </ResponsiveGridLayout>
-                </Provider>
-              </>
-            )}
-          </Observer>
-        </div>
-        <div key="setting">
-          <Observer>
-            {() => (
-              <Drawer
-                destroyOnClose
-                title={store.editingItem && store.editingItem.i}
-                placement="right"
-                width={`100%`}
-                closable={store.isEditing}
-                onClose={_ => store.setEditingItem(null)}
-                visible={store.isEditing}
-                getContainer={false}
-                style={{ position: "absolute" }}
-                bodyStyle={{
-                  padding: 0,
-                  height: `calc( 100% - 54.6px )`,
-                  overflow: `auto`
-                }}
-              >
-                <ItemSettingForm
-                  item={store.editingItem}
-                  onItemTypeChange={store.onItemTypeChange}
-                  onItemPropsChange={store.onItemPropsChange}
-                  componentGroup={store.componentGroup}
-                  flatComponents={store.flatComponents}
-                />
-              </Drawer>
-            )}
-          </Observer>
-
-          <Form layout="inline">
-            <Form.Item>
-              <Observer>
-                {() => (
-                  <Button
-                    type="primary"
-                    icon="plus"
-                    disabled={store.isPreview}
-                    onClick={store.createItem}
-                  >
-                    添加元素
-                  </Button>
-                )}
-              </Observer>
-            </Form.Item>
-            <Form.Item label="断点">
-              <Observer>
-                {() => (
-                  <Button
-                    disabled={store.isPreview}
-                    onClick={_ => store.setBreakpointSettingVisible(true)}
-                  >
-                    断点
-                  </Button>
-                )}
-              </Observer>
-            </Form.Item>
-            <Form.Item>
-              <Observer>
-                {() => (
-                  <Radio.Group
-                    buttonStyle="solid"
-                    onChange={store.changeMode}
-                    value={store.mode}
-                  >
-                    <Radio.Button value={Mode.DESIGN}>设计</Radio.Button>
-                    <Radio.Button value={Mode.PRIVIEW}>预览</Radio.Button>
-                  </Radio.Group>
-                )}
-              </Observer>
-            </Form.Item>
-          </Form>
-        </div>
-      </SplitPane>
-      <Observer>
-        {() => (
-          <Modal
-            centered
-            destroyOnClose
-            maskClosable={false}
-            title={"设置断点"}
-            visible={store.breakpointSettingVisible}
-            onOk={store.setBreakpointConfig}
-            onCancel={_ => store.setBreakpointSettingVisible(false)}
-          >
-            <BreakpointForm
-              ref={breakpointFormRef}
-              initialData={store.breakpointsConfig}
-            />
-          </Modal>
-        )}
-      </Observer>
-    </>
-  );
+  return store;
 };
-const FormFPB = Form.create<FPBProps>({ name: "FPB" })(FPB);
-export { FormFPB as default };
+
+export default useFPBStore;
