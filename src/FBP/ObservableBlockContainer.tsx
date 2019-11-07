@@ -43,12 +43,19 @@ const ObservableBlockContainer: React.SFC<
                       <Form.Item>
                         <Button
                           icon="edit"
-                          onClick={_ => props.store.setEditingItem(props.data)}
+                          onClick={_ => {
+                            props.store.setEditingItem(null);
+                            props.store.setEditingItem(props.data);
+                          }}
                           type="primary"
                         />
                       </Form.Item>
                       <Form.Item>
-                        <Button icon="delete" type="danger" onClick={_=>props.store.deleteItem(props.itemKey)}/>
+                        <Button
+                          icon="delete"
+                          type="danger"
+                          onClick={_ => props.store.deleteItem(props.itemKey)}
+                        />
                       </Form.Item>
                     </Form>
                   </>

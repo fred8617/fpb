@@ -107,21 +107,19 @@ export interface ItemSettingFormProps
    */
   item: FBPItem;
   components: ComponentType[];
+  /**
+   * 初始计数器
+   */
+  initialKeyCounter;
 }
 
 const { create, Item } = Form;
 
 const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
+  const { form, item, onItemPropsChange } = props;
   console.log("ItemSettingForm", toJS(props, { recurseEverything: true }));
-
-  const [keyCounter, setKeyCounter] = useState(
-    (props.item &&
-      getObjectKeysWhenIsArray(
-        toJS(props.item.componentProps) || {},
-        "componentProps"
-      )) ||
-      {}
-  );
+  const [keyCounter, setKeyCounter] = useState(() => props.initialKeyCounter);
+  const recordItem = useRef(item);
   // useEffect(() => {
   //   props.item &&
   //     console.log(
@@ -134,16 +132,21 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   //   console.log(keyCounter);
   // });
   useEffect(() => {
+    if (recordItem.current !== item) {
+      form.resetFields()
+      recordItem.current = item;
+    }
+  }, [item]);
+  useEffect(() => {
     console.log(keyCounter);
-
     //临时解决方案
     Object.keys(keyCounter).length &&
-      props.form.getFieldsValue().componentProps &&
-      props.form.setFieldsValue({
+      form.getFieldsValue().componentProps &&
+      form.setFieldsValue({
         componentProps: props.form.getFieldsValue().componentProps
       });
   }, [keyCounter]);
-  const { form, item, onItemPropsChange } = props;
+
   const initialValue: FBPItem | { [key: string]: any } = item || {};
   const { getFieldDecorator, getFieldsValue, getFieldValue } = form;
   const renderTypeTreeNode = component => {
@@ -256,7 +259,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                 {getFieldDecorator(propName, {
                   // initialValue: get(item, propName)
                   //preserve: true
-                })(<FPBForm components={props.components}/>)}
+                })(<FPBForm components={props.components} />)}
               </Item>
             );
           }

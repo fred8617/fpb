@@ -1,7 +1,7 @@
 import { Responsive, WidthProvider } from "react-grid-layout";
 import React, { useRef, useEffect } from "react";
 import { Observer } from "mobx-react-lite";
-import { doWindowResize } from "./utils";
+import { doWindowResize, getObjectKeysWhenIsArray } from "./utils";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./index.less";
@@ -104,14 +104,26 @@ const FPB: React.SFC<FPBProps> = props => {
                   overflow: `auto`
                 }}
               >
-                <ItemSettingForm
-                  components={props.components}
-                  item={store.editingItem}
-                  onItemTypeChange={store.onItemTypeChange}
-                  onItemPropsChange={store.onItemPropsChange}
-                  componentGroup={store.componentGroup}
-                  flatComponents={store.flatComponents}
-                />
+                {store.isEditing && (
+                  <ItemSettingForm
+                    initialKeyCounter={
+                      (store.editingItem &&
+                        getObjectKeysWhenIsArray(
+                          toJS(store.editingItem.componentProps, {
+                            recurseEverything: true
+                          }) || {},
+                          "componentProps"
+                        )) ||
+                      {}
+                    }
+                    components={props.components}
+                    item={store.editingItem}
+                    onItemTypeChange={store.onItemTypeChange}
+                    onItemPropsChange={store.onItemPropsChange}
+                    componentGroup={store.componentGroup}
+                    flatComponents={store.flatComponents}
+                  />
+                )}
               </Drawer>
             )}
           </Observer>

@@ -513,13 +513,16 @@ const useFPBStore = (props): FPBStore => {
         return Object.keys(store.datas).length !== 0;
       },
       setDatas(datas: any) {
-        const entries= Object.fromEntries(
-          Object.entries(datas).map(([key, data]:[string,any]) => [
+        const entries = Object.fromEntries(
+          Object.entries(datas).map(([key, data]: [string, any]) => [
             key,
-            { ...data, Component: store.flatComponents[data.componentId].Component }
+            {
+              ...data,
+              Component: store.flatComponents[data.componentId].Component
+            }
           ])
         ) as any;
-        store.datas =entries
+        store.datas = entries;
       },
       setLayouts(_currentLayout, layouts) {
         if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
