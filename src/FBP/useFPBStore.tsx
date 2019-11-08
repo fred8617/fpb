@@ -242,15 +242,16 @@ export interface ComponentGroup {
 }
 
 export interface FPBProps extends FormComponentProps {
-  defaultDatas?: any;
-  /**
-   * 默认配置
-   */
-  defaultConfig?: RGLConfig;
-  /**
-   * 默认布局
-   */
-  defaultLayouts?: BreakpointsLayouts;
+  forwardRef?: any;
+  defaultDatas?: FPBConfig;
+  // /**
+  //  * 默认配置
+  //  */
+  // defaultConfig?: RGLConfig;
+  // /**
+  //  * 默认布局
+  //  */
+  // defaultLayouts?: BreakpointsLayouts;
   /**
    * 左侧布局的默认宽度
    */
@@ -264,10 +265,33 @@ export interface BreakpointsConfig {
   breakpoints: string[];
   cols: Cols;
 }
+
+export interface FPBConfig {
+  /**
+   *元素的断点布局
+   */
+  layouts: BreakpointsLayouts;
+  /**
+   * 数据源
+   */
+  datas: FPBItemIndexListInitial;
+  /**
+   * 断点对应格子数
+   */
+  cols?: Cols;
+  /**
+   * 包含断点
+   */
+  breakpoints?: string[];
+}
 /**
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  /**
+   * 获取全部配置项以及数据
+   */
+  config: FPBConfig;
   /**
    * 删除区块
    * @param itemKey 主键
@@ -406,6 +430,9 @@ export type RGLItemCallBack = (
 export interface FPBItemIndexList {
   [key: string]: FBPItem;
 }
+export interface FPBItemIndexListInitial {
+  [key: string]: Omit<FBPItem,'Component'>;
+}
 
 export enum Mode {
   /**
@@ -485,6 +512,17 @@ const useFPBStore = (props): FPBStore => {
       breakpoints: defaultbreakpoints,
       cols: defaultCols,
       /*********************** */
+      get config() {
+        return toJS<FPBConfig>(
+          {
+            datas: store.datas,
+            layouts: store.layouts,
+            cols: store.cols,
+            breakpoints: store.breakpointsArr
+          },
+          { recurseEverything: true }
+        );
+      },
       mode: Mode.DESIGN,
       get isPreview() {
         return store.mode === Mode.PRIVIEW;

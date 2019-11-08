@@ -19,6 +19,9 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = props => {
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
+  if(props.forwardRef){
+    props.forwardRef.current=store
+  }
   useEffect(() => {
     if (props.defaultDatas) {
       store.setDatas(props.defaultDatas.datas);

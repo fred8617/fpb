@@ -72,8 +72,12 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
               </Comp>
             );
           });
-        } else {
-          return chil; //组件含有属性 //组件属性中包含子元素
+        } else if (
+          comp.componentProps && //组件含有属性
+          comp.componentProps.children && //组件属性中包含子元素
+          comp.componentProps.children.type === "FPR" //子元素为数组
+        ) {
+          return <div>{JSON.stringify(chil)}</div>; //组件含有属性 //组件属性中包含子元素
         }
       };
       let finalComponent = Component && //存在Component并且

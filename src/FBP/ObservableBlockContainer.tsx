@@ -44,7 +44,6 @@ const ObservableBlockContainer: React.SFC<
                         <Button
                           icon="edit"
                           onClick={_ => {
-                            props.store.setEditingItem(null);
                             props.store.setEditingItem(props.data);
                           }}
                           type="primary"
