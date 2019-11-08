@@ -242,6 +242,7 @@ export interface ComponentGroup {
 }
 
 export interface FPBProps extends FormComponentProps {
+  FPR?: boolean;
   forwardRef?: any;
   defaultDatas?: FPBConfig;
   // /**
@@ -431,7 +432,7 @@ export interface FPBItemIndexList {
   [key: string]: FBPItem;
 }
 export interface FPBItemIndexListInitial {
-  [key: string]: Omit<FBPItem,'Component'>;
+  [key: string]: Omit<FBPItem, "Component">;
 }
 
 export enum Mode {

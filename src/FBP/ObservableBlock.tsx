@@ -1,15 +1,17 @@
 import React, { SFC } from "react";
-import { FPBStore, ArrayComponentProp } from "./useFPBStore";
+import { FPBStore, ArrayComponentProp, ComponentType } from "./useFPBStore";
 import { useObserver, Observer } from "mobx-react-lite";
 import Block from "./Block";
 import { toJS } from "mobx";
 import { Consumer } from "./FormContext";
 import FormConsumerComponent from "./FormConsumerComponent";
 import ReactDOM from "react-dom";
+import FPB from "FBP";
 
 export interface ObservableBlockProps {
   i;
   store: FPBStore;
+  components: ComponentType[];
 }
 /**
  * 观察者区块
@@ -77,7 +79,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = (
           comp.componentProps.children && //组件属性中包含子元素
           comp.componentProps.children.type === "FPR" //子元素为数组
         ) {
-          return <div>{JSON.stringify(chil)}</div>; //组件含有属性 //组件属性中包含子元素
+          return <FPB components={props.components} FPR defaultDatas={chil}/>; //组件含有属性 //组件属性中包含子元素
         }
       };
       let finalComponent = Component && //存在Component并且

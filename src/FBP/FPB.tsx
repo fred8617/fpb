@@ -19,11 +19,14 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = props => {
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
-  if(props.forwardRef){
-    props.forwardRef.current=store
+  if (props.forwardRef) {
+    props.forwardRef.current = store;
   }
   useEffect(() => {
     if (props.defaultDatas) {
+      if (props.FPR) {
+        store.mode = Mode.PRIVIEW;
+      }
       store.setDatas(props.defaultDatas.datas);
       store.setLayouts([] as any, props.defaultDatas.layouts);
       setTimeout(doWindowResize, 0);
@@ -38,6 +41,47 @@ const FPB: React.SFC<FPBProps> = props => {
     layouts: toJS(store).layouts
   });
   console.log("render", store);
+  const { FPR = false } = props;
+  const FPRPart = (
+    <Provider value={{ form: props.form }}>
+      <Observer>
+        {() => (
+          <ResponsiveGridLayout
+            style={{ display: !store.hasLayout() ? "none" : "block" }}
+            className="layout"
+            {...store.jsConfig}
+          >
+            {Object.entries(store.datas).map(([key, data]) => {
+              return (
+                <div key={key}>
+                  <Observer>
+                    {() =>
+                      store.mode === Mode.DESIGN && (
+                        <ObservableBlockContainer
+                          store={store}
+                          itemKey={key}
+                          data={data}
+                        />
+                      )
+                    }
+                  </Observer>
+
+                  <ObservableBlock
+                    store={store}
+                    i={key}
+                    components={props.components}
+                  />
+                </div>
+              );
+            })}
+          </ResponsiveGridLayout>
+        )}
+      </Observer>
+    </Provider>
+  );
+  if (FPR) {
+    return FPRPart;
+  }
   return (
     <>
       <SplitPane
@@ -57,33 +101,7 @@ const FPB: React.SFC<FPBProps> = props => {
                   style={{ display: store.hasLayout() ? "none" : "block" }}
                   description={"暂无元素"}
                 />
-                <Provider value={{ form: props.form }}>
-                  <ResponsiveGridLayout
-                    style={{ display: !store.hasLayout() ? "none" : "block" }}
-                    className="layout"
-                    {...store.jsConfig}
-                  >
-                    {Object.entries(store.datas).map(([key, data]) => {
-                      return (
-                        <div key={key}>
-                          <Observer>
-                            {() =>
-                              store.mode === Mode.DESIGN && (
-                                <ObservableBlockContainer
-                                  store={store}
-                                  itemKey={key}
-                                  data={data}
-                                />
-                              )
-                            }
-                          </Observer>
-
-                          <ObservableBlock store={store} i={key} />
-                        </div>
-                      );
-                    })}
-                  </ResponsiveGridLayout>
-                </Provider>
+                {FPRPart}
               </>
             )}
           </Observer>
