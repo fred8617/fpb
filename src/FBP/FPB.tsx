@@ -29,7 +29,8 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       }
       store.setDatas(props.defaultDatas.datas);
       store.setLayouts([] as any, props.defaultDatas.layouts);
-      setTimeout(doWindowResize, 0);
+      //模态框动画弹出需要加renderDelay
+      setTimeout(doWindowResize, props.renderDelay||0);
       // doWindowResize();
     }
   }, [props.defaultDatas]);
@@ -78,6 +79,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
   }
   return (
     <>
+      {/* 此处在预览模式下取消transition */}
       <Observer>
         {() => (
           <style>

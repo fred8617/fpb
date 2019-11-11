@@ -133,7 +133,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   // });
   useEffect(() => {
     if (recordItem.current !== item) {
-      form.resetFields()
+      form.resetFields();
       recordItem.current = item;
     }
   }, [item]);
@@ -254,10 +254,14 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
               </Item>
             );
           } else if (prop.type === "FPR") {
+            console.log("FPR", get(item, propName));
+
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
-                  // initialValue: get(item, propName)
+                  initialValue: toJS(get(item, propName), {
+                    recurseEverything: true
+                  })
                   //preserve: true
                 })(<FPBForm components={props.components} />)}
               </Item>

@@ -1,15 +1,15 @@
-import React, { ExoticComponent } from "react";
-import { useLocalStore, useForceUpdate } from "mobx-react-lite";
-import { doWindowResize } from "./utils";
-import { toJS, set, remove } from "mobx";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-import "./index.less";
-import { Size } from "react-split-pane";
-import shortid from "shortid";
-import { ItemSettingProps } from "./ItemSettingForm";
-import { FormComponentProps } from "antd/lib/form";
-import { RadioChangeEvent } from "antd/lib/radio";
+import React, { ExoticComponent } from 'react';
+import { useLocalStore, useForceUpdate } from 'mobx-react-lite';
+import { doWindowResize } from './utils';
+import { toJS, set, remove } from 'mobx';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+import './index.less';
+import { Size } from 'react-split-pane';
+import shortid from 'shortid';
+import { ItemSettingProps } from './ItemSettingForm';
+import { FormComponentProps } from 'antd/lib/form';
+import { RadioChangeEvent } from 'antd/lib/radio';
 
 const emptyLayouts: BreakpointsLayouts = {
   xxl: [],
@@ -17,7 +17,7 @@ const emptyLayouts: BreakpointsLayouts = {
   lg: [],
   md: [],
   sm: [],
-  xs: []
+  xs: [],
 };
 interface Breakpoints {
   xxl?: number;
@@ -112,7 +112,7 @@ interface BaseComponentProp {
   /**
    * 类型
    */
-  type: "array:component" | "array:string" | "string" | "number" | "FPR";
+  type: 'array:component' | 'array:string' | 'string' | 'number' | 'FPR';
   /**
    * 组件
    */
@@ -133,7 +133,7 @@ export interface ArrayComponentProp extends BaseComponentProp {
   /**
    * 类型
    */
-  type: "array:component";
+  type: 'array:component';
   /**
    * 组件
    */
@@ -154,7 +154,7 @@ export interface ArrayStringProp extends BaseComponentProp {
   /**
    * 类型
    */
-  type: "array:string";
+  type: 'array:string';
   /**
    * type为array时是否默认增加一个元素
    */
@@ -162,14 +162,14 @@ export interface ArrayStringProp extends BaseComponentProp {
 }
 
 export interface FPRProp extends BaseComponentProp {
-  type: "FPR";
+  type: 'FPR';
 }
 
 export interface StringProp extends BaseComponentProp {
   /**
    * 类型
    */
-  type: "string";
+  type: 'string';
 }
 
 export interface ComponentProps {
@@ -244,6 +244,10 @@ export interface ComponentGroup {
 export interface FPBProps extends FormComponentProps {
   FPR?: boolean;
   forwardRef?: any;
+  /**
+   * 延迟渲染，在模态框弹出动画非常有用，antd modal设置200即可
+   */
+  renderDelay?: number;
   defaultDatas?: FPBConfig;
   // /**
   //  * 默认配置
@@ -310,7 +314,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    */
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
-  breakpoint: "xxl" | "xl" | "lg" | "md" | "sm" | "xs";
+  breakpoint: 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
   /**
    * 断点数组的key
    */
@@ -426,24 +430,24 @@ export type RGLItemCallBack = (
   newItem: RGLItem,
   placeholder: RGLItem,
   e: MouseEvent,
-  element: HTMLElement
+  element: HTMLElement,
 ) => void;
 export interface FPBItemIndexList {
   [key: string]: FBPItem;
 }
 export interface FPBItemIndexListInitial {
-  [key: string]: Omit<FBPItem, "Component">;
+  [key: string]: Omit<FBPItem, 'Component'>;
 }
 
 export enum Mode {
   /**
    * 设计模式
    */
-  DESIGN = "design",
+  DESIGN = 'design',
   /**
    * 预览模式
    */
-  PRIVIEW = "priview"
+  PRIVIEW = 'priview',
 }
 
 /**
@@ -494,18 +498,18 @@ const breakpointsStandard: Breakpoints = {
   lg: 1200,
   md: 992,
   sm: 768,
-  xs: 576
+  xs: 576,
   // xs: 0
 };
 const defaultbreakpoints: Breakpoints = {
-  lg: breakpointsStandard.lg
+  lg: breakpointsStandard.lg,
   // md: breakpointsStandard.md
 };
 const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
 
 const useFPBStore = (props): FPBStore => {
   const force = useForceUpdate();
-  const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, "form">>(
+  const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, 'form'>>(
     source => ({
       rowHeight: 1,
       margin: [0, 0],
@@ -519,9 +523,9 @@ const useFPBStore = (props): FPBStore => {
             datas: store.datas,
             layouts: store.layouts,
             cols: store.cols,
-            breakpoints: store.breakpointsArr
+            breakpoints: store.breakpointsArr,
           },
-          { recurseEverything: true }
+          { recurseEverything: true },
         );
       },
       mode: Mode.DESIGN,
@@ -532,12 +536,12 @@ const useFPBStore = (props): FPBStore => {
         store.mode = e.target.value;
       },
       datas: {},
-      breakpoint: "lg",
+      breakpoint: 'lg',
       defaultFormField: true,
       get breakpointsConfig() {
         return {
           breakpoints: store.breakpointsArr,
-          cols: store.cols
+          cols: store.cols,
         };
       },
       get breakpointsArr() {
@@ -545,7 +549,10 @@ const useFPBStore = (props): FPBStore => {
       },
       get computedLayout() {
         return Object.fromEntries(
-          store.breakpointsArr.map(point => [point, store.layouts[point] || []])
+          store.breakpointsArr.map(point => [
+            point,
+            store.layouts[point] || [],
+          ]),
         );
       },
       hasLayout() {
@@ -559,9 +566,9 @@ const useFPBStore = (props): FPBStore => {
               ...data,
               Component:
                 data.componentId &&
-                store.flatComponents[data.componentId].Component
-            }
-          ])
+                store.flatComponents[data.componentId].Component,
+            },
+          ]),
         ) as any;
         store.datas = entries;
       },
@@ -569,21 +576,21 @@ const useFPBStore = (props): FPBStore => {
         if (JSON.stringify(store.layouts) == JSON.stringify(layouts)) {
           return;
         }
-        console.log("layout-change", toJS(store.layouts), layouts);
+        console.log('layout-change', toJS(store.layouts), layouts);
         store.layouts = layouts;
       },
       setBreakpoint(breakpoint, _col) {
-        console.log("setBreakpoint", breakpoint, store.datas);
+        console.log('setBreakpoint', breakpoint, store.datas);
 
         store.breakpoint = breakpoint;
       },
       setBreakpointConfig(values) {
         store.breakpoints = Object.fromEntries(
-          values.breakpoints.map(point => [point, breakpointsStandard[point]])
+          values.breakpoints.map(point => [point, breakpointsStandard[point]]),
         );
         store.cols = {
           ...store.cols,
-          ...values.cols
+          ...values.cols,
         };
         store.setBreakpointSettingVisible(false);
       },
@@ -605,9 +612,9 @@ const useFPBStore = (props): FPBStore => {
             onResizeStop: store.onResizeStop,
             //此处是个问题
             isDraggable: store.editingItem === null && !store.isPreview,
-            isResizable: store.editingItem === null && !store.isPreview
+            isResizable: store.editingItem === null && !store.isPreview,
           },
-          { recurseEverything: true }
+          { recurseEverything: true },
         );
       },
       operatedItem: null,
@@ -627,8 +634,8 @@ const useFPBStore = (props): FPBStore => {
         return Object.fromEntries(
           Object.entries(store.layouts).map(([point, items]) => [
             point,
-            items.find((item: { i: string }) => item.i === key)
-          ])
+            items.find((item: { i: string }) => item.i === key),
+          ]),
         );
       },
       getItemHeight(key) {
@@ -668,7 +675,7 @@ const useFPBStore = (props): FPBStore => {
           componentProps: {},
           componentId: null,
           isFormField: null,
-          $id: null
+          $id: null,
         };
         set(store.datas, i, newItem);
         force();
@@ -690,7 +697,7 @@ const useFPBStore = (props): FPBStore => {
         if (component.formField) {
           store.editingItem.isFormField = store.defaultFormField;
           // store.editingItem.label = "";
-          set(store.editingItem, "label", "");
+          set(store.editingItem, 'label', '');
           // .label = '';
           //这里默认给i值吧
           // store.editingItem.$id = shortid.generate()
@@ -715,7 +722,7 @@ const useFPBStore = (props): FPBStore => {
         const flatComponents = {};
         const dealChildren = (
           arr: (ComponentType | BaseComponentType)[] = source.components,
-          parent?: ComponentType | BaseComponentType
+          parent?: ComponentType | BaseComponentType,
         ) => {
           arr.forEach(component => {
             flatComponents[component.id] = component;
@@ -733,21 +740,21 @@ const useFPBStore = (props): FPBStore => {
       get componentGroup() {
         //有分组组件
         const componentsHasGroup = source.components.filter(
-          component => component.group
+          component => component.group,
         );
         //无分组组件
         const componentsNoGroup = source.components.filter(
-          component => !component.group
+          component => !component.group,
         );
         //全部分组
         const allGroup = [
-          ...new Set(componentsHasGroup.map(component => component.group))
+          ...new Set(componentsHasGroup.map(component => component.group)),
         ];
         //自动分组
         const returnGroup = [];
         allGroup.forEach(group => {
           const filterGroup = componentsHasGroup.filter(
-            component => component.group === group
+            component => component.group === group,
           );
           returnGroup.push({ [group]: filterGroup, groupName: group });
         });
@@ -759,9 +766,9 @@ const useFPBStore = (props): FPBStore => {
       breakpointSettingVisible: false,
       setBreakpointSettingVisible(breakpointSettingVisible) {
         store.breakpointSettingVisible = breakpointSettingVisible;
-      }
+      },
     }),
-    { components: props.components }
+    { components: props.components },
   );
   return store;
 };
