@@ -45,13 +45,14 @@ const Block: React.SFC<BlockProps> = props => {
     },
     {
       monitorHeight: true
-      // refreshMode: 'debounce',
-      // refreshRate: 200,
+      // refreshMode: showTag?'debounce':'throttle',
+      // refreshRate: showTag?200:16,
     }
   );
-  const setParent = useCallback(debounce(props.onParentHeightChange, 200), [
-    props.onParentHeightChange
-  ]);
+  const setParent = useCallback(
+    debounce(props.onParentHeightChange, showTag ? 200 : 0),
+    [props.onParentHeightChange]
+  );
   useEffect(() => {
     console.log("setHeight");
 

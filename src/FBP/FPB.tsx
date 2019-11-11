@@ -16,7 +16,7 @@ import useFPBStore, { FPBProps, Mode } from "./useFPBStore";
 import { toJS } from "mobx";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
-const FPB: React.SFC<FPBProps> = props => {
+const FPB: React.SFC<FPBProps> = React.memo(props => {
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
   if (props.forwardRef) {
@@ -33,13 +33,6 @@ const FPB: React.SFC<FPBProps> = props => {
       // doWindowResize();
     }
   }, [props.defaultDatas]);
-  //@ts-ignore
-  global.window.getStore = () => toJS(store);
-  //@ts-ignore
-  global.window.getData = () => ({
-    datas: toJS(store).datas,
-    layouts: toJS(store).layouts
-  });
   console.log("render", store);
   const { FPR = false } = props;
   const FPRPart = (
@@ -47,6 +40,7 @@ const FPB: React.SFC<FPBProps> = props => {
       <Observer>
         {() => (
           <ResponsiveGridLayout
+            // useCSSTransforms={false}
             style={{ display: !store.hasLayout() ? "none" : "block" }}
             className="layout"
             {...store.jsConfig}
@@ -84,6 +78,22 @@ const FPB: React.SFC<FPBProps> = props => {
   }
   return (
     <>
+      <Observer>
+        {() => (
+          <style>
+            {store.isPreview
+              ? `
+        .react-grid-item{
+          transition:none!important
+        }
+        .react-grid-layout{
+          transition:none!important
+        }
+        `
+              : null}
+          </style>
+        )}
+      </Observer>
       <SplitPane
         className="FPB"
         onDragFinished={doWindowResize}
@@ -177,6 +187,11 @@ const FPB: React.SFC<FPBProps> = props => {
               </Observer>
             </Form.Item>
             <Form.Item>
+              <Button onClick={_ => console.log(JSON.stringify(store.config))}>
+                获取配置
+              </Button>
+            </Form.Item>
+            <Form.Item>
               <Observer>
                 {() => (
                   <Radio.Group
@@ -222,6 +237,6 @@ const FPB: React.SFC<FPBProps> = props => {
       </Observer>
     </>
   );
-};
+});
 const FormFPB = Form.create<FPBProps>({ name: "FPB" })(FPB);
 export { FormFPB as default };

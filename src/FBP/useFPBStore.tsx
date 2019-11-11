@@ -498,8 +498,8 @@ const breakpointsStandard: Breakpoints = {
   // xs: 0
 };
 const defaultbreakpoints: Breakpoints = {
-  lg: breakpointsStandard.lg,
-  md: breakpointsStandard.md
+  lg: breakpointsStandard.lg
+  // md: breakpointsStandard.md
 };
 const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
 
@@ -532,7 +532,7 @@ const useFPBStore = (props): FPBStore => {
         store.mode = e.target.value;
       },
       datas: {},
-      breakpoint: null,
+      breakpoint: "lg",
       defaultFormField: true,
       get breakpointsConfig() {
         return {
@@ -557,7 +557,9 @@ const useFPBStore = (props): FPBStore => {
             key,
             {
               ...data,
-              Component: store.flatComponents[data.componentId].Component
+              Component:
+                data.componentId &&
+                store.flatComponents[data.componentId].Component
             }
           ])
         ) as any;
@@ -571,7 +573,7 @@ const useFPBStore = (props): FPBStore => {
         store.layouts = layouts;
       },
       setBreakpoint(breakpoint, _col) {
-        console.log("setBreakpoint", breakpoint);
+        console.log("setBreakpoint", breakpoint, store.datas);
 
         store.breakpoint = breakpoint;
       },

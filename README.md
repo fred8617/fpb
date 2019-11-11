@@ -27,11 +27,13 @@
 - ~~断点！~~
 
 # FPR
+- FPRForm内容反显
 - 设计FPR
 - 读取FPB数据
 
 
 # 待办
+- margin padding等属性
 - 各类ref定义
 - defaultDatas类型补充
 - interface以及其他类型整理
