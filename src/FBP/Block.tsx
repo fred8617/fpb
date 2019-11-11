@@ -1,10 +1,10 @@
-import useSizeMe from "./useSizeMe";
-import CalTag from "./CalTag";
-import debounce from "lodash/debounce";
-import { useEffect, useCallback } from "react";
-import { Tag } from "antd";
-import { useLocalStore, useObserver } from "mobx-react-lite";
-import React from "react";
+import useSizeMe from './useSizeMe';
+import CalTag from './CalTag';
+import debounce from 'lodash/debounce';
+import { useEffect, useCallback } from 'react';
+import { Tag } from 'antd';
+import { useLocalStore, useObserver } from 'mobx-react-lite';
+import React from 'react';
 /**
  * 区块
  */
@@ -36,7 +36,7 @@ const Block: React.SFC<BlockProps> = props => {
   const [sized, width, height] = useSizeMe(
     size => {
       return (
-        <div style={{ position: `relative` }}>
+        <div style={{ position: `relative`, zIndex: 0 }}>
           {/* 计量维度的tag */}
           {showTag && <CalTag width={width} height={props.height} />}
           {props.children}
@@ -44,17 +44,17 @@ const Block: React.SFC<BlockProps> = props => {
       );
     },
     {
-      monitorHeight: true
+      monitorHeight: true,
       // refreshMode: showTag?'debounce':'throttle',
       // refreshRate: showTag?200:16,
-    }
+    },
   );
   const setParent = useCallback(
     debounce(props.onParentHeightChange, showTag ? 200 : 0),
-    [props.onParentHeightChange]
+    [props.onParentHeightChange],
   );
   useEffect(() => {
-    console.log("setHeight");
+    console.log('setHeight');
 
     setParent(height as number);
   }, [height, props.breakpoint, props.autoHeight]);

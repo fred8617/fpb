@@ -1,7 +1,7 @@
-import React from "react";
-import { Popover, Form, Button } from "antd";
-import { FPBStore, FBPItem } from "./useFPBStore";
-import { useObserver, Observer } from "mobx-react-lite";
+import React from 'react';
+import { Popover, Form, Button } from 'antd';
+import { FPBStore, FBPItem } from './useFPBStore';
+import { useObserver, Observer } from 'mobx-react-lite';
 export interface ObservableBlockContainerProps {
   /**
    * 全局store
@@ -23,7 +23,7 @@ const ObservableBlockContainer: React.SFC<
   const isEditingItem =
     props.store.editingItem && props.store.editingItem.i === props.itemKey;
   const hasBorder = !hasEditingItem || isEditingItem;
-  const border = `1px solid ${isEditingItem ? "#e72727" : "#d3d3d3"}`;
+  const border = `1px solid ${isEditingItem ? '#e72727' : '#d3d3d3'}`;
   return (
     <Observer>
       {() => (
@@ -31,7 +31,9 @@ const ObservableBlockContainer: React.SFC<
           <div
             className="item-container"
             style={{
-              border: hasBorder ? border : null
+              border: hasBorder ? border : null,
+              zIndex: isEditingItem ? null : 1,
+              boxSizing: isEditingItem ? 'content-box' : null,
             }}
           >
             {!isEditingItem && (
