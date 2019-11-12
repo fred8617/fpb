@@ -4,7 +4,6 @@ import { Observer } from 'mobx-react-lite';
 import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import './index.less';
 import { Empty, Button, Form, Drawer, Radio, Modal } from 'antd';
 import SplitPane from 'react-split-pane';
 import ItemSettingForm from './ItemSettingForm';
@@ -14,7 +13,6 @@ import { Provider } from './FormContext';
 import BreakpointForm from './BreakpointForm';
 import useFPBStore, { FPBProps, Mode } from './useFPBStore';
 import { toJS } from 'mobx';
-
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = React.memo(props => {
   const breakpointFormRef = useRef<any>();

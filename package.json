@@ -2,14 +2,17 @@
   "name": "FPB",
   "version": "0.0.1",
   "private": true,
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fled8617/FPB.git"
+  },
   "dependencies": {
     "@apollo/react-hooks": "^3.1.3",
     "antd": "^3.24.3",
     "apollo-boost": "^0.4.4",
     "graphiql": "^0.16.0",
     "graphql": "^14.5.8",
-    "less": "^3.10.3",
-    "less-loader": "^5.0.0",
     "mobx": "^4.14.0",
     "mobx-react-lite": "^1.4.1",
     "react": "^16.9.0",
@@ -18,15 +21,16 @@
     "react-grid-layout": "^0.16.6",
     "react-sizeme": "^2.6.7",
     "react-split-pane": "^0.1.87",
-    "scriptjs": "^2.5.9",
     "shortid": "^2.2.15"
   },
   "scripts": {
-    "comp": "babel --extensions .tsx src/FPB -d lib",
     "start": "react-app-rewired start",
+    "compile": "cross-env NODE_ENV=production npm run babel&&npm run less",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject"
+    "eject": "react-app-rewired eject",
+    "babel": "babel --extensions .tsx,.ts src/FPB -d lib",
+    "less": "lessc ./src/FPB/index.less ./lib/index.css"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -50,7 +54,10 @@
     "@types/react": "16.9.2",
     "@types/react-dom": "16.9.0",
     "babel-plugin-import": "^1.12.2",
+    "cross-env": "^6.0.3",
     "customize-cra": "^0.7.0",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
     "react-app-rewired": "^2.1.3",
     "react-scripts": "3.1.2",
     "typescript": "3.6.3"

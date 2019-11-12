@@ -2,8 +2,6 @@ import useSizeMe from './useSizeMe';
 import CalTag from './CalTag';
 import debounce from 'lodash/debounce';
 import { useEffect, useCallback } from 'react';
-import { Tag } from 'antd';
-import { useLocalStore, useObserver } from 'mobx-react-lite';
 import React from 'react';
 /**
  * 区块
@@ -34,7 +32,7 @@ export interface BlockProps {
 const Block: React.SFC<BlockProps> = props => {
   const { showTag = true } = props;
   const [sized, width, height] = useSizeMe(
-    size => {
+    () => {
       return (
         <div style={{ position: `relative`, zIndex: 0 }}>
           {/* 计量维度的tag */}

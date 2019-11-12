@@ -1,5 +1,6 @@
 import React, {  } from 'react';
 import FPB from './FPB';
+import './FPB/index.less';
 import { ApolloProvider } from '@apollo/react-hooks';
 import ApolloClient from 'apollo-boost';
 import input from 'demo-components/input';

@@ -1,12 +1,10 @@
-import React, { SFC, useEffect } from 'react';
-import { FPBStore, ArrayComponentProp, ComponentType } from './useFPBStore';
-import { useObserver, Observer } from 'mobx-react-lite';
+import React, { SFC } from 'react';
+import { FPBStore, ComponentType } from './useFPBStore';
+import { Observer } from 'mobx-react-lite';
 import Block from './Block';
 import { toJS } from 'mobx';
-import { Consumer } from './FormContext';
 import FormConsumerComponent from './FormConsumerComponent';
-import ReactDOM from 'react-dom';
-import FPB from 'FPB';
+import FPB from './FPB';
 import ErrorWrapper from './ErrorWrapper';
 import { findRequiredRules } from './utils';
 import { Alert } from 'antd';
@@ -31,7 +29,6 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
       const {
         Component,
         componentProps,
-        autoHeight,
         componentId,
         isFormField,
       } = item;

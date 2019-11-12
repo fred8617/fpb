@@ -1,7 +1,7 @@
 import React, { SFC, useRef, useEffect } from 'react';
 import { Form, Button } from 'antd';
 import FullScreenModal from './FullScreenModal';
-import FPB from 'FPB';
+import FPB from './FPB';
 import { ComponentType } from './useFPBStore';
 import { FormComponentProps } from 'antd/lib/form';
 import { useLocalStore, Observer } from 'mobx-react-lite';

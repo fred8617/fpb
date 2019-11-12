@@ -1,4 +1,4 @@
-import { SFC } from "react";
+import React, { SFC } from 'react';
 interface FPRProps {}
 const FPR: SFC<FPRProps> = props => {
   return (

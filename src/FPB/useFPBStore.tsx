@@ -4,7 +4,6 @@ import { doWindowResize } from './utils';
 import { toJS, set, remove } from 'mobx';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import './index.less';
 import { Size } from 'react-split-pane';
 import shortid from 'shortid';
 import { ItemSettingProps } from './ItemSettingForm';
