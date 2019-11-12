@@ -2,7 +2,7 @@ import { SFC, useEffect } from "react";
 import { Form } from "antd";
 import { useObserver, Observer } from "mobx-react-lite";
 import { Consumer } from "./FormContext";
-import { FBPItem } from "./useFPBStore";
+import { FPBItem } from "./useFPBStore";
 import React from "react";
 const { Item } = Form;
 /**
@@ -12,7 +12,7 @@ interface FormConsumerComponentProps {
   /**
    * 传入元素
    */
-  item: FBPItem;
+  item: FPBItem;
   /**
    * 传入的表单组件
    */

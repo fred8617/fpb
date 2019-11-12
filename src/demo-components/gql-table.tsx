@@ -1,5 +1,5 @@
 import { Input, Checkbox, Radio, Table } from 'antd';
-import { ComponentType } from 'FBP/useFPBStore';
+import { ComponentType } from 'FPB/useFPBStore';
 import GqlTable from 'components/GqlTable';
 const table: ComponentType = {
   id: 'gql-table',
@@ -12,15 +12,10 @@ const table: ComponentType = {
   formField: false,
   children: [],
   componentProps: {
-    gql: {
-      label: 'gql查询',
-      type: 'graphql',
-      rules: [{ required: true, message: '请完成gql查询' }],
-    },
     children: {
       type: 'array:component',
       label: '列',
-      shouldHaveOne:true,
+      shouldHaveOne: true,
       Component: Table.Column,
       componentProps: {
         dataIndex: {
@@ -32,6 +27,11 @@ const table: ComponentType = {
           type: 'string',
         },
       },
+    },
+    gql: {
+      label: 'gql查询',
+      type: 'graphql',
+      rules: [{ required: true, message: '请完成gql查询' }],
     },
   },
 };

@@ -18,7 +18,7 @@ import { FormComponentProps } from 'antd/lib/form';
 import {
   ComponentGroup,
   ComponentType,
-  FBPItem,
+  FPBItem,
   ComponentProps,
 } from './useFPBStore';
 import React, { useState, useEffect, Fragment, useRef } from 'react';
@@ -107,7 +107,7 @@ export interface ItemSettingFormProps
   /**
    * 编辑中数据，用于初始化值
    */
-  item: FBPItem;
+  item: FPBItem;
   components: ComponentType[];
   /**
    * 初始计数器
@@ -122,17 +122,6 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   console.log('ItemSettingForm', toJS(props, { recurseEverything: true }));
   const [keyCounter, setKeyCounter] = useState(() => props.initialKeyCounter);
   const recordItem = useRef(item);
-  // useEffect(() => {
-  //   props.item &&
-  //     console.log(
-  //       toJS(props.item.componentProps),
-  //       getObjectKeysWhenIsArray(
-  //         toJS(props.item.componentProps) || {},
-  //         "componentProps"
-  //       )
-  //     );
-  //   console.log(keyCounter);
-  // });
   useEffect(() => {
     if (recordItem.current !== item) {
       form.resetFields();
@@ -140,16 +129,19 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     }
   }, [item]);
   useEffect(() => {
-    // console.log(keyCounter);
     //临时解决方案
-    Object.keys(keyCounter).length &&
-      form.getFieldsValue().componentProps &&
-      form.setFieldsValue({
-        componentProps: props.form.getFieldsValue().componentProps,
-      });
+    setTimeout(
+      () =>
+        Object.keys(keyCounter).length &&
+        form.getFieldsValue().componentProps &&
+        form.setFieldsValue({
+          componentProps: form.getFieldsValue().componentProps,
+        }),
+      500,
+    );
   }, [keyCounter]);
 
-  const initialValue: FBPItem | { [key: string]: any } = item || {};
+  const initialValue: FPBItem | { [key: string]: any } = item || {};
   const { getFieldDecorator, getFieldsValue, getFieldValue } = form;
   const renderTypeTreeNode = component => {
     if (component.children) {
@@ -293,27 +285,10 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           .map(([name, prop], i) => {
             let setting;
             const propName = `${prefix}.${name}`;
-
-            // const props = getFieldsValue()[prefix];
-            // const prop = (props && props[name]) || [];
             let mapedArr;
             mapedArr = keyCounter[propName] || [];
-            // if (keyCounter[propName] && keyCounter[propName]) {
-            //   const itemVal = get(getFieldsValue(), propName) || [];
-            //   mapedArr = keyCounter[propName];
-            //   if (prop.shouldHaveOne && itemVal.length > mapedArr.length) {
-            //     mapedArr = mapedArr.concat([{}]);
-            //   }
-            //   // mapedArr = mapedArr.concat([{}]);
-            // } else if (prop.shouldHaveOne) {
-            //   mapedArr = [{}];
-            // } else {
-            //   mapedArr = [];
-            // }
-
-            // debugger;
             setting = (
-              <Panel header={prop.label} key={`setting${i}`}>
+              <Panel forceRender header={prop.label} key={`setting${i}`}>
                 <Button
                   icon="plus"
                   onClick={e => {
@@ -476,7 +451,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           defaultActiveKey={['1']}
           destroyInactivePanel={false}
         >
-          <Panel header={`基础设置`} key="1">
+          <Panel forceRender header={`基础设置`} key="1">
             <Row gutter={15}>
               <Col {...getCol(width, Size.MIDDLE)}>
                 <Item label={'组件'}>
@@ -572,7 +547,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             </Row>
           </Panel>
           {propsDecModels.length && (
-            <Panel header={'自定义设置'} key="2">
+            <Panel forceRender header={'自定义设置'} key="2">
               {propsDecModels}
             </Panel>
           )}

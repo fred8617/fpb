@@ -19,6 +19,7 @@
     "jsx": "preserve",
     "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
     "experimentalDecorators":true
   },
   "include": [

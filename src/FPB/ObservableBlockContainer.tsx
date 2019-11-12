@@ -1,6 +1,6 @@
 import React from 'react';
 import { Popover, Form, Button } from 'antd';
-import { FPBStore, FBPItem } from './useFPBStore';
+import { FPBStore, FPBItem } from './useFPBStore';
 import { useObserver, Observer } from 'mobx-react-lite';
 export interface ObservableBlockContainerProps {
   /**
@@ -12,9 +12,9 @@ export interface ObservableBlockContainerProps {
    */
   itemKey: string;
   /**
-   * @interface FBPItem
+   * @interface FPBItem
    */
-  data: FBPItem;
+  data: FPBItem;
 }
 const ObservableBlockContainer: React.SFC<
   ObservableBlockContainerProps

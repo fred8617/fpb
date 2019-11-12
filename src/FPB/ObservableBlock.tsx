@@ -6,7 +6,7 @@ import { toJS } from 'mobx';
 import { Consumer } from './FormContext';
 import FormConsumerComponent from './FormConsumerComponent';
 import ReactDOM from 'react-dom';
-import FPB from 'FBP';
+import FPB from 'FPB';
 import ErrorWrapper from './ErrorWrapper';
 import { findRequiredRules } from './utils';
 import { Alert } from 'antd';

@@ -2460,7 +2460,7 @@ collection-visit@^1.0.0:
 color-convert@^1.9.0, color-convert@^1.9.1:
   version "1.9.3"
   resolved "https://registry.npm.taobao.org/color-convert/download/color-convert-1.9.3.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fcolor-convert%2Fdownload%2Fcolor-convert-1.9.3.tgz#bb71850690e1f136567de629d2d5471deda4c1e8"
-  integrity sha1-u3GFBpDh8TZWfeYp0tVHHe2kweg=
+  integrity sha1-u3GFPBDh8TZWfeYp0tVHHe2kweg=
   dependencies:
     color-name "1.1.3"
 
@@ -7700,7 +7700,7 @@ private@^0.1.6:
 process-nextick-args@~2.0.0:
   version "2.0.1"
   resolved "https://registry.npm.taobao.org/process-nextick-args/download/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
-  integrity sha1-eCDZsWEgzFXKmud5JoCufbptf+I=
+  integrity sha1-eCDZsWEgzFXKmud5JoCuFPBtf+I=
 
 process@^0.11.10:
   version "0.11.10"

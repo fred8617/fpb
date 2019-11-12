@@ -7,11 +7,13 @@ interface GqlTableProps {
 }
 const GqlTable: SFC<GqlTableProps> = props => {
   const { data, loading } = useQuery(gql(props.gql));
-  console.log(props);
-  
   return (
     <>
-      <Table loading={loading} dataSource={data&&data.dataSource}>
+      <Table
+        rowKey={`id`}
+        loading={loading}
+        dataSource={data && data.dataSource}
+      >
         {props.children}
       </Table>
     </>

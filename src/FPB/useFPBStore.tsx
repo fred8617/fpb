@@ -310,6 +310,7 @@ export interface FPBConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  setBreakpointFromEntry(breakpoints: any);
   /**
    * 获取全部配置项以及数据
    */
@@ -361,7 +362,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * @param breakpoint 当前断点
    * @param col 布局列
    */
-  setBreakpoint(breakpoint, col);
+  setBreakpoint(breakpoint, col?);
   /**
    * RGLConfig
    */
@@ -407,12 +408,12 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    * 编辑中的数据
    */
-  editingItem: FBPItem;
+  editingItem: FPBItem;
   /**
    * 设置编辑中的数据
-   * @param item @interface FBPItem
+   * @param item @interface FPBItem
    */
-  setEditingItem(item: FBPItem);
+  setEditingItem(item: FPBItem);
   /**
    * 编辑状态
    */
@@ -450,10 +451,10 @@ export type RGLItemCallBack = (
   element: HTMLElement,
 ) => void;
 export interface FPBItemIndexList {
-  [key: string]: FBPItem;
+  [key: string]: FPBItem;
 }
 export interface FPBItemIndexListInitial {
-  [key: string]: Omit<FBPItem, 'Component'>;
+  [key: string]: Omit<FPBItem, 'Component'>;
 }
 
 export enum Mode {
@@ -470,7 +471,7 @@ export enum Mode {
 /**
  * fpb元素
  */
-export interface FBPItem {
+export interface FPBItem {
   /**
    * 主键
    */
@@ -510,7 +511,7 @@ export interface FBPItem {
 // lg	≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
 // xl	≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-
 // xxl
-const breakpointsStandard: Breakpoints = {
+export const breakpointsStandard: Breakpoints = {
   xl: 1600,
   lg: 1200,
   md: 992,
@@ -604,10 +605,13 @@ const useFPBStore = (props): FPBStore => {
 
         store.breakpoint = breakpoint;
       },
-      setBreakpointConfig(values) {
+      setBreakpointFromEntry(breakpoints) {
         store.breakpoints = Object.fromEntries(
-          values.breakpoints.map(point => [point, breakpointsStandard[point]]),
+          breakpoints.map(point => [point, breakpointsStandard[point]]),
         );
+      },
+      setBreakpointConfig(values) {
+        store.setBreakpointFromEntry(values.breakpoints);
         store.cols = {
           ...store.cols,
           ...values.cols,
@@ -688,7 +692,7 @@ const useFPBStore = (props): FPBStore => {
       createItem() {
         const i = shortid.generate();
         // store.layouts[store.breakpoint].push(item);
-        const newItem: FBPItem = {
+        const newItem: FPBItem = {
           i,
           Component: null,
           autoHeight: true,

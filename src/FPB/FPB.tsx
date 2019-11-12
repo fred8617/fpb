@@ -14,7 +14,6 @@ import { Provider } from './FormContext';
 import BreakpointForm from './BreakpointForm';
 import useFPBStore, { FPBProps, Mode } from './useFPBStore';
 import { toJS } from 'mobx';
-import GraphqlEditor from './GraphqlEditor';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = React.memo(props => {
@@ -29,6 +28,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         store.mode = Mode.PRIVIEW;
       }
       store.setDatas(props.defaultDatas.datas);
+      store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
       store.setLayouts([] as any, props.defaultDatas.layouts);
       //模态框动画弹出需要加renderDelay
       setTimeout(doWindowResize, props.renderDelay || 0);
@@ -121,45 +121,47 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         </div>
         <div key="setting">
           <Observer>
-            {() => (
-              <Drawer
-                destroyOnClose
-                title={store.editingItem && store.editingItem.i}
-                placement="right"
-                width={`100%`}
-                closable={store.isEditing}
-                onClose={_ => store.setEditingItem(null)}
-                visible={store.isEditing}
-                getContainer={false}
-                style={{ position: 'absolute' }}
-                bodyStyle={{
-                  padding: 0,
-                  height: `calc( 100% - 54.6px )`,
-                  overflow: `auto`,
-                }}
-              >
-                {store.isEditing && (
-                  <ItemSettingForm
-                    initialKeyCounter={
-                      (store.editingItem &&
-                        getObjectKeysWhenIsArray(
-                          toJS(store.editingItem.componentProps, {
-                            recurseEverything: true,
-                          }) || {},
-                          'componentProps',
-                        )) ||
-                      {}
-                    }
-                    components={props.components}
-                    item={store.editingItem}
-                    onItemTypeChange={store.onItemTypeChange}
-                    onItemPropsChange={store.onItemPropsChange}
-                    componentGroup={store.componentGroup}
-                    flatComponents={store.flatComponents}
-                  />
-                )}
-              </Drawer>
-            )}
+            {() => {
+              return (
+                <Drawer
+                  destroyOnClose
+                  title={store.editingItem && store.editingItem.i}
+                  placement="right"
+                  width={`100%`}
+                  closable={store.isEditing}
+                  onClose={_ => store.setEditingItem(null)}
+                  visible={store.isEditing}
+                  getContainer={false}
+                  style={{ position: 'absolute' }}
+                  bodyStyle={{
+                    padding: 0,
+                    height: `calc( 100% - 54.6px )`,
+                    overflow: `auto`,
+                  }}
+                >
+                  {store.isEditing && (
+                    <ItemSettingForm
+                      initialKeyCounter={
+                        (store.editingItem &&
+                          getObjectKeysWhenIsArray(
+                            toJS(store.editingItem.componentProps, {
+                              recurseEverything: true,
+                            }) || {},
+                            'componentProps',
+                          )) ||
+                        {}
+                      }
+                      components={props.components}
+                      item={store.editingItem}
+                      onItemTypeChange={store.onItemTypeChange}
+                      onItemPropsChange={store.onItemPropsChange}
+                      componentGroup={store.componentGroup}
+                      flatComponents={store.flatComponents}
+                    />
+                  )}
+                </Drawer>
+              );
+            }}
           </Observer>
 
           <Form layout="inline">
@@ -208,7 +210,6 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 )}
               </Observer>
             </Form.Item>
-            {/* <GraphqlEditor/> */}
           </Form>
         </div>
       </SplitPane>
