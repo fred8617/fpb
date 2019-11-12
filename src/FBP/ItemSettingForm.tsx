@@ -12,30 +12,32 @@ import {
   Row,
   Col,
   Divider,
-  Card
-} from "antd";
-import { FormComponentProps } from "antd/lib/form";
+  Card,
+} from 'antd';
+import { FormComponentProps } from 'antd/lib/form';
 import {
   ComponentGroup,
   ComponentType,
   FBPItem,
-  ComponentProps
-} from "./useFPBStore";
-import React, { useState, useEffect, Fragment, useRef } from "react";
-import { get } from "lodash";
-import CommonInput from "./CommonInput";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import useSizeMe from "./useSizeMe";
-import { toJS } from "mobx";
-import { getObjectKeysWhenIsArray } from "./utils";
-import FPBForm from "./FPBForm";
+  ComponentProps,
+} from './useFPBStore';
+import React, { useState, useEffect, Fragment, useRef } from 'react';
+import { get } from 'lodash';
+import CommonInput from './CommonInput';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import useSizeMe from './useSizeMe';
+import { toJS } from 'mobx';
+import { getObjectKeysWhenIsArray } from './utils';
+import FPBForm from './FPBForm';
+import GraphqlEditor from './GraphqlEditor';
+
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
 const { Panel } = Collapse;
 enum Size {
   SMALL,
   MIDDLE,
-  LARGE
+  LARGE,
 }
 // xs	<576
 // sm	≥576
@@ -117,7 +119,7 @@ const { create, Item } = Form;
 
 const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
   const { form, item, onItemPropsChange } = props;
-  console.log("ItemSettingForm", toJS(props, { recurseEverything: true }));
+  console.log('ItemSettingForm', toJS(props, { recurseEverything: true }));
   const [keyCounter, setKeyCounter] = useState(() => props.initialKeyCounter);
   const recordItem = useRef(item);
   // useEffect(() => {
@@ -138,12 +140,12 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     }
   }, [item]);
   useEffect(() => {
-    console.log(keyCounter);
+    // console.log(keyCounter);
     //临时解决方案
     Object.keys(keyCounter).length &&
       form.getFieldsValue().componentProps &&
       form.setFieldsValue({
-        componentProps: props.form.getFieldsValue().componentProps
+        componentProps: props.form.getFieldsValue().componentProps,
       });
   }, [keyCounter]);
 
@@ -172,38 +174,38 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     );
   };
   //组件类型
-  const componentTypeDec = getFieldDecorator("componentId", {
-    initialValue: initialValue.componentId
+  const componentTypeDec = getFieldDecorator('componentId', {
+    initialValue: initialValue.componentId,
     //preserve: true
   });
   /**
    * 自适应高度
    */
-  const autoHeightDec = getFieldDecorator("autoHeight", {
-    valuePropName: "checked",
-    initialValue: initialValue.autoHeight
+  const autoHeightDec = getFieldDecorator('autoHeight', {
+    valuePropName: 'checked',
+    initialValue: initialValue.autoHeight,
     //preserve: true
   });
   /**
    * 是否作为表单域
    */
-  const isFormFieldDec = getFieldDecorator("isFormField", {
-    valuePropName: "checked",
-    initialValue: initialValue.isFormField
+  const isFormFieldDec = getFieldDecorator('isFormField', {
+    valuePropName: 'checked',
+    initialValue: initialValue.isFormField,
     //preserve: true
   });
   /**
    * 是否作为表单域id
    */
-  const $idDec = getFieldDecorator("$id", {
-    initialValue: initialValue.$id
+  const $idDec = getFieldDecorator('$id', {
+    initialValue: initialValue.$id,
     //preserve: true
   });
   /**
    * 是否作为表单域label
    */
-  const labelDec = getFieldDecorator("label", {
-    initialValue: initialValue.label
+  const labelDec = getFieldDecorator('label', {
+    initialValue: initialValue.label,
     //preserve: true
   });
   const { componentId, isFormField } = getFieldsValue();
@@ -220,7 +222,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     arr.splice(source.index, 1);
     arr.splice(destination.index, 0, dragValue);
     form.setFieldsValue({
-      componentProps: values.componentProps
+      componentProps: values.componentProps,
     });
   };
   const deleteProp = (propName, index) => {
@@ -229,41 +231,56 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     arr.splice(index, 1);
     keyCounter[propName].splice(index, 1);
     form.setFieldsValue({
-      componentProps: values.componentProps
+      componentProps: values.componentProps,
     });
     setKeyCounter({ ...keyCounter });
   };
   const createComponentPropsForm = (
     componentProps: ComponentProps,
-    prefix = "componentProps"
+    prefix = 'componentProps',
   ) => {
     const componentPropsEntries = Object.entries(componentProps);
     return [
       ...componentPropsEntries
-        .filter(([, prop]) => prop.type.indexOf("array") < 0)
+        .filter(([, prop]) => prop.type.indexOf('array') < 0)
         .map(([name, prop], i) => {
           let setting;
           const propName = `${prefix}.${name}`;
-          if (prop.type === "string") {
+          const options = {
+            rules: prop.rules,
+          };
+          if (prop.type === 'string') {
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
-                  initialValue: get(item, propName)
+                  initialValue: get(item, propName),
+                  ...options,
                   //preserve: true
                 })(<CommonInput />)}
               </Item>
             );
-          } else if (prop.type === "FPR") {
-            console.log("FPR", get(item, propName));
+          } else if (prop.type === 'FPR') {
+            // console.log('FPR', get(item, propName));
 
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
                   initialValue: toJS(get(item, propName), {
-                    recurseEverything: true
-                  })
+                    recurseEverything: true,
+                  }),
+                  ...options,
                   //preserve: true
                 })(<FPBForm components={props.components} />)}
+              </Item>
+            );
+          } else if (prop.type === 'graphql') {
+            setting = (
+              <Item label={prop.label} key={propName}>
+                {getFieldDecorator(propName, {
+                  initialValue: get(item, propName),
+                  ...options,
+                  //preserve: true
+                })(<GraphqlEditor />)}
               </Item>
             );
           }
@@ -272,7 +289,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
         }),
       <Collapse key={`settings`} accordion destroyInactivePanel={false}>
         {componentPropsEntries
-          .filter(([, prop]) => prop.type.indexOf("array") >= 0)
+          .filter(([, prop]) => prop.type.indexOf('array') >= 0)
           .map(([name, prop], i) => {
             let setting;
             const propName = `${prefix}.${name}`;
@@ -317,7 +334,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                 >
                   添加{prop.label}
                 </Button>
-                {(prop.type === "array:component" && (
+                {(prop.type === 'array:component' && (
                   <DragDropContext onDragEnd={sortProps}>
                     <Droppable droppableId={propName}>
                       {provided => {
@@ -348,20 +365,20 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                                           key={`car${pi}`}
                                           actions={[
                                             <div {...provided.dragHandleProps}>
-                                              <Icon type="drag" key={"drag"} />
+                                              <Icon type="drag" key={'drag'} />
                                             </div>,
                                             <Icon
                                               type="delete"
-                                              key={"delete"}
+                                              key={'delete'}
                                               onClick={_ =>
                                                 deleteProp(propName, pi)
                                               }
-                                            />
+                                            />,
                                           ]}
                                         >
                                           {createComponentPropsForm(
                                             componentProps[name].componentProps,
-                                            `${propName}[${pi}].componentProps`
+                                            `${propName}[${pi}].componentProps`,
                                           )}
                                         </Card>
                                       </div>
@@ -377,7 +394,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                     </Droppable>
                   </DragDropContext>
                 )) ||
-                  (prop.type === "array:string" && (
+                  (prop.type === 'array:string' && (
                     <DragDropContext onDragEnd={sortProps}>
                       <Droppable droppableId={propName}>
                         {provided => {
@@ -411,7 +428,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                                           <Item>
                                             {getFieldDecorator(key, {
                                               //preserve: true,
-                                              initialValue: get(item, key)
+                                              initialValue: get(item, key),
                                             })(<CommonInput />)}
                                           </Item>
                                           <Item>
@@ -422,7 +439,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                                               type="delete"
                                               style={{
                                                 color: `red`,
-                                                cursor: `pointer`
+                                                cursor: `pointer`,
                                               }}
                                             />
                                           </Item>
@@ -444,7 +461,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
             return setting;
           })}
-      </Collapse>
+      </Collapse>,
     ];
   };
 
@@ -456,19 +473,19 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
       <Form {...getFormItemCol(width)}>
         <Collapse
           accordion
-          defaultActiveKey={["1"]}
+          defaultActiveKey={['1']}
           destroyInactivePanel={false}
         >
           <Panel header={`基础设置`} key="1">
             <Row gutter={15}>
               <Col {...getCol(width, Size.MIDDLE)}>
-                <Item label={"组件"}>
+                <Item label={'组件'}>
                   {componentTypeDec(
                     <TreeSelect
                       onChange={_ => setKeyCounter({})}
                       showSearch
                       style={{ width: `100%` }}
-                      dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
+                      dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                       placeholder="请选择组件"
                       allowClear
                       autoClearSearchValue
@@ -481,19 +498,19 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                         return (
                           <TreeNode
                             disabled
-                            value={"group"}
-                            title={groupOrComponent["groupName"]}
-                            key={`group${index}`}
+                            value={groupOrComponent['groupName']}
+                            title={groupOrComponent['groupName']}
+                            key={groupOrComponent['groupName']}
                           >
                             {groupOrComponent[
-                              groupOrComponent["groupName"]
+                              groupOrComponent['groupName']
                             ].map(component => {
                               return renderTypeTreeNode(component);
                             })}
                           </TreeNode>
                         );
                       })}
-                    </TreeSelect>
+                    </TreeSelect>,
                   )}
                 </Item>
               </Col>
@@ -509,7 +526,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                   }
                 >
                   {autoHeightDec(
-                    <Switch checkedChildren={"开"} unCheckedChildren={"关"} />
+                    <Switch checkedChildren={'开'} unCheckedChildren={'关'} />,
                   )}
                 </Item>
               </Col>
@@ -517,12 +534,12 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
               {formField && (
                 <Fragment key="frag">
                   <Col {...getCol(width, Size.SMALL)}>
-                    <Item label={"是否作为表单域"}>
+                    <Item label={'是否作为表单域'}>
                       {isFormFieldDec(
                         <Switch
-                          checkedChildren={"是"}
-                          unCheckedChildren={"否"}
-                        />
+                          checkedChildren={'是'}
+                          unCheckedChildren={'否'}
+                        />,
                       )}
                     </Item>
                   </Col>
@@ -539,12 +556,12 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                             </span>
                           }
                         >
-                          {$idDec(<CommonInput placeholder={"请填写id"} />)}
+                          {$idDec(<CommonInput placeholder={'请填写id'} />)}
                         </Item>
                       </Col>
                       <Col {...getCol(width, Size.MIDDLE)}>
                         <Item label={<span>label</span>}>
-                          {labelDec(<CommonInput placeholder={""} />)}
+                          {labelDec(<CommonInput placeholder={''} />)}
                         </Item>
                       </Col>
                     </>
@@ -555,7 +572,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             </Row>
           </Panel>
           {propsDecModels.length && (
-            <Panel header={"自定义设置"} key="2">
+            <Panel header={'自定义设置'} key="2">
               {propsDecModels}
             </Panel>
           )}
@@ -572,12 +589,12 @@ export default create<ItemSettingFormProps>({
       return;
     }
     const value = changedValues[field];
-    console.log("onValuesChange", field, allValues[field]);
-    if (field === "componentId") {
+    console.log('onValuesChange', field, allValues[field]);
+    if (field === 'componentId') {
       props.onItemTypeChange(value);
     } else {
       props.onItemPropsChange(field, allValues[field]);
     }
   },
-  onFieldsChange(props, fields) {}
+  onFieldsChange(props, fields) {},
 })(ItemSettingForm);

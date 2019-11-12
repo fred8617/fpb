@@ -1,12 +1,15 @@
-import React, { SFC, useEffect } from "react";
-import { FPBStore, ArrayComponentProp, ComponentType } from "./useFPBStore";
-import { useObserver, Observer } from "mobx-react-lite";
-import Block from "./Block";
-import { toJS } from "mobx";
-import { Consumer } from "./FormContext";
-import FormConsumerComponent from "./FormConsumerComponent";
-import ReactDOM from "react-dom";
-import FPB from "FBP";
+import React, { SFC, useEffect } from 'react';
+import { FPBStore, ArrayComponentProp, ComponentType } from './useFPBStore';
+import { useObserver, Observer } from 'mobx-react-lite';
+import Block from './Block';
+import { toJS } from 'mobx';
+import { Consumer } from './FormContext';
+import FormConsumerComponent from './FormConsumerComponent';
+import ReactDOM from 'react-dom';
+import FPB from 'FBP';
+import ErrorWrapper from './ErrorWrapper';
+import { findRequiredRules } from './utils';
+import { Alert } from 'antd';
 
 export interface ObservableBlockProps {
   i;
@@ -30,19 +33,21 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
         componentProps,
         autoHeight,
         componentId,
-        isFormField
+        isFormField,
       } = item;
+      const component = store.flatComponents[componentId];
 
       // const component = store.flatComponents[componentId];
       const { children, ...rest } = toJS(componentProps || {}, {
-        recurseEverything: true
+        recurseEverything: true,
       });
       const finalComponentProps = { ...rest };
       if (isFormField) {
         delete finalComponentProps.defaultValue;
         delete finalComponentProps.value;
       }
-      const component = store.flatComponents[componentId];
+
+      // component.componentProps&&findRequiredRules(component.componentProps);
       /**
        *
        * @param comp 组件类型
@@ -52,27 +57,41 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
         // console.log(toJS(children));
         //debugger;
         // //debugger
+
         if (
           comp.componentProps && //组件含有属性
           comp.componentProps.children && //组件属性中包含子元素
-          comp.componentProps.children.type === "array:component" //子元素为数组
+          comp.componentProps.children.type === 'array:component' //子元素为数组
         ) {
           // if(comp.componentProps.children.shouldHaveOne){
           //   //debugger
           //   chil.push({})
           // }
-          console.log("child");
+          // console.log('child');
           return chil.map((child, i) => {
             const Comp = comp.componentProps.children.Component; //获取子组件组件类型
             const { children, ...rest } =
               toJS(child.componentProps, { recurseEverything: true }) || {};
-
+            const requiredRules = findRequiredRules(
+              comp.componentProps.children.componentProps,
+            );
+            if (requiredRules.find(rule => !rest[rule])) {
+              return (
+                <Alert
+                  key={`chil${i}`}
+                  message="提示"
+                  description="属性不全请补齐"
+                  type="warning"
+                  showIcon
+                />
+              );
+            }
             return (
               <Comp key={`chil${i}`} {...rest}>
                 {children &&
                   renderComponentChildren(
                     comp.componentProps.children as any,
-                    children
+                    children,
                   )}
               </Comp>
             );
@@ -80,9 +99,9 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
         } else if (
           comp.componentProps && //组件含有属性
           comp.componentProps.children && //组件属性中包含子元素
-          comp.componentProps.children.type === "FPR" //子元素为数组
+          comp.componentProps.children.type === 'FPR' //子元素为数组
         ) {
-          console.log("renderfpr");
+          // console.log('renderfpr');
 
           return (
             <Observer>
@@ -102,18 +121,34 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
         !component.componentProps.children.shouldHaveOne || //或者有子元素不需要默认创建
           (component.componentProps.children && //有子元素并且需要有默认元素并且类型还是数组的需要长度大于0
             component.componentProps.children.shouldHaveOne &&
-            component.componentProps.children.type === "array:component" &&
+            component.componentProps.children.type === 'array:component' &&
             children &&
             children.length)) && (
-          <Component {...finalComponentProps}>
-            {children && renderComponentChildren()}
-          </Component>
+          <ErrorWrapper>
+            {props => {
+              // console.log('rule',component.componentProps);
+              const requiredRules = findRequiredRules(component.componentProps);
+              if (requiredRules.find(rule => !finalComponentProps[rule])) {
+                return (
+                  <Alert
+                    message="提示"
+                    description="属性不全请补齐"
+                    type="warning"
+                    showIcon
+                  />
+                );
+              }
+              return (
+                <Component {...finalComponentProps} {...props}>
+                  {children && renderComponentChildren()}
+                </Component>
+              );
+            }}
+          </ErrorWrapper>
         )
       );
     };
     let finalComponent = getComponent();
-
-    // console.log(renderedComponent,ReactDOM);
     return (
       <Observer>
         {() => {
@@ -137,7 +172,7 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
                 {() => {
                   let renderedComponent;
                   if (!store.isPreview) {
-                    console.log("getComponent");
+                    // console.log('getComponent');
 
                     finalComponent = getComponent();
                   }
@@ -160,6 +195,6 @@ const ObservableBlock: SFC<ObservableBlockProps> = React.memo(
         }}
       </Observer>
     );
-  }
+  },
 );
 export default ObservableBlock;

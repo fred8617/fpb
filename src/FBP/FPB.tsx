@@ -1,19 +1,20 @@
-import { Responsive, WidthProvider } from "react-grid-layout";
-import React, { useRef, useEffect } from "react";
-import { Observer } from "mobx-react-lite";
-import { doWindowResize, getObjectKeysWhenIsArray } from "./utils";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-import "./index.less";
-import { Empty, Button, Form, Drawer, Radio, Modal } from "antd";
-import SplitPane from "react-split-pane";
-import ItemSettingForm from "./ItemSettingForm";
-import ObservableBlock from "./ObservableBlock";
-import ObservableBlockContainer from "./ObservableBlockContainer";
-import { Provider } from "./FormContext";
-import BreakpointForm from "./BreakpointForm";
-import useFPBStore, { FPBProps, Mode } from "./useFPBStore";
-import { toJS } from "mobx";
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import React, { useRef, useEffect } from 'react';
+import { Observer } from 'mobx-react-lite';
+import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+import './index.less';
+import { Empty, Button, Form, Drawer, Radio, Modal } from 'antd';
+import SplitPane from 'react-split-pane';
+import ItemSettingForm from './ItemSettingForm';
+import ObservableBlock from './ObservableBlock';
+import ObservableBlockContainer from './ObservableBlockContainer';
+import { Provider } from './FormContext';
+import BreakpointForm from './BreakpointForm';
+import useFPBStore, { FPBProps, Mode } from './useFPBStore';
+import { toJS } from 'mobx';
+import GraphqlEditor from './GraphqlEditor';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = React.memo(props => {
@@ -30,11 +31,11 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       store.setDatas(props.defaultDatas.datas);
       store.setLayouts([] as any, props.defaultDatas.layouts);
       //模态框动画弹出需要加renderDelay
-      setTimeout(doWindowResize, props.renderDelay||0);
+      setTimeout(doWindowResize, props.renderDelay || 0);
       // doWindowResize();
     }
   }, [props.defaultDatas]);
-  console.log("render", store);
+  console.log('render', store);
   const { FPR = false } = props;
   const FPRPart = (
     <Provider value={{ form: props.form }}>
@@ -42,7 +43,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         {() => (
           <ResponsiveGridLayout
             // useCSSTransforms={false}
-            style={{ display: !store.hasLayout() ? "none" : "block" }}
+            style={{ display: !store.hasLayout() ? 'none' : 'block' }}
             className="layout"
             {...store.jsConfig}
           >
@@ -100,18 +101,18 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         className="FPB"
         onDragFinished={doWindowResize}
         paneStyle={{ position: `relative` }}
-        style={{ position: "relative" }}
+        style={{ position: 'relative' }}
         defaultSize={props.contentDefaultSize || `50%`}
         minSize={479}
         maxSize={1600}
       >
-        <div style={{ position: `relative` }} key={"builder"}>
+        <div style={{ position: `relative` }} key={'builder'}>
           <Observer>
             {() => (
               <>
                 <Empty
-                  style={{ display: store.hasLayout() ? "none" : "block" }}
-                  description={"暂无元素"}
+                  style={{ display: store.hasLayout() ? 'none' : 'block' }}
+                  description={'暂无元素'}
                 />
                 {FPRPart}
               </>
@@ -130,11 +131,11 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 onClose={_ => store.setEditingItem(null)}
                 visible={store.isEditing}
                 getContainer={false}
-                style={{ position: "absolute" }}
+                style={{ position: 'absolute' }}
                 bodyStyle={{
                   padding: 0,
                   height: `calc( 100% - 54.6px )`,
-                  overflow: `auto`
+                  overflow: `auto`,
                 }}
               >
                 {store.isEditing && (
@@ -143,9 +144,9 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                       (store.editingItem &&
                         getObjectKeysWhenIsArray(
                           toJS(store.editingItem.componentProps, {
-                            recurseEverything: true
+                            recurseEverything: true,
                           }) || {},
-                          "componentProps"
+                          'componentProps',
                         )) ||
                       {}
                     }
@@ -207,6 +208,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                 )}
               </Observer>
             </Form.Item>
+            {/* <GraphqlEditor/> */}
           </Form>
         </div>
       </SplitPane>
@@ -216,7 +218,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
             centered
             destroyOnClose
             maskClosable={false}
-            title={"设置断点"}
+            title={'设置断点'}
             visible={store.breakpointSettingVisible}
             onOk={_ =>
               breakpointFormRef.current.validateFieldsAndScroll(
@@ -225,7 +227,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
                     return;
                   }
                   store.setBreakpointConfig(values);
-                }
+                },
               )
             }
             onCancel={_ => store.setBreakpointSettingVisible(false)}
@@ -240,5 +242,5 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
     </>
   );
 });
-const FormFPB = Form.create<FPBProps>({ name: "FPB" })(FPB);
+const FormFPB = Form.create<FPBProps>({ name: 'FPB' })(FPB);
 export { FormFPB as default };

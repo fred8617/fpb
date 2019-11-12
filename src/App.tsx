@@ -1,12 +1,15 @@
-import React, { SFC, Fragment } from 'react';
+import React, { SFC, Fragment, useEffect, useState } from 'react';
 import FPB from './FBP';
 import { Input, Button, Tabs, Radio, Checkbox } from 'antd';
+import { ApolloProvider } from '@apollo/react-hooks';
+import ApolloClient, { gql } from 'apollo-boost';
 import input from 'demo-components/input';
 import checkbox from 'demo-components/checkbox';
 import radio from 'demo-components/radio';
 import button from 'demo-components/button';
 import tabs from 'demo-components/tabs';
 import table from 'demo-components/table';
+import gqltable from 'demo-components/gql-table';
 const defaultDatas = {
   datas: {
     'jffT1f5-': {
@@ -288,12 +291,17 @@ const defaultDatas2 = {
   cols: { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 },
   breakpoints: ['lg'],
 };
+const client = new ApolloClient({
+  uri: 'http://localhost:4466/',
+});
 const App: React.FC = () => {
   return (
-    <FPB
-      defaultDatas={defaultDatas as any}
-      components={[input, checkbox, radio, button, tabs, table]}
-    />
+    <ApolloProvider client={client}>
+       <FPB
+          defaultDatas={defaultDatas as any}
+          components={[input, checkbox, radio, button, tabs, table,gqltable]}
+        />
+    </ApolloProvider>
   );
 };
 

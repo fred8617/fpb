@@ -1,7 +1,7 @@
 ### fled-page-builder
 
 # form-setting
-- 增加componentType FPR
+- 基础类型完善，Boolean，Number,Object(Json),动态Select现有component
 - 表单值域 id 去重
 - 布局
 - 区块高度
@@ -10,6 +10,7 @@
 - 表单域 option(rules)
 - 表单域label布局
 - 框内样式，用padding模拟gutter
+- ~~增加componentType FPR~~
 - ~~分组 Panel~~
 - ~~表单域 label~~
 - ~~修复自定义设置类型显示不正确~~

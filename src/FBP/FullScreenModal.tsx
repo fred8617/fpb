@@ -7,14 +7,15 @@ interface FullScreenModalProps extends ModalProps {
   minuHeight?: number;
 }
 
-const FullScreenModal: SFC<FullScreenModalProps> = props => {
+const FullScreenModal: SFC<FullScreenModalProps> = allProps => {
+  const { bodyStyle, ...props } = allProps;
   const [height, setHeight] = useState(0);
 
   const minuHeight = useMemo(() => {
     return props.footer === null ? 0 : props.minuHeight ? props.minuHeight : 53;
   }, [props.footer, props.minuHeight]);
-  const minuHeightRef=useRef(minuHeight)
-  minuHeightRef.current=minuHeight
+  const minuHeightRef = useRef(minuHeight);
+  minuHeightRef.current = minuHeight;
   useEffect(() => {
     const caclHeight = () => {
       setTimeout(() => {
@@ -30,9 +31,9 @@ const FullScreenModal: SFC<FullScreenModalProps> = props => {
   }, []);
   return (
     <Modal
-      style={{ padding: 0,margin:0,maxWidth:`100%` }}
+      style={{ padding: 0, margin: 0, maxWidth: `100%` }}
       width={`100%`}
-      bodyStyle={{ height, overflow: `auto` }}
+      bodyStyle={{ height, overflow: `auto`, ...bodyStyle }}
       centered
       {...props}
     />

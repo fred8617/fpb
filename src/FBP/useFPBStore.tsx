@@ -8,7 +8,7 @@ import './index.less';
 import { Size } from 'react-split-pane';
 import shortid from 'shortid';
 import { ItemSettingProps } from './ItemSettingForm';
-import { FormComponentProps } from 'antd/lib/form';
+import { FormComponentProps, ValidationRule } from 'antd/lib/form';
 import { RadioChangeEvent } from 'antd/lib/radio';
 
 const emptyLayouts: BreakpointsLayouts = {
@@ -112,11 +112,21 @@ interface BaseComponentProp {
   /**
    * 类型
    */
-  type: 'array:component' | 'array:string' | 'string' | 'number' | 'FPR';
+  type:
+    | 'array:component'
+    | 'array:string'
+    | 'string'
+    | 'number'
+    | 'FPR'
+    | 'graphql';
+  /**
+   * 校验规则
+   */
+  rules?: ValidationRule[];
   /**
    * 组件
    */
-  Component?: React.ComponentClass | ExoticComponent | null;
+  Component?: React.ComponentClass | ExoticComponent | null | React.SFC;
   /**
    * type为array时是否默认增加一个元素
    */
@@ -137,7 +147,7 @@ export interface ArrayComponentProp extends BaseComponentProp {
   /**
    * 组件
    */
-  Component: React.ComponentClass | ExoticComponent;
+  Component: React.ComponentClass | ExoticComponent | React.SFC;
   /**
    * type为array时是否默认增加一个元素
    */
@@ -171,13 +181,20 @@ export interface StringProp extends BaseComponentProp {
    */
   type: 'string';
 }
+export interface GraphqlProp extends BaseComponentProp {
+  /**
+   * 类型
+   */
+  type: 'graphql';
+}
 
 export interface ComponentProps {
   [propName: string]:
     | FPRProp
     | ArrayComponentProp
     | ArrayStringProp
-    | StringProp;
+    | StringProp
+    | GraphqlProp;
   children?: FPRProp | ArrayComponentProp | ArrayStringProp | StringProp;
 }
 
@@ -208,7 +225,7 @@ export interface BaseComponentType {
   /**
    * 组件,本想dynamic import 一下，但是webpack不支持
    */
-  Component: React.ComponentClass;
+  Component: React.ComponentClass | React.SFC;
   /**
    * 组件属性
    */
@@ -461,7 +478,7 @@ export interface FBPItem {
   /**
    * 组件类
    */
-  Component: React.ComponentClass;
+  Component: React.ComponentClass | React.SFC;
   /**
    * 组件属性
    */
@@ -509,7 +526,10 @@ const defaultCols: Cols = { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 };
 
 const useFPBStore = (props): FPBStore => {
   const force = useForceUpdate();
-  const store: FPBStore = useLocalStore<FPBStore, Omit<FPBProps, 'form'>>(
+  const store: FPBStore = useLocalStore<
+    FPBStore,
+    Omit<Omit<FPBProps, 'form'>, 'schema'>
+  >(
     source => ({
       rowHeight: 1,
       margin: [0, 0],
@@ -735,6 +755,8 @@ const useFPBStore = (props): FPBStore => {
           });
         };
         dealChildren();
+        console.log(flatComponents);
+
         return flatComponents;
       },
       get componentGroup() {
