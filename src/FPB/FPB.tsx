@@ -32,7 +32,7 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       setTimeout(doWindowResize, props.renderDelay || 0);
       // doWindowResize();
     }
-  }, [props.defaultDatas]);
+  }, [props.defaultDatas,props.renderDelay]);
   console.log('render', store);
   const { FPR = false } = props;
   const FPRPart = (
