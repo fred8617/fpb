@@ -309,6 +309,7 @@ export interface FPBConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  editingTitle: string;
   setBreakpointFromEntry(breakpoints: any);
   /**
    * 获取全部配置项以及数据
@@ -537,6 +538,9 @@ const useFPBStore = (props): FPBStore => {
       breakpoints: defaultbreakpoints,
       cols: defaultCols,
       /*********************** */
+      get editingTitle() {
+        return store.editingItem && store.editingItem.i;
+      },
       get config() {
         return toJS<FPBConfig>(
           {

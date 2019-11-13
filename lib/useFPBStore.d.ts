@@ -263,6 +263,7 @@ export interface FPBConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+    editingTitle: string;
     setBreakpointFromEntry(breakpoints: any): any;
     /**
      * 获取全部配置项以及数据

@@ -13,6 +13,7 @@ import {
   Col,
   Divider,
   Card,
+  Spin,
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import {
@@ -30,6 +31,7 @@ import { toJS } from 'mobx';
 import { getObjectKeysWhenIsArray } from './utils';
 import FPBForm from './FPBForm';
 import GraphqlEditor from './GraphqlEditor';
+import { observer } from 'mobx-react-lite';
 
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
@@ -117,11 +119,15 @@ export interface ItemSettingFormProps
 
 const { create, Item } = Form;
 
-const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
+const ItemSettingForm: React.SFC<ItemSettingFormProps> = observer(props => {
+  // const [render, setRender] = useState(false);
   const { form, item, onItemPropsChange } = props;
   console.log('ItemSettingForm', toJS(props, { recurseEverything: true }));
   const [keyCounter, setKeyCounter] = useState(() => props.initialKeyCounter);
   const recordItem = useRef(item);
+  // useEffect(() => {
+  //   setTimeout(() => setRender(true), 300);
+  // }, []);
   useEffect(() => {
     if (recordItem.current !== item) {
       form.resetFields();
@@ -129,19 +135,20 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
     }
   }, [item]);
   useEffect(() => {
+    // if (!render) {
+    //   return;
+    // }
     //临时解决方案
-    setTimeout(
-      () =>
-        Object.keys(keyCounter).length &&
-        form.getFieldsValue().componentProps &&
-        form.setFieldsValue({
-          componentProps: form.getFieldsValue().componentProps,
-        }),
-      500,
-    );
+    const { componentProps } = form.getFieldsValue();
+    Object.keys(keyCounter).length &&
+      componentProps &&
+      form.setFieldsValue({
+        componentProps,
+      });
   }, [keyCounter]);
 
-  const initialValue: FPBItem | { [key: string]: any } = item || {};
+  const initialValue: FPBItem | { [key: string]: any } =
+    toJS(item, { recurseEverything: true }) || {};
   const { getFieldDecorator, getFieldsValue, getFieldValue } = form;
   const renderTypeTreeNode = component => {
     if (component.children) {
@@ -165,6 +172,20 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
       />
     );
   };
+  // const [settingForm] = useSizeMe(size => {
+  //   const { width } = size;
+  //   return (
+  //     <>
+  //       <div></div>
+  //       {width && render&&(
+
+  //       )}
+  //     </>
+  //   );
+  // }, {});
+  // if (!render) {
+  //   return <>{/* <Spin spinning={true}/> */}</>;
+  // }
   //组件类型
   const componentTypeDec = getFieldDecorator('componentId', {
     initialValue: initialValue.componentId,
@@ -245,19 +266,19 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
-                  initialValue: get(item, propName),
+                  initialValue: get(initialValue, propName),
                   ...options,
                   //preserve: true
                 })(<CommonInput />)}
               </Item>
             );
           } else if (prop.type === 'FPR') {
-            // console.log('FPR', get(item, propName));
+            // console.log('FPR', get(initialValue, propName));
 
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
-                  initialValue: toJS(get(item, propName), {
+                  initialValue: toJS(get(initialValue, propName), {
                     recurseEverything: true,
                   }),
                   ...options,
@@ -269,7 +290,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             setting = (
               <Item label={prop.label} key={propName}>
                 {getFieldDecorator(propName, {
-                  initialValue: get(item, propName),
+                  initialValue: get(initialValue, propName),
                   ...options,
                   //preserve: true
                 })(<GraphqlEditor />)}
@@ -287,6 +308,123 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
             const propName = `${prefix}.${name}`;
             let mapedArr;
             mapedArr = keyCounter[propName] || [];
+            let renderAfterAddButtonComponent;
+            if (prop.type === 'array:component') {
+              renderAfterAddButtonComponent = (
+                <DragDropContext onDragEnd={sortProps}>
+                  <Droppable droppableId={propName}>
+                    {provided => {
+                      return (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {mapedArr.map((p, pi) => {
+                            const key = `${propName}[${pi}]`;
+                            return (
+                              <Draggable key={key} draggableId={key} index={pi}>
+                                {provided => {
+                                  return (
+                                    <div
+                                      key={key}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      // className="ant-form ant-form-inline"
+                                    >
+                                      <Card
+                                        style={{ margin: `5px 0` }}
+                                        key={`car${pi}`}
+                                        actions={[
+                                          <div {...provided.dragHandleProps}>
+                                            <Icon type="drag" key={'drag'} />
+                                          </div>,
+                                          <Icon
+                                            type="delete"
+                                            key={'delete'}
+                                            onClick={_ =>
+                                              deleteProp(propName, pi)
+                                            }
+                                          />,
+                                        ]}
+                                      >
+                                        {createComponentPropsForm(
+                                          componentProps[name].componentProps,
+                                          `${propName}[${pi}].componentProps`,
+                                        )}
+                                      </Card>
+                                    </div>
+                                  );
+                                }}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </div>
+                      );
+                    }}
+                  </Droppable>
+                </DragDropContext>
+              );
+            } else if (prop.type === 'array:string') {
+              renderAfterAddButtonComponent = (
+                <DragDropContext onDragEnd={sortProps}>
+                  <Droppable droppableId={propName}>
+                    {provided => {
+                      return (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {mapedArr.map((p, pi) => {
+                            const key = `${propName}[${pi}]`;
+                            debugger;
+                            return (
+                              <Draggable key={key} draggableId={key} index={pi}>
+                                {provided => {
+                                  return (
+                                    <div
+                                      key={key}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      className="ant-form ant-form-inline"
+                                    >
+                                      <Item>
+                                        <div {...provided.dragHandleProps}>
+                                          <Icon type="drag" />
+                                        </div>
+                                      </Item>
+                                      <Item>
+                                        {getFieldDecorator(key, {
+                                          //preserve: true,
+                                          initialValue: get(item, key),
+                                        })(<CommonInput />)}
+                                      </Item>
+                                      <Item>
+                                        <Icon
+                                          onClick={_ =>
+                                            deleteProp(propName, pi)
+                                          }
+                                          type="delete"
+                                          style={{
+                                            color: `red`,
+                                            cursor: `pointer`,
+                                          }}
+                                        />
+                                      </Item>
+                                    </div>
+                                  );
+                                }}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </div>
+                      );
+                    }}
+                  </Droppable>
+                </DragDropContext>
+              );
+            }
             setting = (
               <Panel forceRender header={prop.label} key={`setting${i}`}>
                 <Button
@@ -309,128 +447,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                 >
                   添加{prop.label}
                 </Button>
-                {(prop.type === 'array:component' && (
-                  <DragDropContext onDragEnd={sortProps}>
-                    <Droppable droppableId={propName}>
-                      {provided => {
-                        return (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                          >
-                            {mapedArr.map((p, pi) => {
-                              const key = `${propName}[${pi}]`;
-
-                              return (
-                                <Draggable
-                                  key={key}
-                                  draggableId={key}
-                                  index={pi}
-                                >
-                                  {provided => {
-                                    return (
-                                      <div
-                                        key={key}
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        // className="ant-form ant-form-inline"
-                                      >
-                                        <Card
-                                          style={{ margin: `5px 0` }}
-                                          key={`car${pi}`}
-                                          actions={[
-                                            <div {...provided.dragHandleProps}>
-                                              <Icon type="drag" key={'drag'} />
-                                            </div>,
-                                            <Icon
-                                              type="delete"
-                                              key={'delete'}
-                                              onClick={_ =>
-                                                deleteProp(propName, pi)
-                                              }
-                                            />,
-                                          ]}
-                                        >
-                                          {createComponentPropsForm(
-                                            componentProps[name].componentProps,
-                                            `${propName}[${pi}].componentProps`,
-                                          )}
-                                        </Card>
-                                      </div>
-                                    );
-                                  }}
-                                </Draggable>
-                              );
-                            })}
-                            {provided.placeholder}
-                          </div>
-                        );
-                      }}
-                    </Droppable>
-                  </DragDropContext>
-                )) ||
-                  (prop.type === 'array:string' && (
-                    <DragDropContext onDragEnd={sortProps}>
-                      <Droppable droppableId={propName}>
-                        {provided => {
-                          return (
-                            <div
-                              {...provided.droppableProps}
-                              ref={provided.innerRef}
-                            >
-                              {mapedArr.map((p, pi) => {
-                                const key = `${propName}[${pi}]`;
-                                // console.log(key);
-                                return (
-                                  <Draggable
-                                    key={key}
-                                    draggableId={key}
-                                    index={pi}
-                                  >
-                                    {provided => {
-                                      return (
-                                        <div
-                                          key={key}
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          className="ant-form ant-form-inline"
-                                        >
-                                          <Item>
-                                            <div {...provided.dragHandleProps}>
-                                              <Icon type="drag" />
-                                            </div>
-                                          </Item>
-                                          <Item>
-                                            {getFieldDecorator(key, {
-                                              //preserve: true,
-                                              initialValue: get(item, key),
-                                            })(<CommonInput />)}
-                                          </Item>
-                                          <Item>
-                                            <Icon
-                                              onClick={_ =>
-                                                deleteProp(propName, pi)
-                                              }
-                                              type="delete"
-                                              style={{
-                                                color: `red`,
-                                                cursor: `pointer`,
-                                              }}
-                                            />
-                                          </Item>
-                                        </div>
-                                      );
-                                    }}
-                                  </Draggable>
-                                );
-                              })}
-                              {provided.placeholder}
-                            </div>
-                          );
-                        }}
-                      </Droppable>
-                    </DragDropContext>
-                  ))}
+                {renderAfterAddButtonComponent}
               </Panel>
             );
 
@@ -442,10 +459,10 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
   const propsDecModels = createComponentPropsForm(componentProps);
 
-  const [settingForm] = useSizeMe(size => {
-    const { width } = size;
-    return (
-      <Form {...getFormItemCol(width)}>
+  return (
+    <>
+      {' '}
+      <Form {...getFormItemCol(1000)}>
         <Collapse
           accordion
           defaultActiveKey={['1']}
@@ -453,7 +470,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
         >
           <Panel forceRender header={`基础设置`} key="1">
             <Row gutter={15}>
-              <Col {...getCol(width, Size.MIDDLE)}>
+              <Col {...getCol(1000, Size.MIDDLE)}>
                 <Item label={'组件'}>
                   {componentTypeDec(
                     <TreeSelect
@@ -489,7 +506,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                   )}
                 </Item>
               </Col>
-              <Col {...getCol(width, Size.SMALL)}>
+              <Col {...getCol(1000, Size.SMALL)}>
                 <Item
                   label={
                     <span>
@@ -508,7 +525,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
 
               {formField && (
                 <Fragment key="frag">
-                  <Col {...getCol(width, Size.SMALL)}>
+                  <Col {...getCol(1000, Size.SMALL)}>
                     <Item label={'是否作为表单域'}>
                       {isFormFieldDec(
                         <Switch
@@ -520,7 +537,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                   </Col>
                   {isFormField && (
                     <>
-                      <Col {...getCol(width, Size.MIDDLE)}>
+                      <Col {...getCol(1000, Size.MIDDLE)}>
                         <Item
                           label={
                             <span>
@@ -534,7 +551,7 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
                           {$idDec(<CommonInput placeholder={'请填写id'} />)}
                         </Item>
                       </Col>
-                      <Col {...getCol(width, Size.MIDDLE)}>
+                      <Col {...getCol(1000, Size.MIDDLE)}>
                         <Item label={<span>label</span>}>
                           {labelDec(<CommonInput placeholder={''} />)}
                         </Item>
@@ -553,23 +570,25 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = props => {
           )}
         </Collapse>
       </Form>
-    );
-  }, {});
-  return <>{settingForm}</>;
-};
-export default create<ItemSettingFormProps>({
-  onValuesChange(props, changedValues, allValues) {
-    const field = Object.keys(changedValues)[0];
-    if (!field) {
-      return;
-    }
-    const value = changedValues[field];
-    console.log('onValuesChange', field, allValues[field]);
-    if (field === 'componentId') {
-      props.onItemTypeChange(value);
-    } else {
-      props.onItemPropsChange(field, allValues[field]);
-    }
-  },
-  onFieldsChange(props, fields) {},
-})(ItemSettingForm);
+    </>
+  );
+});
+ItemSettingForm.displayName = 'ItemSettingFormObserver';
+export default React.memo(
+  create<ItemSettingFormProps>({
+    onValuesChange(props, changedValues, allValues) {
+      const field = Object.keys(changedValues)[0];
+      if (!field) {
+        return;
+      }
+      const value = changedValues[field];
+      console.log('onValuesChange', field, allValues[field]);
+      if (field === 'componentId') {
+        props.onItemTypeChange(value);
+      } else {
+        props.onItemPropsChange(field, allValues[field]);
+      }
+    },
+    onFieldsChange(props, fields) {},
+  })(ItemSettingForm),
+);

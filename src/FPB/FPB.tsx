@@ -13,16 +13,17 @@ import { Provider } from './FormContext';
 import BreakpointForm from './BreakpointForm';
 import useFPBStore, { FPBProps, Mode } from './useFPBStore';
 import { toJS } from 'mobx';
+const linePadding = 5;
 const ResponsiveGridLayout = WidthProvider(Responsive);
-const FPB: React.SFC<FPBProps> = React.memo(props => {
-  const [isInit, setIsInit] = useState(false);
+const FPB: React.SFC<FPBProps> = props => {
+  const isInit = useRef(false);
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
   if (props.forwardRef) {
     props.forwardRef.current = store;
   }
   useEffect(() => {
-    if (!isInit) {
+    if (!isInit.current) {
       if (props.defaultDatas) {
         if (props.FPR) {
           store.mode = Mode.PRIVIEW;
@@ -31,12 +32,12 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
         store.setLayouts([] as any, props.defaultDatas.layouts);
         //模态框动画弹出需要加renderDelay
-        setIsInit(true);
+        isInit.current = true;
         setTimeout(doWindowResize, props.renderDelay || 0);
         // doWindowResize();
       }
     }
-  }, [props.defaultDatas, props.renderDelay, isInit]);
+  }, [props.defaultDatas, props.renderDelay]);
   useEffect(() => {
     console.log('mount');
   }, []);
@@ -111,7 +112,14 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
         minSize={479}
         maxSize={1600}
       >
-        <div style={{ position: `relative` }} key={'builder'}>
+        <div
+          style={{
+            position: `relative`,
+            paddingLeft: linePadding,
+            paddingRight: linePadding,
+          }}
+          key={'builder'}
+        >
           <Observer>
             {() => (
               <>
@@ -124,13 +132,23 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
             )}
           </Observer>
         </div>
-        <div key="setting">
+        <div
+          key="setting"
+          style={{
+            background: `#fff`,
+            height: `100%`,
+            paddingLeft: linePadding,
+          }}
+        >
           <Observer>
             {() => {
+              console.log('drawer render');
+              
               return (
                 <Drawer
+                // maskStyle={{display:'none'}}
                   destroyOnClose
-                  title={store.editingItem && store.editingItem.i}
+                  title={store.editingTitle}
                   placement="right"
                   width={`100%`}
                   closable={store.isEditing}
@@ -247,6 +265,8 @@ const FPB: React.SFC<FPBProps> = React.memo(props => {
       </Observer>
     </>
   );
-});
-const FormFPB = Form.create<FPBProps>({ name: 'FPB' })(FPB);
+};
+const FormFPB = React.memo(
+  Form.create<FPBProps>({ name: 'FPB' })(FPB),
+);
 export { FormFPB as default };

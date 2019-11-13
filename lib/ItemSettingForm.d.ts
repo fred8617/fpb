@@ -35,6 +35,6 @@ export interface ItemSettingFormProps extends FormComponentProps, ItemSettingPro
      */
     initialKeyCounter: any;
 }
-declare const _default: import("antd/lib/form/interface").ConnectedComponentClass<React.FunctionComponent<ItemSettingFormProps>, Pick<ItemSettingFormProps, "item" | "components" | "wrappedComponentRef" | "initialKeyCounter" | "componentGroup" | "flatComponents" | "onItemTypeChange" | "onItemPropsChange">>;
+declare const _default: React.MemoExoticComponent<import("antd/lib/form/interface").ConnectedComponentClass<React.FunctionComponent<ItemSettingFormProps>, Pick<ItemSettingFormProps, "item" | "components" | "wrappedComponentRef" | "initialKeyCounter" | "componentGroup" | "flatComponents" | "onItemTypeChange" | "onItemPropsChange">>>;
 export default _default;
 //# sourceMappingURL=ItemSettingForm.d.ts.map

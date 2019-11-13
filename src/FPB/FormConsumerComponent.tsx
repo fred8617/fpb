@@ -36,7 +36,6 @@ const FormConsumerComponent: SFC<FormConsumerComponentProps> = ({
         return (
           <Consumer>
             {({ form }) => {
-              console.log(form);
               let renderComponent = form.getFieldDecorator(id)(component);
               if (label) {
                 renderComponent = <Item label={label}>{renderComponent}</Item>;
