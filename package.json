@@ -1,6 +1,6 @@
 {
   "name": "FPB",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "main": "lib/index.js",
   "repository": {
@@ -27,7 +27,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
-    "babel": "babel --extensions .tsx,.ts src/FPB -d lib",
+    "babel": "babel --source-maps --extensions .tsx,.ts src/FPB -d lib",
     "types": "tsc --project tsconfig.types.json",
     "less": "lessc ./src/FPB/index.less ./lib/index.css"
   },
