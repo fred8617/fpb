@@ -4,6 +4,11 @@
     "@babel/preset-react",
     "@babel/preset-env"
   ],
+  "env": {
+    "production": {
+      "presets": ["minify"]
+    }
+  },
   "plugins": [
     "@babel/proposal-class-properties",
     [

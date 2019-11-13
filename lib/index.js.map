@@ -1,1 +1,1 @@
-{"version":3,"sources":["../src/FPB/index.tsx"],"names":[],"mappings":";;;;;;;;;;;;AAAA","sourcesContent":["import FPB from './FPB';\r\nexport { FPB as default };\r\n"],"file":"index.js"}
+{"version":3,"sources":["../src/FPB/index.tsx"],"names":[],"mappings":"aAAA,kD","sourcesContent":["import FPB from './FPB';\r\nexport { FPB as default };\r\n"],"file":"index.js"}

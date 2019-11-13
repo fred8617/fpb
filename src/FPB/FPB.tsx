@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Observer } from 'mobx-react-lite';
 import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
 import 'react-grid-layout/css/styles.css';
@@ -15,24 +15,28 @@ import useFPBStore, { FPBProps, Mode } from './useFPBStore';
 import { toJS } from 'mobx';
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = React.memo(props => {
+  const [isInit, setIsInit] = useState(false);
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
   if (props.forwardRef) {
     props.forwardRef.current = store;
   }
   useEffect(() => {
-    if (props.defaultDatas) {
-      if (props.FPR) {
-        store.mode = Mode.PRIVIEW;
+    if (!isInit) {
+      if (props.defaultDatas) {
+        if (props.FPR) {
+          store.mode = Mode.PRIVIEW;
+        }
+        store.setDatas(props.defaultDatas.datas);
+        store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
+        store.setLayouts([] as any, props.defaultDatas.layouts);
+        //模态框动画弹出需要加renderDelay
+        setIsInit(true);
+        setTimeout(doWindowResize, props.renderDelay || 0);
+        // doWindowResize();
       }
-      store.setDatas(props.defaultDatas.datas);
-      store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
-      store.setLayouts([] as any, props.defaultDatas.layouts);
-      //模态框动画弹出需要加renderDelay
-      setTimeout(doWindowResize, props.renderDelay || 0);
-      // doWindowResize();
     }
-  }, [props.defaultDatas, props.renderDelay]);
+  }, [props.defaultDatas, props.renderDelay, isInit]);
   useEffect(() => {
     console.log('mount');
   }, []);
