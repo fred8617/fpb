@@ -1,6 +1,6 @@
 {
   "name": "FPB",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "main": "lib/index.js",
   "repository": {
@@ -23,12 +23,12 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "compile": "cross-env NODE_ENV=production npm run babel&&npm run less",
+    "compile": "cross-env NODE_ENV=production npm run babel&&npm run types&&npm run less",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "babel": "babel --extensions .tsx,.ts src/FPB -d lib",
-    "types":"tsc --project tsconfig.types.json",
+    "types": "tsc --project tsconfig.types.json",
     "less": "lessc ./src/FPB/index.less ./lib/index.css"
   },
   "eslintConfig": {
