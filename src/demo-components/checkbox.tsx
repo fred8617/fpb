@@ -1,5 +1,5 @@
 import { Input, Checkbox } from "antd";
-import { ComponentType } from "FPB/useFPBStore";
+import { ComponentType } from "../FPB/useFPBStore";
 const checkbox: ComponentType = {
   id: "antd-checkbox",
   label: "复选框",

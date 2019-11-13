@@ -1,6 +1,6 @@
 import { Input, Checkbox, Radio, Table } from 'antd';
-import { ComponentType } from 'FPB/useFPBStore';
-import GqlTable from 'components/GqlTable';
+import { ComponentType } from '../FPB/useFPBStore';
+import GqlTable from '../components/GqlTable';
 const table: ComponentType = {
   id: 'gql-table',
   label: 'Graphql查询表格',

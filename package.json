@@ -28,6 +28,7 @@
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "babel": "babel --extensions .tsx,.ts src/FPB -d lib",
+    "types":"tsc --project tsconfig.types.json",
     "less": "lessc ./src/FPB/index.less ./lib/index.css"
   },
   "eslintConfig": {
