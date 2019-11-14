@@ -29,12 +29,13 @@ export interface ItemSettingFormProps extends FormComponentProps, ItemSettingPro
      * 编辑中数据，用于初始化值
      */
     item: FPBItem;
+    parentStore: any;
     components: ComponentType[];
     /**
      * 初始计数器
      */
     initialKeyCounter: any;
 }
-declare const _default: React.MemoExoticComponent<import("antd/lib/form/interface").ConnectedComponentClass<React.FunctionComponent<ItemSettingFormProps>, Pick<ItemSettingFormProps, "item" | "components" | "wrappedComponentRef" | "initialKeyCounter" | "componentGroup" | "flatComponents" | "onItemTypeChange" | "onItemPropsChange">>>;
+declare const _default: React.MemoExoticComponent<import("antd/lib/form/interface").ConnectedComponentClass<React.FunctionComponent<ItemSettingFormProps>, Pick<ItemSettingFormProps, "item" | "components" | "wrappedComponentRef" | "parentStore" | "initialKeyCounter" | "componentGroup" | "flatComponents" | "onItemTypeChange" | "onItemPropsChange">>>;
 export default _default;
 //# sourceMappingURL=ItemSettingForm.d.ts.map

@@ -5,6 +5,7 @@ import { Size } from 'react-split-pane';
 import { ItemSettingProps } from './ItemSettingForm';
 import { FormComponentProps, ValidationRule } from 'antd/lib/form';
 import { RadioChangeEvent } from 'antd/lib/radio';
+import { ApolloClient } from 'apollo-boost';
 interface Breakpoints {
     xxl?: number;
     xl?: number;
@@ -26,6 +27,7 @@ interface Cols {
  * RGL的基础配置
  */
 export interface RGLConfig {
+    draggableCancel: string;
     /**
      * 元素单位高度
      */
@@ -237,6 +239,9 @@ export interface FPBProps extends FormComponentProps {
      */
     components: ComponentType[];
 }
+export interface ApolloFPBProps extends FPBProps {
+    client: ApolloClient<any>;
+}
 export interface BreakpointsConfig {
     breakpoints: string[];
     cols: Cols;
@@ -263,6 +268,13 @@ export interface FPBConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+    /**
+     * 不让拖拽的样式名称
+     */
+    draggableCancelClassName: string;
+    /**
+     * 编辑元素窗口的标题，取i
+     */
     editingTitle: string;
     setBreakpointFromEntry(breakpoints: any): any;
     /**
@@ -280,7 +292,11 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
      */
     mode: Mode;
     changeMode: (e: RadioChangeEvent) => void;
+    /**
+     * 模式
+     */
     isPreview: boolean;
+    isDesign: boolean;
     /**
      * 索引数据源
      */
