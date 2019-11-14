@@ -1,4 +1,9 @@
+@import '~antd/lib/style/themes/default.less'; // 引入官方提供的 less 样式入口文件
+
 .FPB {
+  .react-grid-item.react-grid-placeholder{
+    background:  @primary-color;
+  }
   .Resizer {
     background: #000;
     opacity: 0.2;
@@ -58,6 +63,7 @@
     position: absolute;
     height: 100%;
     width: 100%;
+    cursor: move;
   }
   .function-container:hover {
     opacity: 1;

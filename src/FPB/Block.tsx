@@ -36,7 +36,7 @@ const Block: React.SFC<BlockProps> = props => {
       return (
         <div style={{ position: `relative`, zIndex: 0 }}>
           {/* 计量维度的tag */}
-          {/* {showTag && <CalTag width={width} height={props.height} />} */}
+          {showTag && <CalTag width={width} height={props.height} />}
           {props.children}
         </div>
       );

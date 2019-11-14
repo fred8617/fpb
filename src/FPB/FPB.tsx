@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, SFC } from 'react';
 import { Observer } from 'mobx-react-lite';
 import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
 import 'react-grid-layout/css/styles.css';
@@ -11,8 +11,9 @@ import ObservableBlock from './ObservableBlock';
 import ObservableBlockContainer from './ObservableBlockContainer';
 import { Provider } from './FormContext';
 import BreakpointForm from './BreakpointForm';
-import useFPBStore, { FPBProps, Mode } from './useFPBStore';
+import useFPBStore, { FPBProps, Mode, ApolloFPBProps } from './useFPBStore';
 import { toJS } from 'mobx';
+import { ApolloProvider } from '@apollo/react-hooks';
 const linePadding = 5;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = props => {
@@ -55,10 +56,10 @@ const FPB: React.SFC<FPBProps> = props => {
           >
             {Object.entries(store.datas).map(([key, data]) => {
               return (
-                <div key={key}>
+                <div className={store.draggableCancelClassName} key={key}>
                   <Observer>
                     {() =>
-                      store.mode === Mode.DESIGN && (
+                      store.isDesign && (
                         <ObservableBlockContainer
                           store={store}
                           itemKey={key}
@@ -90,13 +91,20 @@ const FPB: React.SFC<FPBProps> = props => {
       <Observer>
         {() => (
           <style>
-            {store.isPreview
+            {store.draggableCancel
               ? `
         .react-grid-item{
           transition:none!important
         }
         .react-grid-layout{
           transition:none!important
+        }
+        ${
+          store.draggableCancel
+            ? `.react-grid-item > .react-resizable-handle{
+          display:none;
+        }`
+            : null
         }
         `
               : null}
@@ -142,11 +150,8 @@ const FPB: React.SFC<FPBProps> = props => {
         >
           <Observer>
             {() => {
-              console.log('drawer render');
-              
               return (
                 <Drawer
-                // maskStyle={{display:'none'}}
                   destroyOnClose
                   title={store.editingTitle}
                   placement="right"
@@ -269,4 +274,12 @@ const FPB: React.SFC<FPBProps> = props => {
 const FormFPB = React.memo(
   Form.create<FPBProps>({ name: 'FPB' })(FPB),
 );
+
+export const ApolloFPB: SFC<Omit<ApolloFPBProps,'form'>> = ({ client, ...props }) => {
+  return (
+    <ApolloProvider client={client}>
+      <FormFPB {...props} />
+    </ApolloProvider>
+  );
+};
 export { FormFPB as default };

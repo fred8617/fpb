@@ -9,6 +9,7 @@ import shortid from 'shortid';
 import { ItemSettingProps } from './ItemSettingForm';
 import { FormComponentProps, ValidationRule } from 'antd/lib/form';
 import { RadioChangeEvent } from 'antd/lib/radio';
+import { ApolloClient } from 'apollo-boost';
 
 const emptyLayouts: BreakpointsLayouts = {
   xxl: [],
@@ -39,6 +40,7 @@ interface Cols {
  * RGL的基础配置
  */
 export interface RGLConfig {
+  draggableCancel: string;
   /**
    * 元素单位高度
    */
@@ -265,14 +267,6 @@ export interface FPBProps extends FormComponentProps {
    */
   renderDelay?: number;
   defaultDatas?: FPBConfig;
-  // /**
-  //  * 默认配置
-  //  */
-  // defaultConfig?: RGLConfig;
-  // /**
-  //  * 默认布局
-  //  */
-  // defaultLayouts?: BreakpointsLayouts;
   /**
    * 左侧布局的默认宽度
    */
@@ -281,6 +275,10 @@ export interface FPBProps extends FormComponentProps {
    * 导入组件
    */
   components: ComponentType[];
+ 
+}
+export interface ApolloFPBProps extends FPBProps{
+  client:ApolloClient<any>;
 }
 export interface BreakpointsConfig {
   breakpoints: string[];
@@ -309,6 +307,13 @@ export interface FPBConfig {
  * pb的store
  */
 export interface FPBStore extends RGLConfig, ItemSettingProps {
+  /**
+   * 不让拖拽的样式名称
+   */
+  draggableCancelClassName: string;
+  /**
+   * 编辑元素窗口的标题，取i
+   */
   editingTitle: string;
   setBreakpointFromEntry(breakpoints: any);
   /**
@@ -326,7 +331,11 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    */
   mode: Mode;
   changeMode: (e: RadioChangeEvent) => void;
+  /**
+   * 模式
+   */
   isPreview: boolean;
+  isDesign: boolean;
   /**
    * 索引数据源
    */
@@ -529,7 +538,7 @@ const useFPBStore = (props): FPBStore => {
   const force = useForceUpdate();
   const store: FPBStore = useLocalStore<
     FPBStore,
-    Omit<Omit<FPBProps, 'form'>, 'schema'>
+    Omit<Omit<FPBProps, 'form'>, 'apolloClient'>
   >(
     source => ({
       rowHeight: 1,
@@ -537,6 +546,14 @@ const useFPBStore = (props): FPBStore => {
       layouts: emptyLayouts,
       breakpoints: defaultbreakpoints,
       cols: defaultCols,
+      get draggableCancelClassName() {
+        return shortid.generate();
+      },
+      get draggableCancel() {
+        return store.editingItem !== null || store.isPreview
+          ? `.${store.draggableCancelClassName}`
+          : '';
+      },
       /*********************** */
       get editingTitle() {
         return store.editingItem && store.editingItem.i;
@@ -553,6 +570,9 @@ const useFPBStore = (props): FPBStore => {
         );
       },
       mode: Mode.DESIGN,
+      get isDesign() {
+        return store.mode === Mode.DESIGN;
+      },
       get isPreview() {
         return store.mode === Mode.PRIVIEW;
       },
@@ -637,13 +657,15 @@ const useFPBStore = (props): FPBStore => {
             onLayoutChange: store.setLayouts,
             onResize: store.onResize,
             onResizeStop: store.onResizeStop,
+            draggableCancel: store.draggableCancel,
             //此处是个问题
-            isDraggable: store.editingItem === null && !store.isPreview,
-            isResizable: store.editingItem === null && !store.isPreview,
+            // isDraggable: store.editingItem === null && !store.isPreview,
+            // isResizable: store.editingItem === null && !store.isPreview,
           },
           { recurseEverything: true },
         );
       },
+
       operatedItem: null,
       setOperatedItem(operatedItem) {
         store.operatedItem = operatedItem;
