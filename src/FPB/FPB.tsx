@@ -36,7 +36,10 @@ const FPB: React.SFC<FPBProps> = props => {
     },
     settingWidth: 0,
     setSettingWidth() {
-      localStore.settingWidth = settingRef.current.clientWidth;
+      if (settingRef.current && settingRef.current.clientWidth) {
+        localStore.settingWidth =
+          settingRef.current && settingRef.current.clientWidth;
+      }
     },
   }));
   if (props.forwardRef) {
@@ -314,7 +317,7 @@ const FPB: React.SFC<FPBProps> = props => {
         {() => (
           <FullScreenModal
             footer={null}
-            onCancel={_=>localStore.setConfigVisible(false)}
+            onCancel={_ => localStore.setConfigVisible(false)}
             visible={localStore.configVisible}
           >
             <ReactJson collapsed={1} indentWidth={10} src={store.config} />

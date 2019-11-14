@@ -78,12 +78,22 @@ const FPBForm: SFC<FPBFormProps> = props => {
             visible={store.visible}
           >
             {store.visible && (
-              <FPB
+              <>
+              <style>
+                {`
+                .react-grid-item > .react-resizable-handle{
+                  display:block;
+                }
+                `}
+              </style>
+               <FPB
                 renderDelay={200}
                 forwardRef={ref}
                 components={props.components}
                 defaultDatas={props.value}
               />
+              </>
+             
             )}
           </FullScreenModal>
         )}

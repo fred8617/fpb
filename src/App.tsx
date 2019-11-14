@@ -121,7 +121,10 @@ const test = {
   breakpoints: ['lg', 'md'],
 };
 const client = new ApolloClient({
-  uri: 'http://localhost:4466/',
+  uri: 'https://api.github.com/graphql',
+  headers:{
+    Authorization:'Bearer 1d3089936d8ea39f24d4c9db846948e51483ce82'
+  }
 });
 const App: React.FC = () => {
   const force = useForceUpdate();
