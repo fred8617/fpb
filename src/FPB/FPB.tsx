@@ -156,6 +156,7 @@ const FPB: React.SFC<FPBProps> = props => {
           localStore.setMainWidth(e - 10);
         }}
         onDragFinished={doWindowResize}
+        pane1Style={{ overflow: `auto` }}
         paneStyle={{ position: `relative` }}
         style={{ position: 'relative' }}
         defaultSize={props.contentDefaultSize || `50%`}
@@ -206,7 +207,7 @@ const FPB: React.SFC<FPBProps> = props => {
                   visible={store.isEditing}
                   getContainer={false}
                   style={{ position: 'absolute', height: `100%` }}
-                  drawerStyle={{  height: `100%` }}
+                  drawerStyle={{ height: `100%` }}
                   bodyStyle={{
                     padding: 0,
                     height: `calc( 100% - 54.6px )`,

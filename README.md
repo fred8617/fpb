@@ -1,6 +1,7 @@
 ### fled-page-builder
 
 # form-setting
+- 直接切换编辑元素子类型个数对不上
 - 基础类型完善，Boolean，Number,Object(Json),动态Select现有component
 - 表单值域 id 去重
 - 布局
