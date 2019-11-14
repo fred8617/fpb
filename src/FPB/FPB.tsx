@@ -205,7 +205,8 @@ const FPB: React.SFC<FPBProps> = props => {
                   onClose={_ => store.setEditingItem(null)}
                   visible={store.isEditing}
                   getContainer={false}
-                  style={{ position: 'absolute',height:`100%` }}
+                  style={{ position: 'absolute', height: `100%` }}
+                  drawerStyle={{  height: `100%` }}
                   bodyStyle={{
                     padding: 0,
                     height: `calc( 100% - 54.6px )`,
