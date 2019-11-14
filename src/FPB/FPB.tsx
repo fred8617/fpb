@@ -61,18 +61,19 @@ const FPB: React.SFC<FPBProps> = props => {
   }, []);
   useEffect(() => {
     if (!isInit.current) {
-      if (props.defaultDatas) {
-        if (props.FPR) {
-          store.mode = Mode.PRIVIEW;
-        }
-        store.setDatas(props.defaultDatas.datas);
-        store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
-        store.setLayouts([] as any, props.defaultDatas.layouts);
-        //模态框动画弹出需要加renderDelay
-        isInit.current = true;
-        setTimeout(doWindowResize, props.renderDelay || 0);
-        // doWindowResize();
+      isInit.current = true;
+      setTimeout(doWindowResize, props.renderDelay || 0);
+    }
+    if (props.defaultDatas) {
+      if (props.FPR) {
+        store.mode = Mode.PRIVIEW;
       }
+      store.setDatas(props.defaultDatas.datas);
+      store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
+      store.setLayouts([] as any, props.defaultDatas.layouts);
+      //模态框动画弹出需要加renderDelay
+
+      // doWindowResize();
     }
   }, [props.defaultDatas, props.renderDelay]);
   useEffect(() => {
@@ -327,9 +328,7 @@ const FPB: React.SFC<FPBProps> = props => {
     </>
   );
 };
-const FormFPB = React.memo(
-  Form.create<FPBProps>({ name: 'FPB' })(FPB),
-);
+const FormFPB = Form.create<FPBProps>({ name: 'FPB' })(FPB);
 
 export const ApolloFPB: SFC<Omit<ApolloFPBProps, 'form'>> = ({
   client,
