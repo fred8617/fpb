@@ -1,6 +1,7 @@
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import React, { useRef, useEffect, useState, SFC } from 'react';
-import { Observer } from 'mobx-react-lite';
+import React, { useRef, useEffect, SFC } from 'react';
+import { Observer, useLocalStore } from 'mobx-react-lite';
+import ReactJson from 'react-json-view';
 import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -10,19 +11,51 @@ import ItemSettingForm from './ItemSettingForm';
 import ObservableBlock from './ObservableBlock';
 import ObservableBlockContainer from './ObservableBlockContainer';
 import { Provider } from './FormContext';
+import { debounce } from 'lodash';
 import BreakpointForm from './BreakpointForm';
 import useFPBStore, { FPBProps, Mode, ApolloFPBProps } from './useFPBStore';
 import { toJS } from 'mobx';
 import { ApolloProvider } from '@apollo/react-hooks';
+import CalText from './CalText';
+import FullScreenModal from './FullScreenModal';
 const linePadding = 5;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const FPB: React.SFC<FPBProps> = props => {
   const isInit = useRef(false);
+  const settingRef: any = useRef();
   const breakpointFormRef = useRef<any>();
   const store = useFPBStore(props);
+  const localStore = useLocalStore(() => ({
+    configVisible: false,
+    setConfigVisible(configVisible) {
+      localStore.configVisible = configVisible;
+    },
+    mainWidth: 0,
+    setMainWidth(width) {
+      localStore.mainWidth = width;
+    },
+    settingWidth: 0,
+    setSettingWidth() {
+      localStore.settingWidth = settingRef.current.clientWidth;
+    },
+  }));
   if (props.forwardRef) {
     props.forwardRef.current = store;
   }
+  useEffect(() => {
+    /**
+     * 初始化一下setting的宽度
+     */
+    const func = debounce(
+      () => setTimeout(() => localStore.setSettingWidth(), 0),
+      200,
+    );
+    func();
+    window.addEventListener('resize', func);
+    return () => {
+      window.removeEventListener('resize', func);
+    };
+  }, []);
   useEffect(() => {
     if (!isInit.current) {
       if (props.defaultDatas) {
@@ -111,8 +144,13 @@ const FPB: React.SFC<FPBProps> = props => {
           </style>
         )}
       </Observer>
+
       <SplitPane
         className="FPB"
+        onChange={e => {
+          localStore.setSettingWidth();
+          localStore.setMainWidth(e - 10);
+        }}
         onDragFinished={doWindowResize}
         paneStyle={{ position: `relative` }}
         style={{ position: 'relative' }}
@@ -124,10 +162,12 @@ const FPB: React.SFC<FPBProps> = props => {
           style={{
             position: `relative`,
             paddingLeft: linePadding,
+            paddingTop: linePadding,
             paddingRight: linePadding,
           }}
           key={'builder'}
         >
+          <Observer>{() => <CalText width={localStore.mainWidth} />}</Observer>
           <Observer>
             {() => (
               <>
@@ -141,6 +181,7 @@ const FPB: React.SFC<FPBProps> = props => {
           </Observer>
         </div>
         <div
+          ref={settingRef}
           key="setting"
           style={{
             background: `#fff`,
@@ -169,6 +210,7 @@ const FPB: React.SFC<FPBProps> = props => {
                 >
                   {store.isEditing && (
                     <ItemSettingForm
+                      parentStore={localStore}
                       initialKeyCounter={
                         (store.editingItem &&
                           getObjectKeysWhenIsArray(
@@ -220,8 +262,8 @@ const FPB: React.SFC<FPBProps> = props => {
               </Observer>
             </Form.Item>
             <Form.Item>
-              <Button onClick={_ => console.log(JSON.stringify(store.config))}>
-                获取配置
+              <Button onClick={_ => localStore.setConfigVisible(true)}>
+                查看配置
               </Button>
             </Form.Item>
             <Form.Item>
@@ -268,6 +310,17 @@ const FPB: React.SFC<FPBProps> = props => {
           </Modal>
         )}
       </Observer>
+      <Observer>
+        {() => (
+          <FullScreenModal
+            footer={null}
+            onCancel={_=>localStore.setConfigVisible(false)}
+            visible={localStore.configVisible}
+          >
+            <ReactJson collapsed={1} indentWidth={10} src={store.config} />
+          </FullScreenModal>
+        )}
+      </Observer>
     </>
   );
 };
@@ -275,7 +328,10 @@ const FormFPB = React.memo(
   Form.create<FPBProps>({ name: 'FPB' })(FPB),
 );
 
-export const ApolloFPB: SFC<Omit<ApolloFPBProps,'form'>> = ({ client, ...props }) => {
+export const ApolloFPB: SFC<Omit<ApolloFPBProps, 'form'>> = ({
+  client,
+  ...props
+}) => {
   return (
     <ApolloProvider client={client}>
       <FormFPB {...props} />

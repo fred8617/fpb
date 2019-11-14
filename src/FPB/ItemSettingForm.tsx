@@ -31,7 +31,7 @@ import { toJS } from 'mobx';
 import { getObjectKeysWhenIsArray } from './utils';
 import FPBForm from './FPBForm';
 import GraphqlEditor from './GraphqlEditor';
-import { observer } from 'mobx-react-lite';
+import { observer, Observer } from 'mobx-react-lite';
 
 const { Option, OptGroup } = Select;
 const { TreeNode } = TreeSelect;
@@ -110,6 +110,7 @@ export interface ItemSettingFormProps
    * 编辑中数据，用于初始化值
    */
   item: FPBItem;
+  parentStore: any;
   components: ComponentType[];
   /**
    * 初始计数器
@@ -121,8 +122,8 @@ const { create, Item } = Form;
 
 const ItemSettingForm: React.SFC<ItemSettingFormProps> = observer(props => {
   // const [render, setRender] = useState(false);
-  const { form, item, onItemPropsChange } = props;
-  console.log('ItemSettingForm', toJS(props, { recurseEverything: true }));
+  const { form, item } = props;
+  console.log('ItemSettingForm', toJS(props));
   const [keyCounter, setKeyCounter] = useState(() => props.initialKeyCounter);
   const recordItem = useRef(item);
   // useEffect(() => {
@@ -460,117 +461,129 @@ const ItemSettingForm: React.SFC<ItemSettingFormProps> = observer(props => {
   const propsDecModels = createComponentPropsForm(componentProps);
 
   return (
-    <>
-      {' '}
-      <Form {...getFormItemCol(1000)}>
-        <Collapse
-          accordion
-          defaultActiveKey={['1']}
-          destroyInactivePanel={false}
-        >
-          <Panel forceRender header={`基础设置`} key="1">
-            <Row gutter={15}>
-              <Col {...getCol(1000, Size.MIDDLE)}>
-                <Item label={'组件'}>
-                  {componentTypeDec(
-                    <TreeSelect
-                      onChange={_ => setKeyCounter({})}
-                      showSearch
-                      style={{ width: `100%` }}
-                      dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                      placeholder="请选择组件"
-                      allowClear
-                      autoClearSearchValue
-                      treeDefaultExpandAll
-                    >
-                      {props.componentGroup.map((groupOrComponent, index) => {
-                        if (groupOrComponent.id) {
-                          return renderTypeTreeNode(groupOrComponent);
-                        }
-                        return (
-                          <TreeNode
-                            disabled
-                            value={groupOrComponent['groupName']}
-                            title={groupOrComponent['groupName']}
-                            key={groupOrComponent['groupName']}
-                          >
-                            {groupOrComponent[
-                              groupOrComponent['groupName']
-                            ].map(component => {
-                              return renderTypeTreeNode(component);
-                            })}
-                          </TreeNode>
-                        );
-                      })}
-                    </TreeSelect>,
-                  )}
-                </Item>
-              </Col>
-              <Col {...getCol(1000, Size.SMALL)}>
-                <Item
-                  label={
-                    <span>
-                      自适应高度&nbsp;
-                      <Tooltip title="开启后区块将自适应内容高度，不能进行纵向resize操作">
-                        <Icon type="question-circle-o" />
-                      </Tooltip>
-                    </span>
-                  }
-                >
-                  {autoHeightDec(
-                    <Switch checkedChildren={'开'} unCheckedChildren={'关'} />,
-                  )}
-                </Item>
-              </Col>
+    <Observer>
+      {() =>{
+        return <>
+        <Form {...getFormItemCol(props.parentStore.settingWidth)}>
+          <Collapse
+            accordion
+            defaultActiveKey={['1']}
+            destroyInactivePanel={false}
+          >
+            <Panel forceRender header={`基础设置`} key="1">
+              <Row gutter={15}>
+                <Col {...getCol(props.parentStore.settingWidth, Size.MIDDLE)}>
+                  <Item label={'组件'}>
+                    {componentTypeDec(
+                      <TreeSelect
+                        onChange={_ => setKeyCounter({})}
+                        showSearch
+                        style={{ width: `100%` }}
+                        dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                        placeholder="请选择组件"
+                        allowClear
+                        autoClearSearchValue
+                        treeDefaultExpandAll
+                      >
+                        {props.componentGroup.map(
+                          (groupOrComponent, index) => {
+                            if (groupOrComponent.id) {
+                              return renderTypeTreeNode(groupOrComponent);
+                            }
+                            return (
+                              <TreeNode
+                                disabled
+                                value={groupOrComponent['groupName']}
+                                title={groupOrComponent['groupName']}
+                                key={groupOrComponent['groupName']}
+                              >
+                                {groupOrComponent[
+                                  groupOrComponent['groupName']
+                                ].map(component => {
+                                  return renderTypeTreeNode(component);
+                                })}
+                              </TreeNode>
+                            );
+                          },
+                        )}
+                      </TreeSelect>,
+                    )}
+                  </Item>
+                </Col>
+                <Col {...getCol(props.parentStore.settingWidth, Size.SMALL)}>
+                  <Item
+                    label={
+                      <span>
+                        自适应高度&nbsp;
+                        <Tooltip title="开启后区块将自适应内容高度，不能进行纵向resize操作">
+                          <Icon type="question-circle-o" />
+                        </Tooltip>
+                      </span>
+                    }
+                  >
+                    {autoHeightDec(
+                      <Switch
+                        checkedChildren={'开'}
+                        unCheckedChildren={'关'}
+                      />,
+                    )}
+                  </Item>
+                </Col>
 
-              {formField && (
-                <Fragment key="frag">
-                  <Col {...getCol(1000, Size.SMALL)}>
-                    <Item label={'是否作为表单域'}>
-                      {isFormFieldDec(
-                        <Switch
-                          checkedChildren={'是'}
-                          unCheckedChildren={'否'}
-                        />,
-                      )}
-                    </Item>
-                  </Col>
-                  {isFormField && (
-                    <>
-                      <Col {...getCol(1000, Size.MIDDLE)}>
-                        <Item
-                          label={
-                            <span>
-                              id&nbsp;
-                              <Tooltip title="表单域传值字段，不填写默认为区块id，需保证唯一">
-                                <Icon type="question-circle-o" />
-                              </Tooltip>
-                            </span>
-                          }
+                {formField && (
+                  <Fragment key="frag">
+                    <Col {...getCol(props.parentStore.settingWidth, Size.SMALL)}>
+                      <Item label={'是否作为表单域'}>
+                        {isFormFieldDec(
+                          <Switch
+                            checkedChildren={'是'}
+                            unCheckedChildren={'否'}
+                          />,
+                        )}
+                      </Item>
+                    </Col>
+                    {isFormField && (
+                      <>
+                        <Col
+                          {...getCol(props.parentStore.settingWidth, Size.MIDDLE)}
                         >
-                          {$idDec(<CommonInput placeholder={'请填写id'} />)}
-                        </Item>
-                      </Col>
-                      <Col {...getCol(1000, Size.MIDDLE)}>
-                        <Item label={<span>label</span>}>
-                          {labelDec(<CommonInput placeholder={''} />)}
-                        </Item>
-                      </Col>
-                    </>
-                  )}
-                </Fragment>
-              )}
-              {/* <Col></Col> */}
-            </Row>
-          </Panel>
-          {propsDecModels.length && (
-            <Panel forceRender header={'自定义设置'} key="2">
-              {propsDecModels}
+                          <Item
+                            label={
+                              <span>
+                                id&nbsp;
+                                <Tooltip title="表单域传值字段，不填写默认为区块id，需保证唯一">
+                                  <Icon type="question-circle-o" />
+                                </Tooltip>
+                              </span>
+                            }
+                          >
+                            {$idDec(<CommonInput placeholder={'请填写id'} />)}
+                          </Item>
+                        </Col>
+                        <Col
+                          {...getCol(props.parentStore.settingWidth, Size.MIDDLE)}
+                        >
+                          <Item label={<span>label</span>}>
+                            {labelDec(<CommonInput placeholder={''} />)}
+                          </Item>
+                        </Col>
+                      </>
+                    )}
+                  </Fragment>
+                )}
+                {/* <Col></Col> */}
+              </Row>
             </Panel>
-          )}
-        </Collapse>
-      </Form>
-    </>
+            {propsDecModels.length && (
+              <Panel forceRender header={'自定义设置'} key="2">
+                {propsDecModels}
+              </Panel>
+            )}
+          </Collapse>
+        </Form>
+      </>
+      }}
+    </Observer>
   );
 });
 ItemSettingForm.displayName = 'ItemSettingFormObserver';
