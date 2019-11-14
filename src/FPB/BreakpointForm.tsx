@@ -27,10 +27,10 @@ const BreakpointForm: React.SFC<BreakpointFormProps> = props => {
         {breakpointsDec(
           <Checkbox.Group>
             <Checkbox value={"xs"}>{"xs <576px"}</Checkbox>
-            <Checkbox value={"sm"}>{"sm ≥576px"}</Checkbox>
-            <Checkbox value={"md"}>{"md ≥768px"}</Checkbox>
-            <Checkbox value={"lg"}>{"lg ≥992px"}</Checkbox>
-            <Checkbox value={"xl"}>{"xl ≥1200px"}</Checkbox>
+            <Checkbox value={"sm"}>{"sm ≥768px"}</Checkbox>
+            <Checkbox value={"md"}>{"md ≥992px"}</Checkbox>
+            <Checkbox value={"lg"}>{"lg ≥1200px"}</Checkbox>
+            <Checkbox value={"xl"}>{"xl ≥1600px"}</Checkbox>
             {/* <Checkbox value={"xxl"}>{"xxl ≥1600px"}</Checkbox> */}
           </Checkbox.Group>
         )}
