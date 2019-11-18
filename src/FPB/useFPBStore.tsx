@@ -215,6 +215,7 @@ export interface BaseComponentType {
    * 组件引入名称
    */
   name: string;
+  asName?:string;
   /**
    * 子组件
    */
@@ -784,8 +785,6 @@ const useFPBStore = (props): FPBStore => {
           });
         };
         dealChildren();
-        console.log(flatComponents);
-
         return flatComponents;
       },
       get componentGroup() {

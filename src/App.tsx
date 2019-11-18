@@ -15,115 +15,10 @@ import { doWindowResize } from './FPB/utils';
 import { useForceUpdate } from 'mobx-react-lite';
 import DevTools from 'mobx-react-devtools';
 
-const test = {
-  datas: {
-    EVRnWB1b: {
-      i: 'EVRnWB1b',
-      autoHeight: true,
-      componentProps: {
-        gql:
-          '{\n  dataSource:users{\n    id\n    name\n    nickname\n    email\n  }\n}',
-        children: [
-          { componentProps: { dataIndex: 'name', title: '姓名' } },
-          { componentProps: { dataIndex: 'nickname', title: '昵称' } },
-          { componentProps: { dataIndex: 'email', title: '邮箱' } },
-        ],
-      },
-      componentId: 'gql-table',
-      isFormField: null,
-      $id: null,
-    },
-  },
-  layouts: {
-    lg: [
-      {
-        w: 4,
-        h: 79,
-        x: 0,
-        y: 338,
-        i: 'jffT1f5-',
-        minH: 79,
-        maxH: 79,
-        moved: false,
-        static: false,
-      },
-      {
-        w: 3,
-        h: 79,
-        x: 5,
-        y: 338,
-        i: 'EiX7-eXY',
-        minH: 79,
-        maxH: 79,
-        moved: false,
-        static: false,
-      },
-      {
-        w: 8,
-        h: 91,
-        x: 0,
-        y: 417,
-        i: 'I7WU2m2d',
-        minH: 91,
-        maxH: 91,
-        moved: false,
-        static: false,
-      },
-      {
-        w: 1,
-        h: 30,
-        x: 4,
-        y: 338,
-        i: '65oj8LJ5',
-        minH: 30,
-        maxH: 30,
-        moved: false,
-        static: false,
-      },
-      {
-        w: 8,
-        h: 112,
-        x: 0,
-        y: 0,
-        i: 'vHSD40rC',
-        minH: 112,
-        maxH: 112,
-        moved: false,
-        static: false,
-      },
-      {
-        w: 8,
-        h: 226,
-        x: 0,
-        y: 112,
-        i: 'EVRnWB1b',
-        minH: 226,
-        maxH: 226,
-        moved: false,
-        static: false,
-      },
-    ],
-    md: [
-      {
-        w: 6,
-        h: 226,
-        x: 0,
-        y: 0,
-        i: 'EVRnWB1b',
-        minH: 226,
-        maxH: 226,
-        moved: false,
-        static: false,
-      },
-    ],
-  },
-  cols: { xxl: 12, xl: 12, lg: 8, md: 6, sm: 4, xs: 2 },
-  breakpoints: ['lg', 'md'],
-};
 const client = new ApolloClient({
   uri: 'https://api.github.com/graphql',
   headers:{
-    Authorization:'Bearer 1d3089936d8ea39f24d4c9db846948e51483ce82'
+    Authorization:'Bearer 62babf1d9e1c93ce12700649436e1f9035a5866c'
   }
 });
 const App: React.FC = () => {
@@ -142,5 +37,6 @@ const App: React.FC = () => {
     </>
   );
 };
+console.log(JSON.stringify([input, checkbox, radio, button, tabs, table, gqltable]));
 
 export default App;
