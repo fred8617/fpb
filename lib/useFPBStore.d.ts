@@ -181,6 +181,7 @@ export interface BaseComponentType {
      * 组件引入名称
      */
     name: string;
+    asName?: string;
     /**
      * 子组件
      */
