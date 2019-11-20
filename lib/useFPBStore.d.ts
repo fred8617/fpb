@@ -168,9 +168,11 @@ export interface GraphqlProp extends BaseComponentProp {
      */
     type: 'graphql';
 }
+export declare type ComponentPropsCommon = FPRProp | ArrayComponentProp | ArrayStringProp | StringProp | GraphqlProp;
+export declare type ComponentPropsChildren = FPRProp | ArrayComponentProp | ArrayStringProp | StringProp;
 export interface ComponentProps {
-    [propName: string]: FPRProp | ArrayComponentProp | ArrayStringProp | StringProp | GraphqlProp;
-    children?: FPRProp | ArrayComponentProp | ArrayStringProp | StringProp;
+    [propName: string]: ComponentPropsCommon;
+    children?: ComponentPropsChildren;
 }
 /**
  * 组件基础
