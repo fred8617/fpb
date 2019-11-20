@@ -9,8 +9,15 @@ const tabs: ComponentType ={
     path: "antd",
     group: "antd",
     Component: Tabs,
+    children:[{
+      id:'antd-tabpane',
+      label:'选项卡标签',
+      name:'TabPane',
+      Component:Tabs.TabPane,
+    }],
     componentProps: {
       children: {
+        id:'antd-tabpane',
         label: "子元素",
         type: "array:component",
         Component: Tabs.TabPane,

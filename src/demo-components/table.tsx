@@ -9,9 +9,17 @@ const table: ComponentType = {
   group: 'antd',
   Component: Table,
   formField: false,
-  children: [],
+  children: [
+    {
+      id: 'antd-column',
+      label: '列',
+      Component: Table.Column,
+      name: 'Column',
+    },
+  ],
   componentProps: {
     children: {
+      id: 'antd-column',
       type: 'array:component',
       label: '列',
       Component: Table.Column,

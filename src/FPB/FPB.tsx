@@ -86,6 +86,7 @@ const FPB: React.SFC<FPBProps> = props => {
       <Observer>
         {() => (
           <ResponsiveGridLayout
+            // compactType={'horizontal'}
             // useCSSTransforms={false}
             style={{ display: !store.hasLayout() ? 'none' : 'block' }}
             className="layout"

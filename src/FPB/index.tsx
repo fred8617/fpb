@@ -1,2 +1,4 @@
 import FPB, { ApolloFPB } from './FPB';
-export { FPB as default, ApolloFPB };
+import useSizeMe from './useSizeMe';
+import ContainerQuery from './ContainerQuery';
+export { FPB as default, ApolloFPB ,useSizeMe,ContainerQuery};

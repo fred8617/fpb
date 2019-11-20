@@ -13,6 +13,7 @@ const table: ComponentType = {
   children: [],
   componentProps: {
     children: {
+      id: 'antd-column',
       type: 'array:component',
       label: '列',
       shouldHaveOne: true,

@@ -84,6 +84,7 @@ export interface RGLItem {
   maxH?: number;
   // If true equal to `isDraggable: false, isResizable: false`.
   static?: boolean;
+  moved?: boolean;
   // If false, will not be draggable. Overrides `static`.
   isDraggable?: boolean;
   // If false, will not be resizable. Overrides `static`.
@@ -137,10 +138,18 @@ interface BaseComponentProp {
    */
   componentProps?: ComponentProps;
 }
+export interface CommonComponentProp {
+  /**
+   * id,用于平铺组件查找,仅仅带有component类型的组件有
+   */
+  id: string;
+}
 /**
  * 数组组件属性
  */
-export interface ArrayComponentProp extends BaseComponentProp {
+export interface ArrayComponentProp
+  extends BaseComponentProp,
+    CommonComponentProp {
   /**
    * 类型
    */
@@ -215,11 +224,11 @@ export interface BaseComponentType {
    * 组件引入名称
    */
   name: string;
-  asName?:string;
+  asName?: string;
   /**
    * 子组件
    */
-  children?: BaseComponentType[];
+  children?: Omit<BaseComponentType, 'children'>[];
   /**
    * 父组件
    */
@@ -276,10 +285,9 @@ export interface FPBProps extends FormComponentProps {
    * 导入组件
    */
   components: ComponentType[];
- 
 }
-export interface ApolloFPBProps extends FPBProps{
-  client:ApolloClient<any>;
+export interface ApolloFPBProps extends FPBProps {
+  client: ApolloClient<any>;
 }
 export interface BreakpointsConfig {
   breakpoints: string[];
