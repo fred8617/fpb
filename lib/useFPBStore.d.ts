@@ -69,6 +69,7 @@ export interface RGLItem {
     minH?: number;
     maxH?: number;
     static?: boolean;
+    moved?: boolean;
     isDraggable?: boolean;
     isResizable?: boolean;
 }
@@ -112,10 +113,16 @@ interface BaseComponentProp {
      */
     componentProps?: ComponentProps;
 }
+export interface CommonComponentProp {
+    /**
+     * id,用于平铺组件查找,仅仅带有component类型的组件有
+     */
+    id: string;
+}
 /**
  * 数组组件属性
  */
-export interface ArrayComponentProp extends BaseComponentProp {
+export interface ArrayComponentProp extends BaseComponentProp, CommonComponentProp {
     /**
      * 类型
      */
@@ -185,7 +192,7 @@ export interface BaseComponentType {
     /**
      * 子组件
      */
-    children?: BaseComponentType[];
+    children?: Omit<BaseComponentType, 'children'>[];
     /**
      * 父组件
      */
