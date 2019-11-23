@@ -1,6 +1,6 @@
-import { SFC } from "react";
-import { FPBItem } from "./useFPBStore";
-import React from "react";
+import { SFC } from 'react';
+import { FPBItem } from './useFPBStore';
+import React from 'react';
 /**
  * FPB表单元素
  */

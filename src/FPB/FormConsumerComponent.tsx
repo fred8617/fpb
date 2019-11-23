@@ -1,9 +1,9 @@
-import { SFC, useEffect } from "react";
-import { Form } from "antd";
-import { useObserver, Observer } from "mobx-react-lite";
-import { Consumer } from "./FormContext";
-import { FPBItem } from "./useFPBStore";
-import React from "react";
+import { SFC, useEffect } from 'react';
+import { Form } from 'antd';
+import { useObserver, Observer } from 'mobx-react-lite';
+import { Consumer } from './FormContext';
+import { FPBItem } from './useFPBStore';
+import React from 'react';
 const { Item } = Form;
 /**
  * FPB表单元素
@@ -20,10 +20,10 @@ interface FormConsumerComponentProps {
 }
 const FormConsumerComponent: SFC<FormConsumerComponentProps> = ({
   item,
-  component
+  component,
 }) => {
   useEffect(() => {
-    console.log("FormConsumerComponentProps");
+    console.log('FormConsumerComponentProps');
   }, []);
 
   return (
@@ -31,14 +31,16 @@ const FormConsumerComponent: SFC<FormConsumerComponentProps> = ({
       {() => {
         const { $id, i, label } = item;
         const id = ($id && $id.trim()) || i;
-
-
         return (
           <Consumer>
             {({ form }) => {
               let renderComponent = form.getFieldDecorator(id)(component);
               if (label) {
-                renderComponent = <Item label={label}>{renderComponent}</Item>;
+                renderComponent = (
+                  <Form>
+                    <Item label={label}>{renderComponent}</Item>
+                  </Form>
+                );
               }
               return <>{renderComponent}</>;
             }}

@@ -1,8 +1,10 @@
 export const doWindowResize = () => {
-  const event = document.createEvent('HTMLEvents');
+  const event: Event = document.createEvent('HTMLEvents');
   event.initEvent('resize', true, false);
   window.dispatchEvent(event);
 };
+//@ts-ignore
+window.doWindowResize = doWindowResize;
 
 export const findRequiredRules = componentProps => {
   if (!componentProps) {

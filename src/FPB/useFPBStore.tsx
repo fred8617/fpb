@@ -284,6 +284,10 @@ export interface FPBProps extends FormComponentProps {
    * 延迟渲染，在模态框弹出动画非常有用，antd modal设置200即可
    */
   renderDelay?: number;
+  /**
+   * 渲染其他操作
+   */
+  renderActions?(): React.ReactElement;
   defaultDatas?: FPBConfig;
   /**
    * 左侧布局的默认宽度
@@ -293,6 +297,10 @@ export interface FPBProps extends FormComponentProps {
    * 导入组件
    */
   components: ComponentType[];
+  /**
+   * 父级断点，存在时可以锁死断点?很奇怪的是局部宽度响应了fpr
+   */
+  breakpoint?: Breakpoint;
 }
 export interface ApolloFPBProps extends FPBProps {
   client: ApolloClient<any>;
@@ -320,6 +328,7 @@ export interface FPBConfig {
    */
   breakpoints?: string[];
 }
+export type Breakpoint = 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
 /**
  * pb的store
  */
@@ -358,7 +367,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    */
   datas: FPBItemIndexList;
   hasLayout: () => boolean;
-  breakpoint: 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
+  breakpoint: Breakpoint;
   /**
    * 断点数组的key
    */
@@ -643,7 +652,7 @@ const useFPBStore = (props): FPBStore => {
       setBreakpoint(breakpoint, _col) {
         console.log('setBreakpoint', breakpoint, store.datas);
 
-        store.breakpoint = breakpoint;
+        store.breakpoint = source.breakpoint || breakpoint;
       },
       setBreakpointFromEntry(breakpoints) {
         store.breakpoints = Object.fromEntries(
@@ -730,6 +739,9 @@ const useFPBStore = (props): FPBStore => {
         item.h = h || 30;
         item.maxH = item.h;
         item.minH = item.h;
+        // console.log(store.layouts);
+
+        // store.setLayouts([] as any, store.layouts);
       },
       createItem() {
         const i = shortid.generate();
@@ -834,7 +846,7 @@ const useFPBStore = (props): FPBStore => {
         store.breakpointSettingVisible = breakpointSettingVisible;
       },
     }),
-    { components: props.components },
+    { components: props.components, breakpoint: props.breakpoint },
   );
   return store;
 };

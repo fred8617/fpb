@@ -10,6 +10,8 @@ export default class ErrorWrapper extends React.Component<ErrorWrapperProps> {
   };
   componentDidCatch(error, info) {
     this.setState({ error, info });
+    console.log(error);
+    
   }
   render() {
     if (this.state.error) {

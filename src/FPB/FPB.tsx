@@ -1,5 +1,5 @@
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import React, { useRef, useEffect, SFC } from 'react';
+import React, { useRef, useEffect, SFC, useMemo } from 'react';
 import { Observer, useLocalStore } from 'mobx-react-lite';
 import ReactJson from 'react-json-view';
 import { doWindowResize, getObjectKeysWhenIsArray } from './utils';
@@ -62,6 +62,10 @@ const FPB: React.SFC<FPBProps> = props => {
   useEffect(() => {
     if (!isInit.current) {
       isInit.current = true;
+      if (props.defaultDatas) {
+        store.setLayouts([] as any, props.defaultDatas.layouts);
+      }
+
       setTimeout(doWindowResize, props.renderDelay || 0);
     }
     if (props.defaultDatas) {
@@ -70,12 +74,14 @@ const FPB: React.SFC<FPBProps> = props => {
       }
       store.setDatas(props.defaultDatas.datas);
       store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
-      store.setLayouts([] as any, props.defaultDatas.layouts);
+      // store.setLayouts([] as any, props.defaultDatas.layouts);
+      setTimeout(doWindowResize, props.renderDelay || 0);
       //模态框动画弹出需要加renderDelay
 
       // doWindowResize();
     }
   }, [props.defaultDatas, props.renderDelay]);
+
   useEffect(() => {
     console.log('mount');
   }, []);
@@ -256,14 +262,14 @@ const FPB: React.SFC<FPBProps> = props => {
                 )}
               </Observer>
             </Form.Item>
-            <Form.Item label="断点">
+            <Form.Item>
               <Observer>
                 {() => (
                   <Button
                     disabled={store.isPreview}
                     onClick={_ => store.setBreakpointSettingVisible(true)}
                   >
-                    断点
+                    断点设置
                   </Button>
                 )}
               </Observer>
@@ -287,6 +293,7 @@ const FPB: React.SFC<FPBProps> = props => {
                 )}
               </Observer>
             </Form.Item>
+            {props.renderActions && props.renderActions()}
           </Form>
         </div>
       </SplitPane>

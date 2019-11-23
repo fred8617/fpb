@@ -27,6 +27,10 @@ const tabs: ComponentType ={
             label: "标题",
             type: "string"
           },
+          key: {
+            label: "key",
+            type: "string"
+          },
           children: {
             label: "选项卡内容",
             type: "FPR",

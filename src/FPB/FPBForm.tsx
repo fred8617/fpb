@@ -1,5 +1,5 @@
 import React, { SFC, useRef, useEffect } from 'react';
-import { Form, Button } from 'antd';
+import { Form, Button, Modal, Drawer } from 'antd';
 import FullScreenModal from './FullScreenModal';
 import FPB from './FPB';
 import { ComponentType } from './useFPBStore';
@@ -17,6 +17,7 @@ const FPBForm: SFC<FPBFormProps> = props => {
   const footerRef: any = useRef();
   const store = useLocalStore(() => ({
     visible: false,
+    destory: false,
     setVisible(visible) {
       store.visible = visible;
       if (visible) {
@@ -32,70 +33,68 @@ const FPBForm: SFC<FPBFormProps> = props => {
       <Button onClick={_ => store.setVisible(true)}>设计</Button>
       <Observer>
         {() => (
-          <FullScreenModal
-            minuHeight={store.minuHeight}
-            onOk={_ => {
-              //   ref.current.config;
-              if (props.onChange) {
-                props.onChange(ref.current.config);
-              }
-            }}
+          <Drawer
+            drawerStyle={{ height: `100%` }}
+            style={{ height: `100%`, transform: `translate(0)` }}
+            bodyStyle={{ height: `100%`, padding: 5 }}
+            width={`100%`}
+            onClose={_ => store.setVisible(false)}
             destroyOnClose
-            footer={
-              <div ref={footerRef}>
-                <Form layout="inline">
-                  <Item>
-                    <Button
-                      type="primary"
-                      onClick={_ => {
-                        //   ref.current.config;
-                        if (props.onChange) {
-                          props.onChange(ref.current.config);
-                        }
-                      }}
-                    >
-                      保存
-                    </Button>
-                  </Item>
-                  <Item>
-                    <Button
-                      type="danger"
-                      onClick={_ => {
-                        //   ref.current.config;
-                        if (props.onChange) {
-                          props.onChange(ref.current.config);
-                        }
-                        store.setVisible(false);
-                      }}
-                    >
-                      保存并关闭
-                    </Button>
-                  </Item>
-                </Form>
-              </div>
-            }
-            onCancel={_ => store.setVisible(false)}
             visible={store.visible}
           >
-            {store.visible && (
-              <>
+            <>
               <style>
                 {`
-                .react-grid-item > .react-resizable-handle{
-                  display:block;
-                }
-                `}
+            .react-grid-item > .react-resizable-handle{
+              display:block;
+            }
+            `}
               </style>
-               <FPB
+              <FPB
+                renderActions={() => (
+                  <>
+                    <Item>
+                      <Button
+                        type="primary"
+                        onClick={_ => {
+                          //   ref.current.config;
+                          props.onChange(null);
+                          setTimeout(
+                            () => props.onChange(ref.current.config),
+                            200,
+                          );
+                        }}
+                      >
+                        保存
+                      </Button>
+                    </Item>
+                    <Item>
+                      <Button
+                        type="danger"
+                        onClick={_ => {
+                          //   ref.current.config;
+                          if (props.onChange) {
+                            props.onChange(null);
+                            setTimeout(
+                              () => props.onChange(ref.current.config),
+                              200,
+                            );
+                          }
+                          store.setVisible(false);
+                        }}
+                      >
+                        保存并关闭
+                      </Button>
+                    </Item>
+                  </>
+                )}
                 renderDelay={200}
                 forwardRef={ref}
                 components={props.components}
                 defaultDatas={props.value}
               />
-              </>
-             
-            )}
-          </FullScreenModal>
+            </>
+          </Drawer>
         )}
       </Observer>
     </>

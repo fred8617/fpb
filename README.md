@@ -28,6 +28,7 @@
 # global-setting
 
 - ~~断点！~~
+- Fpr应该与上层共享Form
 
 # FPR
 - ~~FPRForm内容反显~~

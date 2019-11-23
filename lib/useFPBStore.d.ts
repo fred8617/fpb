@@ -239,6 +239,10 @@ export interface FPBProps extends FormComponentProps {
      * 延迟渲染，在模态框弹出动画非常有用，antd modal设置200即可
      */
     renderDelay?: number;
+    /**
+     * 渲染其他操作
+     */
+    renderActions?(): React.ReactElement;
     defaultDatas?: FPBConfig;
     /**
      * 左侧布局的默认宽度
@@ -248,6 +252,10 @@ export interface FPBProps extends FormComponentProps {
      * 导入组件
      */
     components: ComponentType[];
+    /**
+     * 父级断点，存在时可以锁死断点?很奇怪的是局部宽度响应了fpr
+     */
+    breakpoint?: Breakpoint;
 }
 export interface ApolloFPBProps extends FPBProps {
     client: ApolloClient<any>;
@@ -274,6 +282,7 @@ export interface FPBConfig {
      */
     breakpoints?: string[];
 }
+export declare type Breakpoint = 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
 /**
  * pb的store
  */
@@ -312,7 +321,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
      */
     datas: FPBItemIndexList;
     hasLayout: () => boolean;
-    breakpoint: 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
+    breakpoint: Breakpoint;
     /**
      * 断点数组的key
      */
