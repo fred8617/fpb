@@ -1,5 +1,5 @@
 import { Input, Checkbox, Radio, Button, Tabs } from "antd";
-import { ComponentType } from "../FPB/useFPBStore";
+import { ComponentType } from "../fpb/useFPBStore";
 import { Fragment } from "react";
 const tabs: ComponentType ={
     id: "antd-tabs",

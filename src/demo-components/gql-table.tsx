@@ -1,5 +1,5 @@
 import { Input, Checkbox, Radio, Table } from 'antd';
-import { ComponentType } from '../FPB/useFPBStore';
+import { ComponentType } from '../fpb/useFPBStore';
 import GqlTable from '../components/GqlTable';
 const table: ComponentType = {
   id: 'gql-table',

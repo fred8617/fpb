@@ -1,5 +1,5 @@
 import { Input, Checkbox, Radio, Table } from 'antd';
-import { ComponentType } from '../FPB/useFPBStore';
+import { ComponentType } from '../fpb/useFPBStore';
 const table: ComponentType = {
   id: 'antd-table',
   label: '表格',

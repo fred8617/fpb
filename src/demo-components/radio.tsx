@@ -1,5 +1,5 @@
 import { Input, Checkbox, Radio } from 'antd';
-import { ComponentType } from '../FPB/useFPBStore';
+import { ComponentType } from '../fpb/useFPBStore';
 const radio: ComponentType = {
   id: 'antd-radio',
   label: '单选框',

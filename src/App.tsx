@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { ApolloFPB } from './FPB';
-import './FPB/index.less';
+import { ApolloFPB } from './fpb';
+import './fpb/index.less';
 import { ApolloProvider } from '@apollo/react-hooks';
 import ApolloClient from 'apollo-boost';
 import input from './demo-components/input';
@@ -11,7 +11,7 @@ import tabs from './demo-components/tabs';
 import table from './demo-components/table';
 import gqltable from './demo-components/gql-table';
 import { data } from './data';
-import { doWindowResize } from './FPB/utils';
+import { doWindowResize } from './fpb/utils';
 import { useForceUpdate } from 'mobx-react-lite';
 import DevTools from 'mobx-react-devtools';
 import Test from './testPage'
