@@ -10,7 +10,7 @@ import { ItemSettingProps } from './ItemSettingForm';
 import { FormComponentProps, ValidationRule } from 'antd/lib/form';
 import { RadioChangeEvent } from 'antd/lib/radio';
 import { ApolloClient } from 'apollo-boost';
-
+import debounce from 'lodash/debounce';
 const emptyLayouts: BreakpointsLayouts = {
   xxl: [],
   xl: [],
@@ -278,6 +278,11 @@ export interface ComponentGroup {
 }
 
 export interface FPBProps extends FormComponentProps {
+  /**
+   * 外层自定义布局
+   * @param showPart 主要显示内容
+   */
+  layout?(showPart: React.ReactElement): React.ReactElement;
   FPR?: boolean;
   forwardRef?: any;
   /**
@@ -670,6 +675,7 @@ const useFPBStore = (props): FPBStore => {
       deleteItem(key) {
         remove(store.datas, key);
         force();
+        // setTimeout(doWindowResize,300)
       },
       get jsConfig() {
         return toJS(
@@ -739,6 +745,7 @@ const useFPBStore = (props): FPBStore => {
         item.h = h || 30;
         item.maxH = item.h;
         item.minH = item.h;
+        // debounce(doWindowResize,200)
         // console.log(store.layouts);
 
         // store.setLayouts([] as any, store.layouts);
@@ -757,7 +764,7 @@ const useFPBStore = (props): FPBStore => {
         };
         set(store.datas, i, newItem);
         force();
-        setTimeout(doWindowResize, 0);
+        // setTimeout(doWindowResize, 200);
       },
       editingItem: null,
       onItemTypeChange(value) {

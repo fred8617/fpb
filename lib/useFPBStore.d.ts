@@ -233,6 +233,11 @@ export interface ComponentGroup {
     [groupName: string]: ComponentType[] | string;
 }
 export interface FPBProps extends FormComponentProps {
+    /**
+     * 外层自定义布局
+     * @param showPart 主要显示内容
+     */
+    layout?(showPart: React.ReactElement): React.ReactElement;
     FPR?: boolean;
     forwardRef?: any;
     /**

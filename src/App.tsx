@@ -233,6 +233,11 @@ const App: React.FC = () => {
     <>
       <DevTools position={{ bottom: 0 }} />
       <ApolloFPB
+        layout={(showPart)=>{
+          return <div style={{border:`10px solid`}}>
+            {showPart}
+          </div>
+        }}
         client={client}
         defaultDatas={data as any}
         components={[input, checkbox, radio, button, tabs, table, gqltable]}

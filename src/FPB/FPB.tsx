@@ -46,6 +46,9 @@ const FPB: React.SFC<FPBProps> = props => {
     props.forwardRef.current = store;
   }
   useEffect(() => {
+    console.log('layout change');
+  }, [store.layouts]);
+  useEffect(() => {
     /**
      * 初始化一下setting的宽度
      */
@@ -129,6 +132,37 @@ const FPB: React.SFC<FPBProps> = props => {
   if (FPR) {
     return FPRPart;
   }
+  const showPart = (
+    <>
+      <Observer>{() => <CalText width={localStore.mainWidth} />}</Observer>
+      <Observer>
+        {() => (
+          <>
+            <Empty
+              style={{ display: store.hasLayout() ? 'none' : 'block' }}
+              description={'暂无元素'}
+            />
+            {FPRPart}
+          </>
+        )}
+      </Observer>
+    </>
+  );
+  const builderPart = props.layout ? (
+    <div key={'builder'} style={{ position: `relative` }}>{props.layout(showPart)}</div>
+  ) : (
+    <div
+      style={{
+        position: `relative`,
+        paddingLeft: linePadding,
+        paddingTop: linePadding,
+        paddingRight: linePadding,
+      }}
+      key={'builder'}
+    >
+      {showPart}
+    </div>
+  );
   return (
     <>
       {/* 此处在预览模式下取消transition */}
@@ -170,28 +204,7 @@ const FPB: React.SFC<FPBProps> = props => {
         minSize={479}
         maxSize={1600}
       >
-        <div
-          style={{
-            position: `relative`,
-            paddingLeft: linePadding,
-            paddingTop: linePadding,
-            paddingRight: linePadding,
-          }}
-          key={'builder'}
-        >
-          <Observer>{() => <CalText width={localStore.mainWidth} />}</Observer>
-          <Observer>
-            {() => (
-              <>
-                <Empty
-                  style={{ display: store.hasLayout() ? 'none' : 'block' }}
-                  description={'暂无元素'}
-                />
-                {FPRPart}
-              </>
-            )}
-          </Observer>
-        </div>
+        {builderPart}
         <div
           ref={settingRef}
           key="setting"
@@ -255,7 +268,7 @@ const FPB: React.SFC<FPBProps> = props => {
                     type="primary"
                     icon="plus"
                     disabled={store.isPreview}
-                    onClick={store.createItem}
+                    onClick={debounce(store.createItem, 50)}
                   >
                     添加元素
                   </Button>
