@@ -42,11 +42,18 @@ const FPB: React.SFC<FPBProps> = props => {
       }
     },
   }));
+  useEffect(() => {
+    store.setBreakpointFromEntry(
+      Object.keys(store.breakpoints),
+      props.breakpointDiff,
+    );
+  }, [props.breakpointDiff]);
   if (props.forwardRef) {
     props.forwardRef.current = store;
   }
   useEffect(() => {
-    console.log('layout change');
+    console.log('layout change & doWindowResize');
+    doWindowResize();
   }, [store.layouts]);
   useEffect(() => {
     /**
@@ -76,7 +83,10 @@ const FPB: React.SFC<FPBProps> = props => {
         store.mode = Mode.PRIVIEW;
       }
       store.setDatas(props.defaultDatas.datas);
-      store.setBreakpointFromEntry(props.defaultDatas.breakpoints);
+      store.setBreakpointFromEntry(
+        props.defaultDatas.breakpoints,
+        props.breakpointDiff,
+      );
       // store.setLayouts([] as any, props.defaultDatas.layouts);
       setTimeout(doWindowResize, props.renderDelay || 0);
       //模态框动画弹出需要加renderDelay
@@ -149,7 +159,9 @@ const FPB: React.SFC<FPBProps> = props => {
     </>
   );
   const builderPart = props.layout ? (
-    <div key={'builder'} style={{ position: `relative` }}>{props.layout(showPart)}</div>
+    <div key={'builder'} style={{ position: `relative` }}>
+      {props.layout(showPart)}
+    </div>
   ) : (
     <div
       style={{
@@ -194,7 +206,7 @@ const FPB: React.SFC<FPBProps> = props => {
         className="FPB"
         onChange={e => {
           localStore.setSettingWidth();
-          localStore.setMainWidth(e - 10);
+          localStore.setMainWidth(e - (props.layout ? 0 : 10));
         }}
         onDragFinished={doWindowResize}
         pane1Style={{ overflow: `auto` }}

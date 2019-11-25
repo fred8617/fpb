@@ -279,6 +279,10 @@ export interface ComponentGroup {
 
 export interface FPBProps extends FormComponentProps {
   /**
+   * 断点差值
+   */
+  breakpointDiff?: number;
+  /**
    * 外层自定义布局
    * @param showPart 主要显示内容
    */
@@ -346,7 +350,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
    * 编辑元素窗口的标题，取i
    */
   editingTitle: string;
-  setBreakpointFromEntry(breakpoints: any);
+  setBreakpointFromEntry(breakpoints: any, breakpointDiff?: number);
   /**
    * 获取全部配置项以及数据
    */
@@ -659,9 +663,12 @@ const useFPBStore = (props): FPBStore => {
 
         store.breakpoint = source.breakpoint || breakpoint;
       },
-      setBreakpointFromEntry(breakpoints) {
+      setBreakpointFromEntry(breakpoints, breakpointDiff = 0) {
         store.breakpoints = Object.fromEntries(
-          breakpoints.map(point => [point, breakpointsStandard[point]]),
+          breakpoints.map(point => [
+            point,
+            breakpointsStandard[point] + breakpointDiff,
+          ]),
         );
       },
       setBreakpointConfig(values) {
