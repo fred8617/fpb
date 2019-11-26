@@ -1,8 +1,10 @@
 import { debounce } from 'lodash';
 let doWindowResizeInitial = () => {
-  const event: Event = document.createEvent('HTMLEvents');
-  event.initEvent('resize', true, false);
-  window.dispatchEvent(event);
+  if (typeof window !== 'undefined') {
+    const event: Event = document.createEvent('HTMLEvents');
+    event.initEvent('resize', true, false);
+    window.dispatchEvent(event);
+  }
 };
 export const doWindowResize = debounce(doWindowResizeInitial, 200);
 //@ts-ignore
