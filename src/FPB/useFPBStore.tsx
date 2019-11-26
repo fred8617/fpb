@@ -478,7 +478,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
   /**
    * 设置布局断点配置
    */
-  setBreakpointConfig(values);
+  setBreakpointConfig(values,setBreakpointConfig?:number);
 }
 export type RGLItemCallBack = (
   layout: RGLItem[],
@@ -671,8 +671,8 @@ const useFPBStore = (props): FPBStore => {
           ]),
         );
       },
-      setBreakpointConfig(values) {
-        store.setBreakpointFromEntry(values.breakpoints);
+      setBreakpointConfig(values,setBreakpointConfig=0) {
+        store.setBreakpointFromEntry(values.breakpoints,setBreakpointConfig);
         store.cols = {
           ...store.cols,
           ...values.cols,

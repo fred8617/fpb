@@ -436,7 +436,7 @@ export interface FPBStore extends RGLConfig, ItemSettingProps {
     /**
      * 设置布局断点配置
      */
-    setBreakpointConfig(values: any): any;
+    setBreakpointConfig(values: any, setBreakpointConfig?: number): any;
 }
 export declare type RGLItemCallBack = (layout: RGLItem[], 
 /**

@@ -336,7 +336,7 @@ const FPB: React.SFC<FPBProps> = props => {
                   if (err) {
                     return;
                   }
-                  store.setBreakpointConfig(values);
+                  store.setBreakpointConfig(values, props.breakpointDiff);
                 },
               )
             }
