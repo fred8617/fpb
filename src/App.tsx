@@ -12,7 +12,7 @@ import table from './demo-components/table';
 import gqltable from './demo-components/gql-table';
 import { data } from './data';
 import { doWindowResize } from './fpb/utils';
-import { useForceUpdate } from 'mobx-react-lite';
+import { useForceUpdate, useLocalStore, Observer } from 'mobx-react-lite';
 import DevTools from 'mobx-react-devtools';
 import Test from './testPage';
 import { InputNumber, Form } from 'antd';
@@ -219,11 +219,14 @@ const App: React.FC = () => {
   const force = useForceUpdate();
   //@ts-ignore
   window.force = force;
-  // useEffect(() => {
-  //   // 这种情况应该避免，尽量去用sizeMe监听容器
-  //   window.addEventListener('resize', force);
-  // });
+  useEffect(() => {
+    // 这种情况应该避免，尽量去用sizeMe监听容器
+    window.addEventListener('resize', force);
+  });
   const [breakpointDiff, setBreakDiff] = useState(0);
+  const store = useLocalStore(() => ({
+    breakpointDiff1: 0,
+  }));
   return (
     <>
       <DevTools position={{ bottom: 0 }} />
@@ -234,12 +237,23 @@ const App: React.FC = () => {
         }}
         renderActions={() => {
           return (
-            <Form.Item label="断点差值">
-              <InputNumber
-                value={breakpointDiff}
-                onChange={e => setBreakDiff(e || 0)}
-              />
-            </Form.Item>
+            <>
+              <Form.Item label="断点差值">
+                <InputNumber
+                  value={breakpointDiff}
+                  onChange={e => setBreakDiff(e || 0)}
+                />
+              </Form.Item>
+              <Form.Item label="断点差值1">
+                <Observer>
+                  {()=> <InputNumber
+                  value={store.breakpointDiff1}
+                  onChange={e => (store.breakpointDiff1 = e || 0)}
+                />}
+                </Observer>
+               
+              </Form.Item>
+            </>
           );
         }}
         client={client}

@@ -363,7 +363,10 @@ const FPB: React.SFC<FPBProps> = props => {
     </>
   );
 };
-const FormFPB = Form.create<FPBProps>({ name: 'FPB' })(FPB);
+const FormFPB = React.memo(
+  Form.create<FPBProps>({ name: 'FPB' })(FPB),
+  (p, n) => n.breakpointDiff === p.breakpointDiff,
+);
 
 export const ApolloFPB: SFC<Omit<ApolloFPBProps, 'form'>> = ({
   client,

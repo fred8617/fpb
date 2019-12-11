@@ -1,0 +1,15 @@
+{
+    "extends": ["react-app"],
+    "rules": {
+      "import/no-webpack-loader-syntax": 0
+    },
+    "overrides": [
+      {
+        "files": ["**/*.ts?(x)"],
+        "rules": {
+          "import/no-webpack-loader-syntax": 0
+        }
+      }
+    ]
+  }
+  
