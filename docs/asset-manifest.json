@@ -1,0 +1,41 @@
+{
+  "files": {
+    "main.css": "/fpb/static/css/main.5f5ff9f8.chunk.css",
+    "main.js": "/fpb/static/js/main.c223c1f9.chunk.js",
+    "main.js.map": "/fpb/static/js/main.c223c1f9.chunk.js.map",
+    "runtime-main.js": "/fpb/static/js/runtime-main.aa691f9f.js",
+    "runtime-main.js.map": "/fpb/static/js/runtime-main.aa691f9f.js.map",
+    "static/css/2.30778841.chunk.css": "/fpb/static/css/2.30778841.chunk.css",
+    "static/js/2.1ddd0cae.chunk.js": "/fpb/static/js/2.1ddd0cae.chunk.js",
+    "static/js/2.1ddd0cae.chunk.js.map": "/fpb/static/js/2.1ddd0cae.chunk.js.map",
+    "index.html": "/fpb/index.html",
+    "precache-manifest.59fbc02201ba284e865cb7adfa0372d7.js": "/fpb/precache-manifest.59fbc02201ba284e865cb7adfa0372d7.js",
+    "service-worker.js": "/fpb/service-worker.js",
+    "static/css/2.30778841.chunk.css.map": "/fpb/static/css/2.30778841.chunk.css.map",
+    "static/css/main.5f5ff9f8.chunk.css.map": "/fpb/static/css/main.5f5ff9f8.chunk.css.map",
+    "static/js/2.1ddd0cae.chunk.js.LICENSE.txt": "/fpb/static/js/2.1ddd0cae.chunk.js.LICENSE.txt",
+    "static/media/GraphQLLanguageService.d.ts.map": "/fpb/static/media/GraphQLLanguageService.d.ts.eb90b579.map",
+    "static/media/GraphQLLanguageService.js.map": "/fpb/static/media/GraphQLLanguageService.js.3175caf7.map",
+    "static/media/autocompleteUtils.d.ts.map": "/fpb/static/media/autocompleteUtils.d.ts.ea35d712.map",
+    "static/media/autocompleteUtils.js.map": "/fpb/static/media/autocompleteUtils.js.89cc37de.map",
+    "static/media/getAutocompleteSuggestions.d.ts.map": "/fpb/static/media/getAutocompleteSuggestions.d.ts.4ddd2c6f.map",
+    "static/media/getAutocompleteSuggestions.js.map": "/fpb/static/media/getAutocompleteSuggestions.js.6b2a3530.map",
+    "static/media/getDefinition.d.ts.map": "/fpb/static/media/getDefinition.d.ts.1778450d.map",
+    "static/media/getDefinition.js.map": "/fpb/static/media/getDefinition.js.0d30708e.map",
+    "static/media/getDiagnostics.d.ts.map": "/fpb/static/media/getDiagnostics.d.ts.fd516e89.map",
+    "static/media/getDiagnostics.js.map": "/fpb/static/media/getDiagnostics.js.70284c7d.map",
+    "static/media/getHoverInformation.d.ts.map": "/fpb/static/media/getHoverInformation.d.ts.9fc32f5c.map",
+    "static/media/getHoverInformation.js.map": "/fpb/static/media/getHoverInformation.js.c96e5792.map",
+    "static/media/getOutline.d.ts.map": "/fpb/static/media/getOutline.d.ts.89644432.map",
+    "static/media/getOutline.js.map": "/fpb/static/media/getOutline.js.1564aa6b.map",
+    "static/media/index.d.ts.map": "/fpb/static/media/index.d.ts.f17d70d5.map",
+    "static/media/index.js.map": "/fpb/static/media/index.js.43df36f9.map"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.aa691f9f.js",
+    "static/css/2.30778841.chunk.css",
+    "static/js/2.1ddd0cae.chunk.js",
+    "static/css/main.5f5ff9f8.chunk.css",
+    "static/js/main.c223c1f9.chunk.js"
+  ]
+}

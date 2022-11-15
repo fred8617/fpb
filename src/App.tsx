@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ApolloFPB } from './fpb';
-import './fpb/index.less';
-import { ApolloProvider } from '@apollo/react-hooks';
+import { ApolloFPB } from './FPB';
+import './FPB/index.less';
 import ApolloClient from 'apollo-boost';
 import input from './demo-components/input';
 import checkbox from './demo-components/checkbox';
@@ -11,10 +10,8 @@ import tabs from './demo-components/tabs';
 import table from './demo-components/table';
 import gqltable from './demo-components/gql-table';
 import { data } from './data';
-import { doWindowResize } from './fpb/utils';
 import { useForceUpdate, useLocalStore, Observer } from 'mobx-react-lite';
 import DevTools from 'mobx-react-devtools';
-import Test from './testPage';
 import { InputNumber, Form } from 'antd';
 const testData = {
   datas: {
@@ -212,7 +209,7 @@ const testData = {
 const client = new ApolloClient({
   uri: 'https://api.github.com/graphql',
   headers: {
-    Authorization: 'Bearer 62babf1d9e1c93ce12700649436e1f9035a5866c',
+    Authorization: 'Bearer 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',
   },
 });
 const App: React.FC = () => {
@@ -232,7 +229,7 @@ const App: React.FC = () => {
       <DevTools position={{ bottom: 0 }} />
       <ApolloFPB
         breakpointDiff={breakpointDiff}
-        layout={showPart => {
+        layout={(showPart) => {
           return <div style={{ border: `10px solid` }}>{showPart}</div>;
         }}
         renderActions={() => {
@@ -241,17 +238,18 @@ const App: React.FC = () => {
               <Form.Item label="断点差值">
                 <InputNumber
                   value={breakpointDiff}
-                  onChange={e => setBreakDiff(e || 0)}
+                  onChange={(e) => setBreakDiff(e || 0)}
                 />
               </Form.Item>
               <Form.Item label="断点差值1">
                 <Observer>
-                  {()=> <InputNumber
-                  value={store.breakpointDiff1}
-                  onChange={e => (store.breakpointDiff1 = e || 0)}
-                />}
+                  {() => (
+                    <InputNumber
+                      value={store.breakpointDiff1}
+                      onChange={(e) => (store.breakpointDiff1 = e || 0)}
+                    />
+                  )}
                 </Observer>
-               
               </Form.Item>
             </>
           );

@@ -1,12 +1,12 @@
-import { Input, Checkbox, Radio, Button } from "antd";
-import { ComponentType } from "../fpb/useFPBStore";
+import { Button } from 'antd';
+import { ComponentType } from '../FPB/useFPBStore';
 const button: ComponentType = {
-  id: "antd-button",
-  label: "按钮",
-  name: "Button",
+  id: 'antd-button',
+  label: '按钮',
+  name: 'Button',
   isDefault: false,
-  path: "antd",
-  group: "antd",
-  Component: Button
+  path: 'antd',
+  group: 'antd',
+  Component: Button,
 };
 export default button;
